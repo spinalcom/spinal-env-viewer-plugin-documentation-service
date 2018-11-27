@@ -1,0 +1,16 @@
+{
+  "name": "spinal-env-viewer-plugin-cde-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "createGraphBimObject.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "spinalgraph": "git+https://github.com/spinalcom/spinal-model-graph.git#v01",
+    "vue": "^2.0.1"
+  }
+}
