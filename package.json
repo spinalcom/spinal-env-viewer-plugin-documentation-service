@@ -12,6 +12,7 @@
   "dependencies": {
     "spinalgraph": "git+https://github.com/spinalcom/spinal-model-graph.git#v01",
     "spinal-models-cde": "git+https://github.com/spinalcom/spinal-models-cde.git",
+    "spinal-env-viewer-plugin-bimobjectservice" : "git+https://github.com/spinalcom/spinal-env-viewer-plugin-bimobjectservice",
     "vue": "^2.0.1"
   }
 }
