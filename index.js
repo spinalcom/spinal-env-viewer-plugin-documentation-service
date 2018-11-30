@@ -5,7 +5,7 @@ import {
   SPINAL_RELATION_PTR_LST_TYPE,
 } from 'spinalgraph';
 import bimObjectService from 'spinal-env-viewer-plugin-bimobjectservice';
-import {SpinalURL, SpinalAttribute} from 'spinal-models-cde';
+import {SpinalURL, SpinalAttribute} from 'spinal-models-documentation';
 
 let cdeservice = {
   graph: null,
