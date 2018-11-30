@@ -1,8 +1,8 @@
 {
-  "name": "spinal-env-viewer-plugin-cde-service",
+  "name": "spinal-env-viewer-plugin-documentation-service",
   "version": "1.0.0",
   "description": "",
-  "main": "createGraphBimObject.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
