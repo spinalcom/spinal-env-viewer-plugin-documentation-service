@@ -1,90 +1,82 @@
 import {
-  SpinalGraph,
-  SpinalContext,
   SpinalNode,
   SPINAL_RELATION_PTR_LST_TYPE,
 } from 'spinalgraph';
-import bimObjectService from 'spinal-env-viewer-plugin-bimobjectservice';
-import {SpinalURL, SpinalAttribute} from 'spinal-models-documentation';
+import {
+  SpinalURL,
+  SpinalAttribute
+} from 'spinal-models-documentation';
+class DocumentationService {
 
-let cdeservice = {
-  graph: null,
-  context: null,
-  async getGraph () {
-    if (this.graph === null) {
-      let forgeFile = await window.spinal.spinalSystem.getModel ();
-
-      if (!forgeFile.hasOwnProperty ('graph')) {
-        forgeFile.add_attr ({
-          graph: new SpinalGraph (),
-        });
-      }
-      this.graph = forgeFile.graph;
-    }
-    return this.graph;
-  },
-  async getContext (name) {
-    let graph = await this.getGraph ();
-    let selectedContext = await graph.getContext (name);
-    if (selectedContext === 'undefined') {
-      selectedContext = new SpinalContext (name);
-      graph.addContext (selectedContext);
-    }
-    return selectedContext;
-  },
-  async getBIMObject (dbid) {},
-  async addFile (context, parendNode, file, name) {
-    // this.getContext("File");
-  },
-  async addURL (parentNode, nameURL, URL) {
-    let myChild = new SpinalURL (nameURL, URL);
-
-    if (parentNode instanceof SpinalNode)
-      parentNode.addChild (myChild, 'hasURL', SPINAL_RELATION_PTR_LST_TYPE);
-    else {
-      let myParentNode = await bimObjectService.createBIMObject (
-        parentNode,
-        'bimObject_' + parentNode
-      );
-      // console.log(myParentNode);
-      let myURLNode = await myParentNode.addChild (
-        myChild,
-        'hasURL',
-        SPINAL_RELATION_PTR_LST_TYPE
-      );
-      myURLNode.info.name.set (nameURL);
-      return myParentNode;
-    }
-    // this.getContext("URL");
-  },
-  async addAttribute (parentNode, label, value) {
-    // this.getContext("Attribute");
-    let myChild = new SpinalAttribute (label, value);
-
-    if (parentNode instanceof SpinalNode)
-      parentNode.addChild (
-        myChild,
-        'hasAttributes',
-        SPINAL_RELATION_PTR_LST_TYPE
-      );
-    else {
-      let myParentNode = await bimObjectService.createBIMObject (
-        parentNode,
-        'bimObject_' + parentNode
-      );
-      // console.log(myParentNode);
-      let myURLNode = await myParentNode.addChild (
-        myChild,
-        'hasAttributes',
-        SPINAL_RELATION_PTR_LST_TYPE
-      );
-      myURLNode.info.name.set (label);
-      return myParentNode;
-    }
-  },
-  async addNote (context, parendNode, note, name) {
+  addNote(context, parentNode, note, name) {
     // this.getContext("Note");
-  },
-};
+    console.log(context, parentNode, note, name)
+  }
+  addURL(parentNode, nameURL, URL) {
+    if (nameURL != undefined && URL != undefined && URL != "" && nameURL !=
+      "") {
+      let myChild = new SpinalURL(nameURL, URL);
 
-export default cdeservice;
+      if (parentNode instanceof SpinalNode)
+        parentNode.addChild(myChild, 'hasURL',
+          SPINAL_RELATION_PTR_LST_TYPE);
+      else {
+        console.log("bad request add url")
+
+      }
+    }
+
+  }
+
+  getURL(parentNode) {
+    let tab = [];
+    return parentNode
+      .getChildren(['hasURL'])
+      .then(myURLList => {
+        // console.log(myURLList);
+        for (let i = 0; i < myURLList.length; i++) {
+          const urlNode = myURLList[i];
+          // console.log(urlNode);
+          urlNode.element.ptr.load(url => {
+            tab.push(url);
+          });
+        }
+      })
+      .then(() => tab);
+  }
+
+  addAttribute(parentNode, label, value) {
+    // this.getContext("Attribute");
+    if (label != undefined && value != undefined && value != "" && label !=
+      "") {
+      let myChild = new SpinalAttribute(label, value);
+
+      if (parentNode instanceof SpinalNode)
+        parentNode.addChild(
+          myChild,
+          'hasAttributes',
+          SPINAL_RELATION_PTR_LST_TYPE
+        );
+    } else {
+      console.log("bad request add attributes")
+    }
+  }
+
+  getAttributes(parentNode) {
+    let tab = [];
+    return parentNode
+      .getChildren(['hasAttributes'])
+      .then(myAttributesList => {
+        // console.log(myAttributesList);
+        for (let i = 0; i < myAttributesList.length; i++) {
+          const urlNode = myAttributesList[i];
+          // console.log(urlNode);
+          urlNode.element.ptr.load(url => {
+            tab.push(url);
+          });
+        }
+      })
+      .then(() => tab);
+  }
+}
+export const serviceDocumentation = new DocumentationService()
