@@ -2,57 +2,48 @@ import {
   SpinalNode,
   SPINAL_RELATION_PTR_LST_TYPE,
 } from 'spinalgraph';
+
 import {
   SpinalURL,
   SpinalAttribute
 } from 'spinal-models-documentation';
+
 class DocumentationService {
 
   addNote(context, parentNode, note, name) {
     // this.getContext("Note");
     console.log(context, parentNode, note, name)
   }
-  addURL(parentNode, nameURL, URL) {
-    if (nameURL != undefined && URL != undefined && URL != "" && nameURL !=
-      "") {
+
+  async addURL(parentNode, nameURL, URL) {
+    if (nameURL != undefined && URL != undefined && URL != "" && nameURL != "") {
       let myChild = new SpinalURL(nameURL, URL);
 
       if (parentNode instanceof SpinalNode)
-        parentNode.addChild(myChild, 'hasURL',
-          SPINAL_RELATION_PTR_LST_TYPE);
+        await parentNode.addChild(myChild, 'hasURL', SPINAL_RELATION_PTR_LST_TYPE);
       else {
-        console.log("bad request add url")
-
+        console.log("bad request add url");
       }
     }
-
   }
 
-  getURL(parentNode) {
-    let tab = [];
-    return parentNode
-      .getChildren(['hasURL'])
-      .then(myURLList => {
-        // console.log(myURLList);
-        for (let i = 0; i < myURLList.length; i++) {
-          const urlNode = myURLList[i];
-          // console.log(urlNode);
-          urlNode.element.ptr.load(url => {
-            tab.push(url);
-          });
-        }
-      })
-      .then(() => tab);
+  async getURL(BIMObject) {
+    const urlNodes = await BIMObject.getChildren("hasAttributes");
+    const urls = [];
+
+    for (let url of urlNodes) {
+      urls.push(url.getElement());
+    }
+
+    return Promise.all(urls);
   }
 
-  addAttribute(parentNode, label, value) {
-    // this.getContext("Attribute");
-    if (label != undefined && value != undefined && value != "" && label !=
-      "") {
+  async addAttribute(parentNode, label, value) {
+    if (label != undefined && value != undefined && value != "" && label != "") {
       let myChild = new SpinalAttribute(label, value);
 
       if (parentNode instanceof SpinalNode)
-        parentNode.addChild(
+        await parentNode.addChild(
           myChild,
           'hasAttributes',
           SPINAL_RELATION_PTR_LST_TYPE
@@ -62,21 +53,15 @@ class DocumentationService {
     }
   }
 
-  getAttributes(parentNode) {
-    let tab = [];
-    return parentNode
-      .getChildren(['hasAttributes'])
-      .then(myAttributesList => {
-        // console.log(myAttributesList);
-        for (let i = 0; i < myAttributesList.length; i++) {
-          const urlNode = myAttributesList[i];
-          // console.log(urlNode);
-          urlNode.element.ptr.load(url => {
-            tab.push(url);
-          });
-        }
-      })
-      .then(() => tab);
+  async getAttributes(BIMObject) {
+    const attrNodes = await BIMObject.getChildren("hasAttributes");
+    const attrs = [];
+
+    for (let attr of attrNodes) {
+      attrs.push(attr.getElement());
+    }
+
+    return Promise.all(attrs);
   }
 }
 export const serviceDocumentation = new DocumentationService()
