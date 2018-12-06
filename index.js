@@ -1,7 +1,8 @@
 import { SpinalGraphService } from "spinal-env-viewer-graph-service";
+
 import {
-  SpinalAttribute,
-  SpinalURL
+  SpinalURL,
+  SpinalAttribute
 } from 'spinal-models-documentation';
 
 class DocumentationService {
@@ -17,7 +18,6 @@ class DocumentationService {
       //TODO CHECK relation type. RElation type wanted SPINAL_RELATION_PTR_LST_TYPE
       SpinalGraphService.addChildAndCreateNode( parentNode.id.get(), myChild, "hasURL", 2 );
     }
-
   }
 
   getURL( parentNode ) {
