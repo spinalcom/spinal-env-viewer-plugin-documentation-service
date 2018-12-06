@@ -1,7 +1,4 @@
-import {
-  SpinalNode,
-  SPINAL_RELATION_PTR_LST_TYPE,
-} from 'spinalgraph';
+import { SpinalGraphService } from "spinal-env-viewer-graph-service";
 
 import {
   SpinalURL,
@@ -10,58 +7,61 @@ import {
 
 class DocumentationService {
 
-  addNote(context, parentNode, note, name) {
+  addNote( context, parentNode, note, name ) {
     // this.getContext("Note");
-    console.log(context, parentNode, note, name)
+    console.log( context, parentNode, note, name );
   }
 
-  async addURL(parentNode, nameURL, URL) {
+  addURL( parentNode, nameURL, URL ) {
     if (nameURL != undefined && URL != undefined && URL != "" && nameURL != "") {
-      let myChild = new SpinalURL(nameURL, URL);
-
-      if (parentNode instanceof SpinalNode)
-        await parentNode.addChild(myChild, 'hasURL', SPINAL_RELATION_PTR_LST_TYPE);
-      else {
-        console.log("bad request add url");
-      }
+      let myChild = new SpinalURL( nameURL, URL );
+      //TODO CHECK relation type. RElation type wanted SPINAL_RELATION_PTR_LST_TYPE
+      SpinalGraphService.addChildAndCreateNode( parentNode.id.get(), myChild, "hasURL", 2 );
     }
   }
 
-  async getURL(BIMObject) {
-    const urlNodes = await BIMObject.getChildren("hasAttributes");
-    const urls = [];
-
-    for (let url of urlNodes) {
-      urls.push(url.getElement());
-    }
-
-    return Promise.all(urls);
+  getURL( parentNode ) {
+    let tab = [];
+    return SpinalGraphService
+      .getChildren( parentNode.id.get(), ['hasURL'] )
+      .then( myURLList => {
+        // console.log(myURLList);
+        for (let i = 0; i < myURLList.length; i++) {
+          const urlNode = myURLList[i];
+          // console.log(urlNode);
+          urlNode.element.ptr.load( url => {
+            tab.push( url );
+          } );
+        }
+      } )
+      .then( () => tab );
   }
 
-  async addAttribute(parentNode, label, value) {
-    if (label != undefined && value != undefined && value != "" && label != "") {
-      let myChild = new SpinalAttribute(label, value);
-
-      if (parentNode instanceof SpinalNode)
-        await parentNode.addChild(
-          myChild,
-          'hasAttributes',
-          SPINAL_RELATION_PTR_LST_TYPE
-        );
-    } else {
-      console.log("bad request add attributes")
+  addAttribute( parentNode, label, value ) {
+    // this.getContext("Attribute");
+    if (label != undefined && value != undefined && value != "" && label !=
+      "") {
+      let myChild = new SpinalAttribute( label, value );
+      SpinalGraphService.addChild( parentNode.id.get(), myChild, 'hasAttributes', 2 );
     }
   }
 
-  async getAttributes(BIMObject) {
-    const attrNodes = await BIMObject.getChildren("hasAttributes");
-    const attrs = [];
-
-    for (let attr of attrNodes) {
-      attrs.push(attr.getElement());
-    }
-
-    return Promise.all(attrs);
+  getAttributes( parentNode ) {
+    let tab = [];
+    return SpinalGraphService
+      .getChildren( parentNode.id.get(), ['hasAttributes'] )
+      .then( myAttributesList => {
+        // console.log(myAttributesList);
+        for (let i = 0; i < myAttributesList.length; i++) {
+          const urlNode = myAttributesList[i];
+          // console.log(urlNode);
+          urlNode.element.ptr.load( url => {
+            tab.push( url );
+          } );
+        }
+      } )
+      .then( () => tab );
   }
 }
-export const serviceDocumentation = new DocumentationService()
+
+export const serviceDocumentation = new DocumentationService();
