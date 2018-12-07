@@ -1,8 +1,11 @@
-import { SpinalGraphService } from "spinal-env-viewer-graph-service";
+import {
+  SPINAL_RELATION_PTR_LST_TYPE,
+  SpinalGraphService
+} from "spinal-env-viewer-graph-service";
 
 import {
-  SpinalURL,
-  SpinalAttribute
+  SpinalAttribute,
+  SpinalURL
 } from 'spinal-models-documentation';
 
 class DocumentationService {
@@ -13,17 +16,19 @@ class DocumentationService {
   }
 
   addURL( parentNode, nameURL, URL ) {
+    console.log( "url", parentNode );
+
     if (nameURL != undefined && URL != undefined && URL != "" && nameURL != "") {
       let myChild = new SpinalURL( nameURL, URL );
       //TODO CHECK relation type. RElation type wanted SPINAL_RELATION_PTR_LST_TYPE
-      SpinalGraphService.addChildAndCreateNode( parentNode.id.get(), myChild, "hasURL", 2 );
+      SpinalGraphService.addChildAndCreateNode( parentNode.getId().get(), myChild, "hasURL", SPINAL_RELATION_PTR_LST_TYPE );
     }
   }
 
   getURL( parentNode ) {
     let tab = [];
     return SpinalGraphService
-      .getChildren( parentNode.id.get(), ['hasURL'] )
+      .getChildren( parentNode.getId().get(), ['hasURL'] )
       .then( myURLList => {
         // console.log(myURLList);
         for (let i = 0; i < myURLList.length; i++) {
@@ -39,17 +44,19 @@ class DocumentationService {
 
   addAttribute( parentNode, label, value ) {
     // this.getContext("Attribute");
+    console.log( parentNode );
+
     if (label != undefined && value != undefined && value != "" && label !=
       "") {
       let myChild = new SpinalAttribute( label, value );
-      SpinalGraphService.addChild( parentNode.id.get(), myChild, 'hasAttributes', 2 );
+      SpinalGraphService.addChild( parentNode.getId().get(), myChild, 'hasAttributes', SPINAL_RELATION_PTR_LST_TYPE );
     }
   }
 
   getAttributes( parentNode ) {
     let tab = [];
     return SpinalGraphService
-      .getChildren( parentNode.id.get(), ['hasAttributes'] )
+      .getChildren( parentNode.getId().get(), ['hasAttributes'] )
       .then( myAttributesList => {
         // console.log(myAttributesList);
         for (let i = 0; i < myAttributesList.length; i++) {
