@@ -25,21 +25,24 @@ class DocumentationService {
     }
   }
 
-  getURL( parentNode ) {
-    let tab = [];
-    return SpinalGraphService
-      .getChildren( parentNode.getId().get(), ['hasURL'] )
-      .then( myURLList => {
-        // console.log(myURLList);
-        for (let i = 0; i < myURLList.length; i++) {
-          const urlNode = myURLList[i];
-          // console.log(urlNode);
-          urlNode.element.ptr.load( url => {
-            tab.push( url );
-          } );
-        }
-      } )
-      .then( () => tab );
+
+  async getURL( parentNode ) {
+    const children = await SpinalGraphService.getChildren( parentNode.id.get(), ['hasURL'] );
+    const res = [];
+    for (let child of children) {
+      res.push( child.getElement() );
+    }
+    return Promise.all( res );
+  }
+
+  async getAttributes( parentNode ) {
+    const res = [];
+    const children = await SpinalGraphService.getChildren( parentNode.getId().get(), ['hasAttributes'] );
+
+    for (let child of children) {
+      res.push( child.getElement() );
+    }
+    return Promise.all( res );
   }
 
   addAttribute( parentNode, label, value ) {
@@ -53,22 +56,7 @@ class DocumentationService {
     }
   }
 
-  getAttributes( parentNode ) {
-    let tab = [];
-    return SpinalGraphService
-      .getChildren( parentNode.getId().get(), ['hasAttributes'] )
-      .then( myAttributesList => {
-        // console.log(myAttributesList);
-        for (let i = 0; i < myAttributesList.length; i++) {
-          const urlNode = myAttributesList[i];
-          // console.log(urlNode);
-          urlNode.element.ptr.load( url => {
-            tab.push( url );
-          } );
-        }
-      } )
-      .then( () => tab );
-  }
+
 }
 
 export const serviceDocumentation = new DocumentationService();
