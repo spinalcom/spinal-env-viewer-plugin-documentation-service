@@ -30,7 +30,7 @@ class DocumentationService {
     const children = await SpinalGraphService.getChildren( parentNode.id.get(), ['hasURL'] );
     const res = [];
     for (let child of children) {
-      res.push( child.getElement() );
+      res.push( child.element.load() );
     }
     return Promise.all( res );
   }
@@ -40,7 +40,7 @@ class DocumentationService {
     const children = await SpinalGraphService.getChildren( parentNode.getId().get(), ['hasAttributes'] );
 
     for (let child of children) {
-      res.push( child.getElement() );
+      res.push( child.element.load() );
     }
     return Promise.all( res );
   }
