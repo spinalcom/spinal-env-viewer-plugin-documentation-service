@@ -16,13 +16,9 @@ class DocumentationService {
   }
 
   addURL(parentNode, nameURL, URL) {
-    // console.log("url", parentNode);
-    console.log("service add url")
-
     if (nameURL != undefined && URL != undefined && URL != "" && nameURL !=
       "") {
       let myChild = new SpinalURL(nameURL, URL);
-      console.log("ADD URL OF DOC SERVICE", myChild)
       //TODO CHECK relation type. RElation type wanted SPINAL_RELATION_PTR_LST_TYPE
       SpinalGraphService.addChildAndCreateNode(parentNode.id.get(),
         myChild, "hasURL", SPINAL_RELATION_PTR_LST_TYPE);
@@ -42,7 +38,6 @@ class DocumentationService {
 
   async getAttributes(parentNode) {
     const res = [];
-    console.log(parentNode)
     const children = await SpinalGraphService.getChildren(parentNode.info.id.get(),
       ['hasAttributes']);
 
@@ -53,14 +48,16 @@ class DocumentationService {
   }
 
   addAttribute(parentNode, label, value) {
-    // this.getContext("Attribute");
-    // console.log( parentNode );
-    console.log(parentNode)
     if (label != undefined && value != undefined && value != "" && label !=
       "") {
-      let myChild = new SpinalAttribute(label, value);
-      console.log(parentNode)
-      SpinalGraphService.addChild(parentNode.info.id.get(), myChild,
+      let myChildElement = new SpinalAttribute(label, value);
+      let idNewNode = SpinalGraphService.createNode({
+        name: label,
+        value,
+        type: "SpinalAttribute"
+      }, myChildElement)
+      SpinalGraphService.addChild(parentNode.info.id.get(),
+        idNewNode,
         'hasAttributes', SPINAL_RELATION_PTR_LST_TYPE);
     }
   }
