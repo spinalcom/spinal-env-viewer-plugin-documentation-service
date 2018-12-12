@@ -30,7 +30,7 @@ class DocumentationService {
   }
 
   async getURL(BIMObject) {
-    const urlNodes = await BIMObject.getChildren("hasAttributes");
+    const urlNodes = await BIMObject.getChildren("hasURL");
     const urls = [];
 
     for (let url of urlNodes) {
