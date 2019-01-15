@@ -5,16 +5,13 @@ import {
 
 import {
   SpinalURL,
-  SpinalAttribute
+  SpinalAttribute,
+  SpinalNote,
 } from 'spinal-models-documentation';
 
 class DocumentationService {
-  addNote(context, parentNode, note, name) {
-    // this.getContext("Note");
-    console.log(context, parentNode, note, name);
-  }
   removeNode(node) {
-    console.log(node);
+    node.removeFromGraph();
   }
 
   async addURL(parentNode, nameURL, URL) {
@@ -32,16 +29,16 @@ class DocumentationService {
           'hasURL',
           SPINAL_RELATION_PTR_LST_TYPE
         );
-        node.info.name.set("[URL] " + nameURL)
-        node.info.type.set("SpinalURL")
+        node.info.name.set('[URL] ' + nameURL);
+        node.info.type.set('SpinalURL');
       } else {
         console.log('bad request add url');
       }
     }
   }
 
-  async getURL(BIMObject) {
-    const urlNodes = await BIMObject.getChildren('hasURL');
+  async getURL(parentNode) {
+    const urlNodes = await parentNode.getChildren('hasURL');
     const urls = [];
 
     for (let url of urlNodes) {
@@ -74,16 +71,16 @@ class DocumentationService {
           'hasAttributes',
           SPINAL_RELATION_PTR_LST_TYPE
         );
-        node.info.name.set("[Attributes] " + label)
-        node.info.type.set("SpinalAttributes")
+        node.info.name.set('[Attributes] ' + label);
+        node.info.type.set('SpinalAttributes');
       }
     } else {
       console.log('bad request add attributes');
     }
   }
 
-  async getAttributes(BIMObject) {
-    const attrNodes = await BIMObject.getChildren('hasAttributes');
+  async getAttributes(parentNode) {
+    const attrNodes = await parentNode.getChildren('hasAttributes');
     const attrs = [];
 
     for (let attr of attrNodes) {
@@ -99,6 +96,47 @@ class DocumentationService {
     }
 
     return Promise.all(attrs);
+  }
+  async addNote(parentNode, username, note) {
+    console.log(parentNode);
+    if (parentNode instanceof SpinalNode) {
+      let mySpinalNote = new SpinalNote(username, note);
+      let node = await parentNode.addChild(
+        mySpinalNote,
+        'hasNotes',
+        SPINAL_RELATION_PTR_LST_TYPE
+      );
+      node.info.type.set('SpinalNote');
+    } else {
+      console.log('bad request add attributes');
+    }
+  }
+  async getNotes(parentNode) {
+    if (parentNode instanceof SpinalNode) {
+      const notesChildren = await parentNode.getChildren('hasNotes');
+      const notes = [];
+      for (let noteNode of notesChildren) {
+        let element = noteNode.getElement();
+        notes.push(
+          element.then(loadedElement => {
+            return {
+              element: loadedElement,
+              selectedNode: noteNode,
+            };
+          })
+        );
+      }
+      return Promise.all(notes);
+    } else {
+      console.log('bad request add attributes');
+    }
+  }
+
+  editNote(element, note) {
+    console.log(element)
+    let date = new Date();
+    element.message.set(note);
+    element.date.set(date);
   }
 }
 export const serviceDocumentation = new DocumentationService();
