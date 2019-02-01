@@ -131,8 +131,10 @@ class DocumentationService {
         }
       }
       if (status) {
-        let myChild = new SpinalAttribute(label, value);
-        category.element.push(myChild);
+        if (category != undefined) {
+          let myChild = new SpinalAttribute(label, value);
+          category.element.push(myChild);
+        }
       }
     }
   }
@@ -261,7 +263,8 @@ class DocumentationService {
     let contextDirectory = await this.createDirectory(context);
     ViewerDirectoryInDrive.add_file(context.info.name.get(), contextDirectory, {
       model_type: "Directory",
-      icon: "folder"
+      icon: "folder",
+      node: context
     })
     this.startRecursiveExport(context, contextDirectory, context);
   }
@@ -307,6 +310,7 @@ class DocumentationService {
     } else {
       // il faut créer le directory
       let myDirectory = new Directory();
+
       let myFile = new File('ViewerLinkedDirectory', myDirectory);
       directory.push(myFile);
       return Promise.resolve(myDirectory);
@@ -335,7 +339,9 @@ class DocumentationService {
   async createDirectory(selectedNode) {
     let nbNode = await this.getNbChildren(selectedNode);
     if (nbNode == 0) {
+
       let myDirectory = new Directory();
+
       let node = await selectedNode.addChild(
         myDirectory,
         'hasFiles',
@@ -353,7 +359,8 @@ class DocumentationService {
 
     directory.add_file(node.info.name.get(), dir, {
       model_type: "Directory",
-      icon: "folder"
+      icon: "folder",
+      node: node
     })
     return dir;
   }
@@ -362,7 +369,8 @@ class DocumentationService {
     // console.log(childDir)
     directory.add_file(name, childDir, {
       model_type: "Directory",
-      icon: "folder"
+      icon: "folder",
+      node: childDirNode
     })
     return childDir;
   }
