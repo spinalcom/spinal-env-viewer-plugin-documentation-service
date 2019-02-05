@@ -76,6 +76,7 @@ class DocumentationService {
         let categoryNode = new SpinalNode(label, "categoryAttributes", new Lst());
         let node = await parentNode.addChild(categoryNode,
           "hasCategoryAttributes", SPINAL_RELATION_PTR_LST_TYPE)
+        return node;
       }
     }
   }
@@ -135,6 +136,53 @@ class DocumentationService {
           let myChild = new SpinalAttribute(label, value);
           category.element.push(myChild);
         }
+      }
+    }
+  }
+  async addAttributeByCategoryName(parentNode, categoryName, label, value) {
+    // console.log(category, label, value);
+    const _this = this;
+    let status = true;
+    let categoryNode = undefined;
+    let cat = this.getCategoryByName(parentNode, categoryName)
+    if (
+      label != undefined &&
+      value != undefined &&
+      value != '' &&
+      label != ''
+    ) {
+      let allAttributes = await this.getAllAttributes(parentNode);
+      for (let i = 0; i < allAttributes.length; i++) {
+        const element = allAttributes[i];
+        if (element.label.get() == label) {
+          status = false;
+        }
+      }
+      if (status) {
+        cat.then(async function create(category) {
+          if (category == undefined) {
+            // create category
+            // console.log(parentNode);
+            categoryNode = await _this.addCategoryAttribute(
+              parentNode,
+              categoryName
+            );
+            categoryNode.getElement().then((element) => {
+              let myChild = new SpinalAttribute(label, value);
+              element.push(myChild);
+            });
+            // this.addAttributeByCategory()
+            // categoryNode.element.load((myLst) => {
+            //   let myChild = new SpinalAttribute(label, value);
+            //   myLst.element.push(myChild);
+            // })
+
+          } else {
+            let myChild = new SpinalAttribute(label, value);
+            category.element.push(myChild);
+            // add attributes in category found
+          }
+        })
       }
     }
   }
