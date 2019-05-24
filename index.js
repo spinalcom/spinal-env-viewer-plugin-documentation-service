@@ -1,17 +1,14 @@
 import {
-  SpinalNode,
-  SPINAL_RELATION_PTR_LST_TYPE
-} from 'spinal-model-graph';
+  SPINAL_RELATION_PTR_LST_TYPE,
+  SpinalNode
+} from 'spinal-env-viewer-graph-service';
 
 import {
-  SpinalURL,
   SpinalAttribute,
   SpinalNote,
+  SpinalURL,
 } from 'spinal-models-documentation';
-import {
-  lstat
-} from 'fs';
-// var spinalCore = require('spinalcore');
+
 class DocumentationService {
 
   removeNode(node) {
@@ -67,16 +64,15 @@ class DocumentationService {
       let category = await parentNode.getChildren("hasCategoryAttributes");
       for (let i = 0; i < category.length; i++) {
         const element = category[i];
-        if (element.info.name.get() == label) {
+        if (element.info.name.get() === label) {
           // do not create category
           bool = false;
         }
       }
       if (bool) {
         let categoryNode = new SpinalNode(label, "categoryAttributes", new Lst());
-        let node = await parentNode.addChild(categoryNode,
-          "hasCategoryAttributes", SPINAL_RELATION_PTR_LST_TYPE)
-        return node;
+        return await parentNode.addChild( categoryNode,
+          "hasCategoryAttributes", SPINAL_RELATION_PTR_LST_TYPE );
       }
     }
   }
@@ -101,13 +97,13 @@ class DocumentationService {
     let catArray = await this.getCategory(parentNode);
     for (let i = 0; i < catArray.length; i++) {
       const element = catArray[i];
-      if (element.node.info.name.get() == categoryName) {
+      if (element.node.info.name.get() === categoryName) {
         return element
       }
     }
   }
   async getAttributesByCategory(parentNode, categoryName) {
-    let cat = await this.getCategoryByName(parentNode, categoryName)
+    let cat = await this.getCategoryByName(parentNode, categoryName);
     let tab = [];
     for (let i = 0; i < cat.element.length; i++) {
       const element = cat.element[i];
@@ -148,8 +144,8 @@ class DocumentationService {
     if (
       label != undefined &&
       value != undefined &&
-      value != '' &&
-      label != ''
+      value !== '' &&
+      label !== ''
     ) {
       let allAttributes = await this.getAllAttributes(parentNode);
       for (let i = 0; i < allAttributes.length; i++) {
@@ -244,7 +240,6 @@ class DocumentationService {
     return Promise.all(attrs);
   }
   async addNote(parentNode, username, note) {
-    console.log(parentNode);
     if (parentNode instanceof SpinalNode) {
       let mySpinalNote = new SpinalNote(username, note);
       let node = await parentNode.addChild(
@@ -279,13 +274,11 @@ class DocumentationService {
   }
 
   editNote(element, note) {
-    console.log(element);
     let date = new Date();
     element.message.set(note);
     element.date.set(date);
   }
   predicate(node) {
-    console.log(node);
     return true;
   }
 
@@ -364,6 +357,7 @@ class DocumentationService {
       return Promise.resolve(myDirectory);
     }
   }
+  
   getPathLinkedDirectory() {
     let forgeFilePath = window.spinal.spinalSystem.getPath();
     let drivePath = this.cutLastElementOfPath(forgeFilePath);
@@ -380,13 +374,15 @@ class DocumentationService {
       })
     })
   }
+  
   async getNbChildren(selectedNode) {
     const fileNode = await selectedNode.getChildren("hasFiles");
     return fileNode.length
   }
+  
   async createDirectory(selectedNode) {
     let nbNode = await this.getNbChildren(selectedNode);
-    if (nbNode == 0) {
+    if (nbNode === 0) {
 
       let myDirectory = new Directory();
 
@@ -395,8 +391,8 @@ class DocumentationService {
         'hasFiles',
         SPINAL_RELATION_PTR_LST_TYPE
       );
-      node.info.name.set("[Files]")
-      node.info.type.set("SpinalFiles")
+      node.info.name.set("[Files]");
+      node.info.type.set("SpinalFiles");
       return myDirectory;
     } else {
       return this.getDirectory(selectedNode)
@@ -409,23 +405,23 @@ class DocumentationService {
       model_type: "Directory",
       icon: "folder",
       node: node
-    })
+    });
     return dir;
   }
   async createFileDir(directory, name, childDirNode) {
-    let childDir = await this.getDirectory(childDirNode)
+    let childDir = await this.getDirectory(childDirNode);
     // console.log(childDir)
     directory.add_file(name, childDir, {
       model_type: "Directory",
       icon: "folder",
       node: childDirNode
-    })
+    });
     return childDir;
   }
   async getDirectory(selectedNode) {
-    if (selectedNode != undefined) {
+    if (selectedNode !== undefined) {
       const fileNode = await selectedNode.getChildren("hasFiles");
-      if (fileNode.length == 0) {
+      if (fileNode.length === 0) {
         return undefined
       } else {
         let directory = await fileNode[0].getElement();
@@ -440,14 +436,14 @@ class DocumentationService {
       const element = directory[i];
       if (node.info.name.get() === element.name.get()) {
         // eslint-disable-next-line no-await-in-loop
-        myDir = await this.loadDir(element)
+        myDir = await this.loadDir(element);
         break;
       }
     }
     if (myDir === undefined) {
       // check if directory exist for node
       let child = await node.getChildren("hasFiles");
-      if (child.length != 0) {
+      if (child.length !== 0) {
         myDir = await this.createFileDir(directory, node.info.name.get(),
           node)
       } else {
@@ -455,7 +451,7 @@ class DocumentationService {
       }
     }
     let result = await node.getChildrenInContext(context);
-    let tabProm = []
+    let tabProm = [];
     for (let i = 0; i < result.length; i++) {
       const element = result[i];
       // console.log(element)
