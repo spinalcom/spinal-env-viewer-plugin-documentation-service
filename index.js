@@ -56,9 +56,25 @@ class DocumentationService {
         })
       );
     }
-
     return Promise.all(urls);
   }
+  async deleteURL(parentNode, label) {
+    const urlNodes = await parentNode.getChildren('hasURL');
+    const urls = [];
+
+    for (let url of urlNodes) {
+      let element = url.getElement();
+      element.then(loadedURL => {
+        if (loadedURL.label.get() == label) {
+          console.log("delete node url");
+          url.removeFromGraph();
+        }
+      })
+    }
+    return Promise.all(urls);
+  }
+
+
   async addCategoryAttribute(parentNode, label) {
     // console.log(parentNode, label);
     let bool = true;
@@ -73,7 +89,8 @@ class DocumentationService {
         }
       }
       if (bool) {
-        let categoryNode = new SpinalNode(label, "categoryAttributes", new Lst());
+        let categoryNode = new SpinalNode(label, "categoryAttributes",
+          new Lst());
         let node = await parentNode.addChild(categoryNode,
           "hasCategoryAttributes", SPINAL_RELATION_PTR_LST_TYPE)
         return node;
@@ -309,11 +326,12 @@ class DocumentationService {
     let path = this.getPathLinkedDirectory() + "/" + context.info.name.get();
     let depth = 0;
     let contextDirectory = await this.createDirectory(context);
-    ViewerDirectoryInDrive.add_file(context.info.name.get(), contextDirectory, {
-      model_type: "Directory",
-      icon: "folder",
-      node: context
-    })
+    ViewerDirectoryInDrive.add_file(context.info.name.get(),
+      contextDirectory, {
+        model_type: "Directory",
+        icon: "folder",
+        node: context
+      })
     this.startRecursiveExport(context, contextDirectory, context);
   }
   async startRecursiveExport(node, directory, context) {
