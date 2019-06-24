@@ -8,9 +8,12 @@ import {
   SpinalAttribute,
   SpinalNote,
 } from 'spinal-models-documentation';
+var $q = require('q');
+import bimObjectService from 'spinal-env-viewer-plugin-bimobjectservice';
 import {
-  lstat
-} from 'fs';
+  ROOMS_TO_ELEMENT_RELATION,
+  EQUIPMENTS_TO_ELEMENT_RELATION
+} from "spinal-env-viewer-room-manager/js/service";
 // var spinalCore = require('spinalcore');
 class DocumentationService {
 
@@ -18,6 +21,9 @@ class DocumentationService {
     node.removeFromGraph();
   }
 
+  ///////////////////////////////////////////////////////////////////////////////////
+  //      Spinal URL function                                                 //
+  ///////////////////////////////////////////////////////////////////////////////////
   async addURL(parentNode, nameURL, URL) {
     if (
       nameURL != undefined &&
@@ -58,6 +64,36 @@ class DocumentationService {
     }
     return Promise.all(urls);
   }
+
+  getParents(selectedNode, relationNames) {
+    const promises = [];
+
+    if (typeof relationNames === "undefined" || relationNames.length === 0) {
+      relationNames = selectedNode.parents.keys();
+    }
+
+    for (let name of relationNames) {
+      const list = selectedNode.parents.getElement(name);
+      if (list != undefined) {
+        for (let i = 0; i < list.length; i++) {
+          promises.push(list[i].load().then(relation => {
+            return relation.getParent();
+          }));
+        }
+      }
+    }
+    return Promise.all(promises);
+  }
+
+  async getParentGroup(selectedNode) {
+    // console.log("test of urlFRom parents");
+    return this.getParents(selectedNode, [ROOMS_TO_ELEMENT_RELATION,
+      EQUIPMENTS_TO_ELEMENT_RELATION
+    ]).then((res) => {
+      return res
+    })
+  }
+
   async deleteURL(parentNode, label) {
     const urlNodes = await parentNode.getChildren('hasURL');
     const urls = [];
@@ -73,7 +109,9 @@ class DocumentationService {
     }
     return Promise.all(urls);
   }
-
+  ///////////////////////////////////////////////////////////////////////////////////
+  //      Spinal attributes function                                                 //
+  ///////////////////////////////////////////////////////////////////////////////////
 
   async addCategoryAttribute(parentNode, label) {
     // console.log(parentNode, label);
@@ -106,6 +144,7 @@ class DocumentationService {
         element.then(loadedElement => {
           return {
             element: loadedElement,
+            nameCat: attr.info.name.get(),
             node: attr,
           };
         })
@@ -245,6 +284,7 @@ class DocumentationService {
     // get hasCategoryAttributes and return list of all attributes
     const attrNodes = await parentNode.getChildren('hasAttributes');
     const attrs = [];
+    console.log(attrNodes);
 
     for (let attr of attrNodes) {
       let element = attr.getElement();
@@ -260,6 +300,74 @@ class DocumentationService {
 
     return Promise.all(attrs);
   }
+
+  compareAttr(listAttr1, listAttr2) {
+    let sharedAttributes = []
+    for (let j = 0; j < listAttr1.length; j++) {
+      const element = listAttr1[j];
+      for (let k = 0; k < listAttr2.length; k++) {
+        const element2 = listAttr2[k];
+        if (element.label.get() == element2.label.get()) {
+          sharedAttributes.push(element);
+        }
+      }
+    }
+    return sharedAttributes
+  }
+
+  async getAttributesShared(listOfdbId) {
+    // console.log(listOfdbId);
+    let _this = this;
+    let listOfNode = [];
+    let sharedAttributes = []
+    let attrToCompare = []
+    for (let i = 0; i < listOfdbId.length; i++) {
+      const dbId = listOfdbId[i]
+      listOfNode.push(bimObjectService.getBIMObject(dbId));
+    }
+    return Promise.all(listOfNode).then(function(bimObjectNodes) {
+      // console.log(bimObjectNodes);
+      // get category for the first BO
+      return _this.getAllAttributes(bimObjectNodes[0]).then((res) => {
+        attrToCompare = res;
+        let arrayOfProm = []
+
+        for (let i = 1; i < bimObjectNodes.length; i++) {
+          const BIMObject = bimObjectNodes[i];
+
+          arrayOfProm.push(
+            _this.getAllAttributes(BIMObject).then((
+              attributesList) => {
+              attrToCompare = _this.compareAttr(attrToCompare,
+                attributesList);
+              return attrToCompare;
+            })
+          )
+        }
+        // return 
+        return Promise.all(arrayOfProm).then((arr) => {
+          return attrToCompare
+        });
+      })
+
+    });
+  }
+  findAttributesByLabel(parentNode, label) {
+    this.getAttributes(parentNode).then((data) => {
+      console.log(data);
+    })
+
+  }
+
+  removeAttributesByLabel(parentNode, label) {
+    console.log(parentNode);
+    console.log(label);
+    this.findAttributesByLabel(parentNode, label);
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////////
+  //      SPinal notes function                                                    //
+  ///////////////////////////////////////////////////////////////////////////////////
   async addNote(parentNode, username, note) {
     console.log(parentNode);
     if (parentNode instanceof SpinalNode) {
@@ -306,8 +414,8 @@ class DocumentationService {
     return true;
   }
 
-  ///////////////////////////////////////////////////////////////////////////////////:
-  //      export to drive function
+  ///////////////////////////////////////////////////////////////////////////////////
+  //      export to drive function                                                 //
   ///////////////////////////////////////////////////////////////////////////////////
   async exportToDrive(context) {
     let driveDirectory = await this.getDriveDirectoryOfForgeFile();
