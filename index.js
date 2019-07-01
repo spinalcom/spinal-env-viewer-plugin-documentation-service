@@ -67,7 +67,10 @@ class DocumentationService {
 
   getParents(selectedNode, relationNames) {
     const promises = [];
-
+    console.log(selectedNode);
+    if (selectedNode == undefined) {
+      return Promise.resolve([])
+    }
     if (typeof relationNames === "undefined" || relationNames.length === 0) {
       relationNames = selectedNode.parents.keys();
     }
