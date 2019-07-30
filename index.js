@@ -328,7 +328,7 @@ class DocumentationService {
       const dbId = listOfdbId[i]
       listOfNode.push(bimObjectService.getBIMObject(dbId));
     }
-    return Promise.all(listOfNode).then(function(bimObjectNodes) {
+    return Promise.all(listOfNode).then(function (bimObjectNodes) {
       // console.log(bimObjectNodes);
       // get category for the first BO
       return _this.getAllAttributes(bimObjectNodes[0]).then((res) => {
@@ -441,7 +441,7 @@ class DocumentationService {
       contextDirectory, {
         model_type: "Directory",
         icon: "folder",
-        node: context
+        node: new Ptr(context)
       })
     this.startRecursiveExport(context, contextDirectory, context);
   }
@@ -537,7 +537,7 @@ class DocumentationService {
     directory.add_file(node.info.name.get(), dir, {
       model_type: "Directory",
       icon: "folder",
-      node: node
+      node: new Ptr(node)
     })
     return dir;
   }
@@ -547,7 +547,7 @@ class DocumentationService {
     directory.add_file(name, childDir, {
       model_type: "Directory",
       icon: "folder",
-      node: childDirNode
+      node: new Ptr(childDirNode)
     })
     return childDir;
   }
