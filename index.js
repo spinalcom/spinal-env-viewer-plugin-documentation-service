@@ -132,9 +132,9 @@ class DocumentationService {
       if (bool) {
         let categoryNode = new SpinalNode(label, "categoryAttributes",
           new Lst());
-        let node = await parentNode.addChild(categoryNode,
+        await parentNode.addChild(categoryNode,
           "hasCategoryAttributes", SPINAL_RELATION_PTR_LST_TYPE)
-        return node;
+        return this.getCategoryByName(parentNode, label);
       }
     }
   }
