@@ -15,6 +15,11 @@ import {
   EQUIPMENTS_TO_ELEMENT_RELATION
 } from "spinal-env-viewer-room-manager/js/service";
 // var spinalCore = require('spinalcore');
+import { BUILDING_TYPE } from "spinal-env-viewer-context-geographic-service/build/constants"
+const isShownType = [BUILDING_TYPE]
+const BUILDINGINFORMATIONCATNAME = "Spinal Building Information"
+const BUILDINGINFORMATION = ["Titre", "Bâtiment", "Surface", "Adresse", "Ville"]
+
 class DocumentationService {
 
   removeNode(node) {
@@ -67,7 +72,6 @@ class DocumentationService {
 
   getParents(selectedNode, relationNames) {
     const promises = [];
-    console.log(selectedNode);
     if (selectedNode == undefined) {
       return Promise.resolve([])
     }
@@ -89,7 +93,6 @@ class DocumentationService {
   }
 
   async getParentGroup(selectedNode) {
-    // console.log("test of urlFRom parents");
     return this.getParents(selectedNode, [ROOMS_TO_ELEMENT_RELATION,
       EQUIPMENTS_TO_ELEMENT_RELATION
     ]).then((res) => {
@@ -105,7 +108,6 @@ class DocumentationService {
       let element = url.getElement();
       element.then(loadedURL => {
         if (loadedURL.label.get() == label) {
-          console.log("delete node url");
           url.removeFromGraph();
         }
       })
@@ -117,7 +119,6 @@ class DocumentationService {
   ///////////////////////////////////////////////////////////////////////////////////
 
   async addCategoryAttribute(parentNode, label) {
-    // console.log(parentNode, label);
     let bool = true;
     if (parentNode instanceof SpinalNode) {
       // cannot add category with same name
@@ -134,6 +135,8 @@ class DocumentationService {
           new Lst());
         await parentNode.addChild(categoryNode,
           "hasCategoryAttributes", SPINAL_RELATION_PTR_LST_TYPE)
+        return this.getCategoryByName(parentNode, label);
+      } else {
         return this.getCategoryByName(parentNode, label);
       }
     }
@@ -156,7 +159,6 @@ class DocumentationService {
     return Promise.all(attrs);
   }
   async getCategoryByName(parentNode, categoryName) {
-    // console.log(categoryName);
     let catArray = await this.getCategory(parentNode);
     for (let i = 0; i < catArray.length; i++) {
       const element = catArray[i];
@@ -175,7 +177,6 @@ class DocumentationService {
     return tab;
   }
   async addAttributeByCategory(parentNode, category, label, value) {
-    // console.log(category, label, value);
     let status = true;
     if (
       label != undefined &&
@@ -199,7 +200,6 @@ class DocumentationService {
     }
   }
   async addAttributeByCategoryName(parentNode, categoryName, label, value) {
-    // console.log(category, label, value);
     const _this = this;
     let status = true;
     let categoryNode = undefined;
@@ -215,13 +215,12 @@ class DocumentationService {
         const element = allAttributes[i];
         if (element.label.get() == label) {
           status = false;
+          return element;
         }
       }
       if (status) {
         cat.then(async function create(category) {
           if (category == undefined) {
-            // create category
-            // console.log(parentNode);
             categoryNode = await _this.addCategoryAttribute(
               parentNode,
               categoryName
@@ -230,12 +229,6 @@ class DocumentationService {
               let myChild = new SpinalAttribute(label, value);
               element.push(myChild);
             });
-            // this.addAttributeByCategory()
-            // categoryNode.element.load((myLst) => {
-            //   let myChild = new SpinalAttribute(label, value);
-            //   myLst.element.push(myChild);
-            // })
-
           } else {
             let myChild = new SpinalAttribute(label, value);
             category.element.push(myChild);
@@ -287,8 +280,6 @@ class DocumentationService {
     // get hasCategoryAttributes and return list of all attributes
     const attrNodes = await parentNode.getChildren('hasAttributes');
     const attrs = [];
-    console.log(attrNodes);
-
     for (let attr of attrNodes) {
       let element = attr.getElement();
       attrs.push(
@@ -319,7 +310,6 @@ class DocumentationService {
   }
 
   async getAttributesShared(listOfdbId) {
-    // console.log(listOfdbId);
     let _this = this;
     let listOfNode = [];
     let sharedAttributes = []
@@ -329,7 +319,6 @@ class DocumentationService {
       listOfNode.push(bimObjectService.getBIMObject(dbId));
     }
     return Promise.all(listOfNode).then(function (bimObjectNodes) {
-      // console.log(bimObjectNodes);
       // get category for the first BO
       return _this.getAllAttributes(bimObjectNodes[0]).then((res) => {
         attrToCompare = res;
@@ -355,9 +344,56 @@ class DocumentationService {
 
     });
   }
+
+  getBuildingInformationAttributes(parentNode) {
+    let lst = []
+    let lstPromise = []
+    if (isShownType.indexOf(parentNode.info.type.get()) != -1) {
+      for (let i = 0; i < BUILDINGINFORMATION.length; i++) {
+        const element = BUILDINGINFORMATION[i];
+        let promise = this.findAttributesByLabel(parentNode, element).then((attributesFind) => {
+          if (attributesFind != undefined) {
+            lst.push(attributesFind)
+          }
+        })
+        lstPromise.push(promise)
+      }
+      return Promise.all(lstPromise).then(() => {
+        return lst;
+      });
+    }
+  }
+  setBuildingInformationAttributes(parentNode) {
+    let promiseArray = []
+    if (parentNode instanceof SpinalNode) {
+    } else {
+      parentNode = SpinalGraphService.getRealNode(
+        parentNode
+      );
+    }
+    if (isShownType.indexOf(parentNode.info.type.get()) != -1) {
+      return this.addCategoryAttribute(parentNode, BUILDINGINFORMATIONCATNAME).then((category) => {
+        for (let i = 0; i < BUILDINGINFORMATION.length; i++) {
+          const element = BUILDINGINFORMATION[i];
+          let promise = this.addAttributeByCategoryName(parentNode, BUILDINGINFORMATIONCATNAME, element, "To configure")
+          promiseArray.push(promise)
+        }
+        return Promise.all(promiseArray).then(() => {
+          return this.getBuildingInformationAttributes(parentNode)
+        })
+      })
+    }
+  }
+
   findAttributesByLabel(parentNode, label) {
-    this.getAttributes(parentNode).then((data) => {
-      console.log(data);
+    // this.getCategoryByName
+    return this.getAllAttributes(parentNode).then((data) => {
+      for (let i = 0; i < data.length; i++) {
+        const element = data[i];
+        if (element.label.get() === label) {
+          return element
+        }
+      }
     })
 
   }
@@ -372,7 +408,6 @@ class DocumentationService {
   //      SPinal notes function                                                    //
   ///////////////////////////////////////////////////////////////////////////////////
   async addNote(parentNode, username, note) {
-    console.log(parentNode);
     if (parentNode instanceof SpinalNode) {
       let mySpinalNote = new SpinalNote(username, note);
       let node = await parentNode.addChild(
@@ -407,13 +442,11 @@ class DocumentationService {
   }
 
   editNote(element, note) {
-    console.log(element);
     let date = new Date();
     element.message.set(note);
     element.date.set(date);
   }
   predicate(node) {
-    console.log(node);
     return true;
   }
 
@@ -426,7 +459,6 @@ class DocumentationService {
     let ViewerDirectoryInDrive = await this.getDriveLinkedDirectory(
       driveDirectory
     );
-    // console.log (ViewerDirectoryInDrive, context);
     let name = context.info.name.get();
     let obj = {};
     obj[name] = {
@@ -498,7 +530,6 @@ class DocumentationService {
     let drivePath = this.cutLastElementOfPath(forgeFilePath);
     let linkedDirectoryPath = (drivePath =
       drivePath + '/ViewerLinkedDirectory');
-    // console.log (linkedDirectoryPath);
     return linkedDirectoryPath;
   }
 
@@ -543,7 +574,6 @@ class DocumentationService {
   }
   async createFileDir(directory, name, childDirNode) {
     let childDir = await this.getDirectory(childDirNode)
-    // console.log(childDir)
     directory.add_file(name, childDir, {
       model_type: "Directory",
       icon: "folder",
@@ -587,7 +617,6 @@ class DocumentationService {
     let tabProm = []
     for (let i = 0; i < result.length; i++) {
       const element = result[i];
-      // console.log(element)
       tabProm.push(this.newTryRecursiveExport(element, myDir, context))
     }
     Promise.all(tabProm);
