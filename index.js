@@ -11,11 +11,12 @@ import {
 var $q = require('q');
 import bimObjectService from 'spinal-env-viewer-plugin-bimobjectservice';
 import {
-  ROOMS_TO_ELEMENT_RELATION,
-  EQUIPMENTS_TO_ELEMENT_RELATION
-} from "spinal-env-viewer-room-manager/js/service";
+  groupService
+} from "spinal-env-viewer-room-manager/services/service";
 // var spinalCore = require('spinalcore');
-import { BUILDING_TYPE } from "spinal-env-viewer-context-geographic-service/build/constants"
+import {
+  BUILDING_TYPE
+} from "spinal-env-viewer-context-geographic-service/build/constants"
 const isShownType = [BUILDING_TYPE]
 const BUILDINGINFORMATIONCATNAME = "Spinal Building Information"
 const BUILDINGINFORMATION = ["Titre", "Bâtiment", "Surface", "Adresse", "Ville"]
@@ -93,8 +94,9 @@ class DocumentationService {
   }
 
   async getParentGroup(selectedNode) {
-    return this.getParents(selectedNode, [ROOMS_TO_ELEMENT_RELATION,
-      EQUIPMENTS_TO_ELEMENT_RELATION
+    return this.getParents(selectedNode, [groupService.constants
+      .GROUP_TO_ROOMS_RELATION,
+      groupService.constants.GROUP_TO_EQUIPMENTS_RELATION
     ]).then((res) => {
       return res
     })
@@ -318,7 +320,7 @@ class DocumentationService {
       const dbId = listOfdbId[i]
       listOfNode.push(bimObjectService.getBIMObject(dbId));
     }
-    return Promise.all(listOfNode).then(function (bimObjectNodes) {
+    return Promise.all(listOfNode).then(function(bimObjectNodes) {
       // get category for the first BO
       return _this.getAllAttributes(bimObjectNodes[0]).then((res) => {
         attrToCompare = res;
@@ -336,7 +338,7 @@ class DocumentationService {
             })
           )
         }
-        // return 
+        // return
         return Promise.all(arrayOfProm).then((arr) => {
           return attrToCompare
         });
@@ -351,7 +353,8 @@ class DocumentationService {
     if (isShownType.indexOf(parentNode.info.type.get()) != -1) {
       for (let i = 0; i < BUILDINGINFORMATION.length; i++) {
         const element = BUILDINGINFORMATION[i];
-        let promise = this.findAttributesByLabel(parentNode, element).then((attributesFind) => {
+        let promise = this.findAttributesByLabel(parentNode, element).then((
+          attributesFind) => {
           if (attributesFind != undefined) {
             lst.push(attributesFind)
           }
@@ -365,23 +368,24 @@ class DocumentationService {
   }
   setBuildingInformationAttributes(parentNode) {
     let promiseArray = []
-    if (parentNode instanceof SpinalNode) {
-    } else {
+    if (parentNode instanceof SpinalNode) {} else {
       parentNode = SpinalGraphService.getRealNode(
         parentNode
       );
     }
     if (isShownType.indexOf(parentNode.info.type.get()) != -1) {
-      return this.addCategoryAttribute(parentNode, BUILDINGINFORMATIONCATNAME).then((category) => {
-        for (let i = 0; i < BUILDINGINFORMATION.length; i++) {
-          const element = BUILDINGINFORMATION[i];
-          let promise = this.addAttributeByCategoryName(parentNode, BUILDINGINFORMATIONCATNAME, element, "To configure")
-          promiseArray.push(promise)
-        }
-        return Promise.all(promiseArray).then(() => {
-          return this.getBuildingInformationAttributes(parentNode)
+      return this.addCategoryAttribute(parentNode, BUILDINGINFORMATIONCATNAME)
+        .then((category) => {
+          for (let i = 0; i < BUILDINGINFORMATION.length; i++) {
+            const element = BUILDINGINFORMATION[i];
+            let promise = this.addAttributeByCategoryName(parentNode,
+              BUILDINGINFORMATIONCATNAME, element, "To configure")
+            promiseArray.push(promise)
+          }
+          return Promise.all(promiseArray).then(() => {
+            return this.getBuildingInformationAttributes(parentNode)
+          })
         })
-      })
     }
   }
 
