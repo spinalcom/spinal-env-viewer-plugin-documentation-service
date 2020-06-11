@@ -1,31 +1,30 @@
-import {
+const {
   SpinalNode,
   SPINAL_RELATION_PTR_LST_TYPE
-} from "spinal-model-graph";
 
-import {
+} = require('spinal-model-graph');
+
+
+const {
   SpinalURL,
   SpinalAttribute,
   SpinalNote,
-} from "spinal-models-documentation";
+} = require("spinal-models-documentation");
 var $q = require("q");
 import bimObjectService from "spinal-env-viewer-plugin-bimobjectservice";
-import {
+const {
   groupService
-} from "spinal-env-viewer-room-manager/services/service";
+} = require("spinal-env-viewer-room-manager/services/service");
+
 // var spinalCore = require('spinalcore');
-import {
+const {
   BUILDING_TYPE
-} from "spinal-env-viewer-context-geographic-service/build/constants";
-const isShownType = [BUILDING_TYPE];
-const BUILDINGINFORMATIONCATNAME = "Spinal Building Information";
-const BUILDINGINFORMATION = [
-  "Titre",
-  "Bâtiment",
-  "Surface",
-  "Adresse",
-  "Ville",
-];
+} = require("spinal-env-viewer-context-geographic-service/build/constants")
+
+
+const isShownType = [BUILDING_TYPE]
+const BUILDINGINFORMATIONCATNAME = "Spinal Building Information"
+const BUILDINGINFORMATION = ["Titre", "Bâtiment", "Surface", "Adresse", "Ville"]
 
 class DocumentationService {
   removeNode(node) {
@@ -659,4 +658,15 @@ class DocumentationService {
     Promise.all(tabProm);
   }
 }
-export const serviceDocumentation = new DocumentationService();
+
+const serviceDocumentation = new DocumentationService();
+
+// export {
+//   serviceDocumentation
+// }
+
+exports.default = serviceDocumentation;
+
+module.exports = {
+  serviceDocumentation
+};
