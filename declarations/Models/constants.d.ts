@@ -1,0 +1,14 @@
+declare const URL_RELATION: string;
+declare const URL_TYPE: string;
+declare const NOTE_RELATION: string;
+declare const NOTE_TYPE: string;
+declare const NOTE_CONTEXT_NAME: string;
+declare const NOTE_CATEGORY_NAME: string;
+declare const NOTE_GROUP_NAME: string;
+declare const NODE_TO_CATEGORY_RELATION: string;
+declare const NODE_TO_ATTRIBUTE: string;
+declare const CATEGORY_TYPE: string;
+declare const ATTRIBUTE_TYPE: string;
+declare const BUILDINGINFORMATION: string[];
+declare const BUILDINGINFORMATIONCATNAME: string;
+export { URL_RELATION, URL_TYPE, NOTE_RELATION, NOTE_TYPE, NOTE_CONTEXT_NAME, NOTE_CATEGORY_NAME, NOTE_GROUP_NAME, NODE_TO_CATEGORY_RELATION, NODE_TO_ATTRIBUTE, CATEGORY_TYPE, ATTRIBUTE_TYPE, BUILDINGINFORMATION, BUILDINGINFORMATIONCATNAME };
