@@ -30,18 +30,19 @@ import { groupManagerService } from "spinal-env-viewer-plugin-group-manager-serv
 import {
     NOTE_RELATION, NOTE_TYPE, NOTE_CONTEXT_NAME, NOTE_CATEGORY_NAME, NOTE_GROUP_NAME
 } from "./constants";
-import AttributeService from "./AttributeService";
+
+// import AttributeService from "./AttributeService";
 
 class NoteService {
 
     constructor() {
 
     }
-
-    public async addNote(node: any, userInfo: { username: string, userId: number }, note: string) {
+    s
+    public async addNote(node: any, userInfo: { username: string, userId: number }, note: string, type?: string, file?: spinal.Model) {
         if (!(node instanceof SpinalNode)) return;
 
-        const spinalNote = new SpinalNote(userInfo.username, note, userInfo.userId)
+        const spinalNote = new SpinalNote(userInfo.username, note, userInfo.userId, type, file);
         const spinalNode = await node.addChild(spinalNote, NOTE_RELATION, SPINAL_RELATION_PTR_LST_TYPE)
 
         if (spinalNode && spinalNode.info) {

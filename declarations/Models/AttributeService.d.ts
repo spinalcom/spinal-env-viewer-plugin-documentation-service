@@ -5,9 +5,9 @@ declare class AttributeService {
     getCategoryByName(node: any, categoryName: string): Promise<any>;
     getCategory(node: any): Promise<any>;
     getAttributesByCategory(node: any, categoryName: string): Promise<Array<any>>;
-    addAttributeByCategory(node: any, category: any, label: string, value: string): void;
-    addAttributeByCategoryName(node: any, categoryName: string, label: string, value: string): Promise<void>;
-    addAttribute(node: any, label: string, value: string): Promise<void>;
+    addAttributeByCategory(node: any, category: any, label: string, value: string, type?: string, unit?: string): void;
+    addAttributeByCategoryName(node: any, categoryName: string, label: string, value: string, type?: string, unit?: string): Promise<void>;
+    addAttribute(node: any, label: string, value: string, type?: string, unit?: string): Promise<void>;
     getAllAttributes(node: any): Promise<any>;
     getAttributes(node: any): Promise<any>;
     compareAttr(listAttr1: any, listAttr2: any): any[];

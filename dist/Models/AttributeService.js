@@ -85,27 +85,27 @@ class AttributeService {
             return res;
         });
     }
-    addAttributeByCategory(node, category, label, value) {
+    addAttributeByCategory(node, category, label, value, type = "", unit = "") {
         const labelIsValid = label && label.trim().length > 0;
         const valueIsValid = typeof value !== "undefined";
         if (!(labelIsValid && valueIsValid))
             return;
         if (!this._labelExistInCategory(category, label)) {
-            const attributeModel = new spinal_models_documentation_1.SpinalAttribute(label, value);
+            const attributeModel = new spinal_models_documentation_1.SpinalAttribute(label, value, type, unit);
             category.element.push(attributeModel);
         }
     }
-    addAttributeByCategoryName(node, categoryName, label, value) {
+    addAttributeByCategoryName(node, categoryName, label, value, type = "", unit = "") {
         return __awaiter(this, void 0, void 0, function* () {
             const labelIsValid = label && label.trim().length > 0;
             const valueIsValid = typeof value !== "undefined";
             if (!(labelIsValid && valueIsValid))
                 return;
             const category = yield this.getCategoryByName(node, categoryName);
-            this.addAttributeByCategory(node, category, label, value);
+            this.addAttributeByCategory(node, category, label, value, type, unit);
         });
     }
-    addAttribute(node, label, value) {
+    addAttribute(node, label, value, type = "", unit = "") {
         return __awaiter(this, void 0, void 0, function* () {
             const labelIsValid = label && label.trim().length > 0;
             const valueIsValid = typeof value !== "undefined";
@@ -113,7 +113,7 @@ class AttributeService {
                 return;
             const attributeExist = yield this._attributeExist(node, label);
             if (!attributeExist) {
-                const attributeModel = spinal_models_documentation_1.SpinalAttribute(label, value);
+                const attributeModel = spinal_models_documentation_1.SpinalAttribute(label, value, type, unit);
                 const attributeNode = yield node.addChild(attributeModel, constants_1.NODE_TO_ATTRIBUTE, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE);
                 attributeNode.info.name.set(`[Attributes] ${label}`);
                 node.info.type.set(constants_1.ATTRIBUTE_TYPE);

@@ -36,14 +36,15 @@ const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-servi
 const spinal_models_documentation_1 = require("spinal-models-documentation");
 const spinal_env_viewer_plugin_group_manager_service_1 = require("spinal-env-viewer-plugin-group-manager-service");
 const constants_1 = require("./constants");
+// import AttributeService from "./AttributeService";
 class NoteService {
     constructor() {
     }
-    addNote(node, userInfo, note) {
+    addNote(node, userInfo, note, type, file) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
                 return;
-            const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, userInfo.userId);
+            const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, userInfo.userId, type, file);
             const spinalNode = yield node.addChild(spinalNote, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
             if (spinalNode && spinalNode.info) {
                 spinalNode.info.name.set(`message-${Date.now()}`);

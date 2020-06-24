@@ -102,20 +102,20 @@ class AttributeService {
 
     }
 
-    public addAttributeByCategory(node: any, category, label: string, value: string) {
+    public addAttributeByCategory(node: any, category, label: string, value: string, type: string = "", unit: string = "") {
         const labelIsValid = label && label.trim().length > 0;
         const valueIsValid = typeof value !== "undefined";
 
         if (!(labelIsValid && valueIsValid)) return;
 
         if (!this._labelExistInCategory(category, label)) {
-            const attributeModel = new SpinalAttribute(label, value);
+            const attributeModel = new SpinalAttribute(label, value, type, unit);
             category.element.push(attributeModel);
         }
 
     }
 
-    public async addAttributeByCategoryName(node: any, categoryName: string, label: string, value: string) {
+    public async addAttributeByCategoryName(node: any, categoryName: string, label: string, value: string, type: string = "", unit: string = "") {
         const labelIsValid = label && label.trim().length > 0;
         const valueIsValid = typeof value !== "undefined";
 
@@ -123,10 +123,10 @@ class AttributeService {
 
         const category = await this.getCategoryByName(node, categoryName);
 
-        this.addAttributeByCategory(node, category, label, value);
+        this.addAttributeByCategory(node, category, label, value, type, unit);
     }
 
-    public async addAttribute(node: any, label: string, value: string) {
+    public async addAttribute(node: any, label: string, value: string, type: string = "", unit: string = "") {
         const labelIsValid = label && label.trim().length > 0;
         const valueIsValid = typeof value !== "undefined";
 
@@ -135,7 +135,7 @@ class AttributeService {
         const attributeExist = await this._attributeExist(node, label);
 
         if (!attributeExist) {
-            const attributeModel = SpinalAttribute(label, value);
+            const attributeModel = SpinalAttribute(label, value, type, unit);
 
             const attributeNode = await node.addChild(attributeModel, NODE_TO_ATTRIBUTE, SPINAL_RELATION_PTR_LST_TYPE);
             attributeNode.info.name.set(`[Attributes] ${label}`);
