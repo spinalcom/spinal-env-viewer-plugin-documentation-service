@@ -25,7 +25,8 @@
 import AttributeService from "./Models/AttributeService";
 import NoteService from "./Models/NoteService";
 import UrlService from "./Models/UrlService";
-
+// @ts-ignore
+const globalType = typeof window === "undefined" ? global : window;
 
 function applyMixins(derivedConstructor: any, baseConstructors: any[]) {
     baseConstructors.forEach(baseConstructor => {
@@ -50,7 +51,7 @@ applyMixins(AttributeService, [NoteService, UrlService]);
 
 const serviceDocumentation = new AttributeService();
 
-window.spinal["serviceDocumentation"] = serviceDocumentation;
+globalType.spinal["serviceDocumentation"] = serviceDocumentation;
 
 export { serviceDocumentation };
 
