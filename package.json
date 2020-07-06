@@ -1,13 +1,15 @@
 {
   "name": "spinal-env-viewer-plugin-documentation-service",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
     "build": "rm -rf dist && tsc",
+    "dev": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
+  "types": "declarations",
   "author": "",
   "license": "ISC",
   "dependencies": {
