@@ -145,8 +145,9 @@ class AttributeService {
 
     public async getAllAttributes(node: any): Promise<any> {
         const categories = await this.getCategory(node);
-
-        const promises = categories.map(el => this.getAttributesByCategory(node, el.info.name.get()));
+        const promises = categories.map(el => {
+            return this.getAttributesByCategory(node, el.node.info.name.get())
+        });
 
         return Promise.all(promises).then(res => {
             const result = [];

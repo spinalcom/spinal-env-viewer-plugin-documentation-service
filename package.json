@@ -18,5 +18,8 @@
     "spinal-env-viewer-room-manager": "git+https://github.com/spinalcom/spinal-env-viewer-room-manager.git",
     "spinal-models-documentation": "git+https://github.com/spinalcom/spinal-models-cde.git",
     "vue": "^2.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^3.9.6"
   }
 }
