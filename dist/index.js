@@ -38,9 +38,10 @@ function applyMixins(derivedConstructor, baseConstructors) {
         });
     });
 }
-// interface AttributeService extends NoteService, UrlService { }
-applyMixins(AttributeService_1.default, [NoteService_1.default, UrlService_1.default]);
-const serviceDocumentation = new AttributeService_1.default();
+class ServiceDocumentation {
+}
+applyMixins(ServiceDocumentation, [AttributeService_1.default, NoteService_1.default, UrlService_1.default]);
+const serviceDocumentation = new ServiceDocumentation();
 exports.serviceDocumentation = serviceDocumentation;
 globalType.spinal["serviceDocumentation"] = serviceDocumentation;
 exports.default = serviceDocumentation;

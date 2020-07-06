@@ -44,7 +44,6 @@ import {
 } from "./constants";
 
 
-
 class AttributeService {
 
     private instanceCreated: AttributeService;

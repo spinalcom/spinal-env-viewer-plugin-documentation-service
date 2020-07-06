@@ -44,16 +44,18 @@ function applyMixins(derivedConstructor: any, baseConstructors: any[]) {
     });
 }
 
-// interface AttributeService extends NoteService, UrlService { }
 
 
-applyMixins(AttributeService, [NoteService, UrlService]);
+class ServiceDocumentation { }
+interface ServiceDocumentation extends AttributeService, NoteService, UrlService { }
 
-const serviceDocumentation = new AttributeService();
+applyMixins(ServiceDocumentation, [AttributeService, NoteService, UrlService]);
+
+const serviceDocumentation = new ServiceDocumentation();
 
 globalType.spinal["serviceDocumentation"] = serviceDocumentation;
 
-export { serviceDocumentation };
+export { serviceDocumentation, ServiceDocumentation };
 
 export default serviceDocumentation;
 
