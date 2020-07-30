@@ -261,9 +261,15 @@ class AttributeService {
         return data.find(el => el.label.get() === label);
     }
 
-
-    public removeAttributesByLabel(node: any, label: string) {
-        return;
+    
+    
+    public removeAttributesByLabel(category: any, label: string) {
+      for (let i = 0; i < category.element.length; i++) {
+        const element = category.element[i];
+        if (element.label.get() == label) {
+          category.element.splice(i, 1);
+        }
+      }
     }
 
     ///////////////////////////////////////////////////////////////////
