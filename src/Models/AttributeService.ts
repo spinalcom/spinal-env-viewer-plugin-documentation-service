@@ -261,15 +261,16 @@ class AttributeService {
         return data.find(el => el.label.get() === label);
     }
 
-    
-    
-    public removeAttributesByLabel(category: any, label: string) {
-      for (let i = 0; i < category.element.length; i++) {
-        const element = category.element[i];
-        if (element.label.get() == label) {
-          category.element.splice(i, 1);
+
+
+    public async removeAttributesByLabel(category: any, label: string) {
+        const listAttributes = await category.element.load();
+        for (let i = 0; i < listAttributes.length; i++) {
+            const element = listAttributes[i];
+            if (element.label.get() == label) {
+                listAttributes.splice(i, 1);
+            }
         }
-      }
     }
 
     ///////////////////////////////////////////////////////////////////
