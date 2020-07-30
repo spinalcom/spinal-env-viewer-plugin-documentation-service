@@ -23,11 +23,10 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -219,8 +218,13 @@ class AttributeService {
             return data.find(el => el.label.get() === label);
         });
     }
-    removeAttributesByLabel(node, label) {
-        return;
+    removeAttributesByLabel(category, label) {
+        for (let i = 0; i < category.element.length; i++) {
+            const element = category.element[i];
+            if (element.label.get() == label) {
+                category.element.splice(i, 1);
+            }
+        }
     }
     ///////////////////////////////////////////////////////////////////
     //                          PRIVATES                             //

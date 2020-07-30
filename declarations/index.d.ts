@@ -6,5 +6,5 @@ declare class ServiceDocumentation {
 interface ServiceDocumentation extends AttributeService, NoteService, UrlService {
 }
 declare const serviceDocumentation: ServiceDocumentation;
-export { serviceDocumentation };
+export { serviceDocumentation, ServiceDocumentation };
 export default serviceDocumentation;

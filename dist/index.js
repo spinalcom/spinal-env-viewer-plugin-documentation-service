@@ -23,7 +23,6 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.serviceDocumentation = void 0;
 const AttributeService_1 = require("./Models/AttributeService");
 const NoteService_1 = require("./Models/NoteService");
 const UrlService_1 = require("./Models/UrlService");
@@ -40,6 +39,7 @@ function applyMixins(derivedConstructor, baseConstructors) {
 }
 class ServiceDocumentation {
 }
+exports.ServiceDocumentation = ServiceDocumentation;
 applyMixins(ServiceDocumentation, [AttributeService_1.default, NoteService_1.default, UrlService_1.default]);
 const serviceDocumentation = new ServiceDocumentation();
 exports.serviceDocumentation = serviceDocumentation;

@@ -104,7 +104,7 @@ class NoteService {
 
     public async createAttribute(spinalNode: SpinalNode<any>, spinalNote: SpinalNote) {
         const categoryName: string = "default";
-        const service = (<any>window.spinal).serviceDocumentation;
+        const service = (<any>window).spinal.serviceDocumentation;
         if (service) {
             const category = await service.addCategoryAttribute(spinalNode, categoryName);
 

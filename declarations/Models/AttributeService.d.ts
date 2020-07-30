@@ -15,7 +15,7 @@ declare class AttributeService {
     getBuildingInformationAttributes(node: any): Promise<any[]>;
     setBuildingInformationAttributes(node: any): Promise<any[]>;
     findAttributesByLabel(node: any, label: string, category?: any): Promise<any>;
-    removeAttributesByLabel(node: any, label: string): void;
+    removeAttributesByLabel(category: any, label: string): void;
     _categoryExist(node: any, categoryName: string): Promise<any>;
     _getCategoryElement(categoryNode: any): Promise<any>;
     _labelExistInCategory(category: any, argAttributeName: string): boolean;
