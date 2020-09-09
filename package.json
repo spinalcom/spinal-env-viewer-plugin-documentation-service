@@ -1,13 +1,15 @@
 {
   "name": "spinal-env-viewer-plugin-documentation-service",
-  "version": "1.0.2",
+  "version": "1.0.8",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
     "build": "rm -rf dist && tsc",
+    "dev": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
+  "types": "declarations",
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -15,7 +17,11 @@
     "spinal-env-viewer-graph-service": "git+https://github.com/spinalcom/Spinal-Graph-Service.git",
     "spinal-env-viewer-plugin-bimobjectservice": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-bimobjectservice.git",
     "spinal-env-viewer-plugin-group-manager-service": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-group-manager-service.git",
+    "spinal-env-viewer-room-manager": "git+https://github.com/spinalcom/spinal-env-viewer-room-manager.git",
     "spinal-models-documentation": "git+https://github.com/spinalcom/spinal-models-cde.git",
     "vue": "^2.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^3.9.6"
   }
 }

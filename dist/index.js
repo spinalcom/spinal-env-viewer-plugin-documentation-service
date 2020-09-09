@@ -26,6 +26,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const AttributeService_1 = require("./Models/AttributeService");
 const NoteService_1 = require("./Models/NoteService");
 const UrlService_1 = require("./Models/UrlService");
+// @ts-ignore
+const globalType = typeof window === "undefined" ? global : window;
 function applyMixins(derivedConstructor, baseConstructors) {
     baseConstructors.forEach(baseConstructor => {
         Object.getOwnPropertyNames(baseConstructor.prototype)
@@ -35,11 +37,13 @@ function applyMixins(derivedConstructor, baseConstructors) {
         });
     });
 }
-// interface AttributeService extends NoteService, UrlService { }
-applyMixins(AttributeService_1.default, [NoteService_1.default, UrlService_1.default]);
-const serviceDocumentation = new AttributeService_1.default();
+class ServiceDocumentation {
+}
+exports.ServiceDocumentation = ServiceDocumentation;
+applyMixins(ServiceDocumentation, [AttributeService_1.default, NoteService_1.default, UrlService_1.default]);
+const serviceDocumentation = new ServiceDocumentation();
 exports.serviceDocumentation = serviceDocumentation;
-window.spinal["serviceDocumentation"] = serviceDocumentation;
+globalType.spinal["serviceDocumentation"] = serviceDocumentation;
 exports.default = serviceDocumentation;
 /*
 

@@ -44,7 +44,6 @@ import {
 } from "./constants";
 
 
-
 class AttributeService {
 
     private instanceCreated: AttributeService;
@@ -145,8 +144,9 @@ class AttributeService {
 
     public async getAllAttributes(node: any): Promise<any> {
         const categories = await this.getCategory(node);
-
-        const promises = categories.map(el => this.getAttributesByCategory(node, el.info.name.get()));
+        const promises = categories.map(el => {
+            return this.getAttributesByCategory(node, el.node.info.name.get())
+        });
 
         return Promise.all(promises).then(res => {
             const result = [];
@@ -262,8 +262,15 @@ class AttributeService {
     }
 
 
-    public removeAttributesByLabel(node: any, label: string) {
-        return;
+
+    public async removeAttributesByLabel(category: any, label: string) {
+        const listAttributes = await category.element.load();
+        for (let i = 0; i < listAttributes.length; i++) {
+            const element = listAttributes[i];
+            if (element.label.get() == label) {
+                listAttributes.splice(i, 1);
+            }
+        }
     }
 
     ///////////////////////////////////////////////////////////////////

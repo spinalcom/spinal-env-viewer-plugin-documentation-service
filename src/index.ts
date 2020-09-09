@@ -25,7 +25,8 @@
 import AttributeService from "./Models/AttributeService";
 import NoteService from "./Models/NoteService";
 import UrlService from "./Models/UrlService";
-
+// @ts-ignore
+const globalType: any = typeof window === "undefined" ? global : window;
 
 function applyMixins(derivedConstructor: any, baseConstructors: any[]) {
     baseConstructors.forEach(baseConstructor => {
@@ -43,16 +44,18 @@ function applyMixins(derivedConstructor: any, baseConstructors: any[]) {
     });
 }
 
-// interface AttributeService extends NoteService, UrlService { }
 
 
-applyMixins(AttributeService, [NoteService, UrlService]);
+class ServiceDocumentation { }
+interface ServiceDocumentation extends AttributeService, NoteService, UrlService { }
 
-const serviceDocumentation = new AttributeService();
+applyMixins(ServiceDocumentation, [AttributeService, NoteService, UrlService]);
 
-window.spinal["serviceDocumentation"] = serviceDocumentation;
+const serviceDocumentation = new ServiceDocumentation();
 
-export { serviceDocumentation };
+globalType.spinal["serviceDocumentation"] = serviceDocumentation;
+
+export { serviceDocumentation, ServiceDocumentation };
 
 export default serviceDocumentation;
 
