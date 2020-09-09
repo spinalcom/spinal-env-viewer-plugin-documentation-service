@@ -38,8 +38,8 @@ class NoteService {
     constructor() {
 
     }
-    s
-    public async addNote(node: any, userInfo: { username: string, userId: number }, note: string, type?: string, file?: spinal.Model) {
+
+    public async addNote(node: any, userInfo: { username: string, userId: number }, note: string, type?: string, file?: spinal.Model, noteContextId?: string, noteGroupId?: string) {
         if (!(node instanceof SpinalNode)) return;
 
         const spinalNote = new SpinalNote(userInfo.username, note, userInfo.userId, type, file);
@@ -53,6 +53,22 @@ class NoteService {
         await this.createAttribute(spinalNode, spinalNote);
 
         (<any>SpinalGraphService)._addNode(spinalNode);
+
+        let contextId = noteContextId;
+        let groupId = noteGroupId;
+
+        if (typeof contextId === "undefined") {
+            const noteContext = await this.createDefaultContext();
+            contextId = noteContext.getId().get()
+        }
+
+        if (typeof groupId === "undefined") {
+            const groupNode = await this.createDefaultGroup();
+            groupId = groupNode.getId().get()
+        }
+
+        await this.linkNoteToGroup(contextId, groupId, spinalNode.getId().get());
+
         return spinalNode;
 
     }

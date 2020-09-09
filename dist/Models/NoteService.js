@@ -40,7 +40,7 @@ const constants_1 = require("./constants");
 class NoteService {
     constructor() {
     }
-    addNote(node, userInfo, note, type, file) {
+    addNote(node, userInfo, note, type, file, noteContextId, noteGroupId) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
                 return;
@@ -52,6 +52,17 @@ class NoteService {
             }
             yield this.createAttribute(spinalNode, spinalNote);
             spinal_env_viewer_graph_service_1.SpinalGraphService._addNode(spinalNode);
+            let contextId = noteContextId;
+            let groupId = noteGroupId;
+            if (typeof contextId === "undefined") {
+                const noteContext = yield this.createDefaultContext();
+                contextId = noteContext.getId().get();
+            }
+            if (typeof groupId === "undefined") {
+                const groupNode = yield this.createDefaultGroup();
+                groupId = groupNode.getId().get();
+            }
+            yield this.linkNoteToGroup(contextId, groupId, spinalNode.getId().get());
             return spinalNode;
         });
     }
