@@ -70,13 +70,11 @@ class UrlService {
     getParents(node, url_relationNames) {
         const nodeValid = node instanceof spinal_model_graph_1.SpinalNode || node instanceof spinal_model_graph_1.SpinalContext || node instanceof spinal_model_graph_1.SpinalGraph;
         if (!nodeValid)
-            return;
+            return Promise.resolve([]);
         return node.getParents(url_relationNames);
     }
     getParentGroup(node) {
         const nodeValid = node instanceof spinal_model_graph_1.SpinalNode || node instanceof spinal_model_graph_1.SpinalContext || node instanceof spinal_model_graph_1.SpinalGraph;
-        if (!nodeValid)
-            return;
         return this.getParents(node, []);
     }
     deleteURL(node, label) {

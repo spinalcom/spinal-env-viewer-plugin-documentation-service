@@ -36,6 +36,7 @@ const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-servi
 const spinal_models_documentation_1 = require("spinal-models-documentation");
 const spinal_env_viewer_plugin_group_manager_service_1 = require("spinal-env-viewer-plugin-group-manager-service");
 const constants_1 = require("./constants");
+const FileExplorer_1 = require("./FileExplorer");
 // import AttributeService from "./AttributeService";
 class NoteService {
     constructor() {
@@ -64,6 +65,24 @@ class NoteService {
             }
             yield this.linkNoteToGroup(contextId, groupId, spinalNode.getId().get());
             return spinalNode;
+        });
+    }
+    addFileAsNote(node, files, userInfo, noteContextId, noteGroupId) {
+        if (!(Array.isArray(files)))
+            files = [files];
+        const promises = files.map((file) => __awaiter(this, void 0, void 0, function* () {
+            return {
+                file: file,
+                directory: yield this._getOrCreateFileDirectory(node)
+            };
+        }));
+        return Promise.all(promises).then((res) => {
+            return res.map((data) => {
+                const type = FileExplorer_1.FileExplorer._getFileType(data.file);
+                let files = FileExplorer_1.FileExplorer.addFileUpload(data.directory, [data.file]);
+                let file = files.length > 0 ? files[0] : undefined;
+                this.addNote(node, userInfo, data.file.name, type, file, noteContextId, noteGroupId);
+            });
         });
     }
     getNotes(node) {
@@ -119,6 +138,15 @@ class NoteService {
                 });
                 return Promise.all(promises);
             }
+        });
+    }
+    _getOrCreateFileDirectory(node) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let directory = yield FileExplorer_1.FileExplorer.getDirectory(node);
+            if (!directory) {
+                directory = yield FileExplorer_1.FileExplorer.createDirectory(node);
+            }
+            return directory;
         });
     }
 }

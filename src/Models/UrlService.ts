@@ -67,14 +67,13 @@ class UrlService {
 
     public getParents(node: any, url_relationNames: Array<string>) {
         const nodeValid: boolean = node instanceof SpinalNode || node instanceof SpinalContext || node instanceof SpinalGraph;
-        if (!nodeValid) return;
+        if (!nodeValid) return Promise.resolve([]);
 
         return node.getParents(url_relationNames);
     }
 
     public getParentGroup(node: any) {
         const nodeValid: boolean = node instanceof SpinalNode || node instanceof SpinalContext || node instanceof SpinalGraph;
-        if (!nodeValid) return;
 
         return this.getParents(node, [])
 

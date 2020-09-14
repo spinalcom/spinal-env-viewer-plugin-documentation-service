@@ -6,6 +6,10 @@ declare class NoteService {
         username: string;
         userId: number;
     }, note: string, type?: string, file?: spinal.Model, noteContextId?: string, noteGroupId?: string): Promise<SpinalNode<any>>;
+    addFileAsNote(node: SpinalNode<any>, files: any, userInfo: {
+        username: string;
+        userId: number;
+    }, noteContextId?: string, noteGroupId?: string): Promise<void[]>;
     getNotes(node: any): Promise<any>;
     editNote(element: any, note: string): void;
     predicate(node: any): boolean;
@@ -14,5 +18,6 @@ declare class NoteService {
     createDefaultCategory(): Promise<any>;
     createDefaultGroup(): Promise<any>;
     createAttribute(spinalNode: SpinalNode<any>, spinalNote: SpinalNote): Promise<[unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]>;
+    private _getOrCreateFileDirectory;
 }
 export default NoteService;
