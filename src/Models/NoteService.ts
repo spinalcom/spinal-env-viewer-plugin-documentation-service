@@ -23,7 +23,7 @@
  */
 
 import { SpinalNode, SPINAL_RELATION_PTR_LST_TYPE, SpinalGraphService } from "spinal-env-viewer-graph-service";
-import { SpinalNote } from "spinal-models-documentation";
+import { SpinalNote, ViewStateInterface } from "spinal-models-documentation";
 
 import { groupManagerService } from "spinal-env-viewer-plugin-group-manager-service";
 
@@ -40,10 +40,10 @@ class NoteService {
 
     }
 
-    public async addNote(node: any, userInfo: { username: string, userId: number }, note: string, type?: string, file?: spinal.Model, noteContextId?: string, noteGroupId?: string) {
+    public async addNote(node: any, userInfo: { username: string, userId: number }, note: string, type?: string, file?: spinal.Model, noteContextId?: string, noteGroupId?: string, viewPoint?: ViewStateInterface) {
         if (!(node instanceof SpinalNode)) return;
 
-        const spinalNote = new SpinalNote(userInfo.username, note, userInfo.userId, type, file);
+        const spinalNote = new SpinalNote(userInfo.username, note, userInfo.userId, type, file, viewPoint);
         const spinalNode = await node.addChild(spinalNote, NOTE_RELATION, SPINAL_RELATION_PTR_LST_TYPE)
 
         if (spinalNode && spinalNode.info) {
@@ -79,20 +79,24 @@ class NoteService {
 
         const promises = files.map(async (file) => {
             return {
+                viewPoint: {
+                    viewState: file.viewState,
+                    objectState: file.objectState
+                },
                 file: file,
                 directory: await this._getOrCreateFileDirectory(node)
             }
         })
 
         return Promise.all(promises).then((res) => {
-            return res.map((data: { file: any, directory: any }) => {
+            return res.map((data: { viewPoint: any, file: any, directory: any }) => {
                 const type = FileExplorer._getFileType(data.file);
 
                 let files = FileExplorer.addFileUpload(data.directory, [data.file]);
                 let file = files.length > 0 ? files[0] : undefined;
 
                 this.addNote(
-                    node, userInfo, data.file.name, type, file, noteContextId, noteGroupId
+                    node, userInfo, data.file.name, type, file, noteContextId, noteGroupId, data.viewPoint
                 );
             });
         })

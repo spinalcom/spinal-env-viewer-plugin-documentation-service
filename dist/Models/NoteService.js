@@ -41,11 +41,11 @@ const FileExplorer_1 = require("./FileExplorer");
 class NoteService {
     constructor() {
     }
-    addNote(node, userInfo, note, type, file, noteContextId, noteGroupId) {
+    addNote(node, userInfo, note, type, file, noteContextId, noteGroupId, viewPoint) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
                 return;
-            const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, userInfo.userId, type, file);
+            const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, userInfo.userId, type, file, viewPoint);
             const spinalNode = yield node.addChild(spinalNote, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
             if (spinalNode && spinalNode.info) {
                 spinalNode.info.name.set(`message-${Date.now()}`);
@@ -72,6 +72,10 @@ class NoteService {
             files = [files];
         const promises = files.map((file) => __awaiter(this, void 0, void 0, function* () {
             return {
+                viewPoint: {
+                    viewState: file.viewState,
+                    objectState: file.objectState
+                },
                 file: file,
                 directory: yield this._getOrCreateFileDirectory(node)
             };
@@ -81,7 +85,7 @@ class NoteService {
                 const type = FileExplorer_1.FileExplorer._getFileType(data.file);
                 let files = FileExplorer_1.FileExplorer.addFileUpload(data.directory, [data.file]);
                 let file = files.length > 0 ? files[0] : undefined;
-                this.addNote(node, userInfo, data.file.name, type, file, noteContextId, noteGroupId);
+                this.addNote(node, userInfo, data.file.name, type, file, noteContextId, noteGroupId, data.viewPoint);
             });
         });
     }
