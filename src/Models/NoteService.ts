@@ -95,8 +95,10 @@ class NoteService {
                 let files = FileExplorer.addFileUpload(data.directory, [data.file]);
                 let file = files.length > 0 ? files[0] : undefined;
 
+                const viewPoint = Object.keys(data.viewPoint).length > 0 ? data.viewPoint : undefined;
+
                 this.addNote(
-                    node, userInfo, data.file.name, type, file, noteContextId, noteGroupId, data.viewPoint
+                    node, userInfo, data.file.name, type, file, noteContextId, noteGroupId, viewPoint
                 );
             });
         })
