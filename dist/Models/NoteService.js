@@ -38,6 +38,7 @@ const spinal_env_viewer_plugin_group_manager_service_1 = require("spinal-env-vie
 const constants_1 = require("./constants");
 const FileExplorer_1 = require("./FileExplorer");
 // import AttributeService from "./AttributeService";
+const globalType = typeof window === "undefined" ? global : window;
 class NoteService {
     constructor() {
     }
@@ -135,7 +136,7 @@ class NoteService {
     createAttribute(spinalNode, spinalNote) {
         return __awaiter(this, void 0, void 0, function* () {
             const categoryName = "default";
-            const service = window.spinal.serviceDocumentation;
+            const service = globalType.spinal.serviceDocumentation;
             if (service) {
                 const category = yield service.addCategoryAttribute(spinalNode, categoryName);
                 const promises = spinalNote._attribute_names.map(key => {

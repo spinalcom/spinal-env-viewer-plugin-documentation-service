@@ -34,6 +34,9 @@ import {
 import { FileExplorer } from "./FileExplorer"
 // import AttributeService from "./AttributeService";
 
+const globalType: any = typeof window === "undefined" ? global : window;
+
+
 class NoteService {
 
     constructor() {
@@ -151,7 +154,7 @@ class NoteService {
 
     public async createAttribute(spinalNode: SpinalNode<any>, spinalNote: SpinalNote) {
         const categoryName: string = "default";
-        const service = (<any>window).spinal.serviceDocumentation;
+        const service = globalType.spinal.serviceDocumentation;
         if (service) {
             const category = await service.addCategoryAttribute(spinalNode, categoryName);
 
