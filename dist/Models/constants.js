@@ -23,6 +23,7 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.BUILDINGINFORMATIONCATNAME = exports.BUILDINGINFORMATION = exports.ATTRIBUTE_TYPE = exports.CATEGORY_TYPE = exports.NODE_TO_ATTRIBUTE = exports.NODE_TO_CATEGORY_RELATION = exports.NOTE_GROUP_NAME = exports.NOTE_CATEGORY_NAME = exports.NOTE_CONTEXT_NAME = exports.NOTE_TYPE = exports.NOTE_RELATION = exports.URL_TYPE = exports.URL_RELATION = void 0;
 const URL_RELATION = 'hasURL';
 exports.URL_RELATION = URL_RELATION;
 const URL_TYPE = "SpinalURL";

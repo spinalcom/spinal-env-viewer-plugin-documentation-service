@@ -120,6 +120,30 @@ class AttributeService {
             }
         });
     }
+    setAttribute(node, old_label, old_value, new_label, new_value) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let labelIsValid = old_label && old_label.trim().length > 0;
+            let valueIsValid = typeof old_value !== "undefined";
+            if (!(labelIsValid && valueIsValid))
+                return;
+            labelIsValid = new_label && new_label.trim().length > 0;
+            valueIsValid = typeof new_value !== "undefined";
+            if (!(labelIsValid && valueIsValid))
+                return;
+            let allAttributes = yield this.getAllAttributes(node);
+            for (let i = 0; i < allAttributes.length; i++) {
+                const element = allAttributes[i];
+                if (element.label.get() == old_label) {
+                    if (new_label != "") {
+                        element.label.set(new_label);
+                    }
+                    if (new_value != "") {
+                        element.value.set(new_value);
+                    }
+                }
+            }
+        });
+    }
     getAllAttributes(node) {
         return __awaiter(this, void 0, void 0, function* () {
             const categories = yield this.getCategory(node);
