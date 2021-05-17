@@ -8,6 +8,7 @@ declare class AttributeService {
     addAttributeByCategory(node: any, category: any, label: string, value: string, type?: string, unit?: string): void;
     addAttributeByCategoryName(node: any, categoryName: string, label: string, value: string, type?: string, unit?: string): Promise<void>;
     addAttribute(node: any, label: string, value: string, type?: string, unit?: string): Promise<void>;
+    setAttribute(node: any, old_label: string, old_value: string, new_label: string, new_value: string): Promise<any>;
     getAllAttributes(node: any): Promise<any>;
     getAttributes(node: any): Promise<any>;
     compareAttr(listAttr1: any, listAttr2: any): any[];

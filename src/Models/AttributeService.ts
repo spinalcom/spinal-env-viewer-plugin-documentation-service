@@ -142,6 +142,28 @@ class AttributeService {
         }
     }
 
+    public async setAttribute(node: any, old_label: string, old_value: string, new_label: string, new_value: string): Promise<any> {
+        let labelIsValid = old_label && old_label.trim().length > 0;
+        let valueIsValid = typeof old_value !== "undefined";
+        if (!(labelIsValid && valueIsValid)) return;
+        labelIsValid = new_label && new_label.trim().length > 0;
+        valueIsValid = typeof new_value !== "undefined";
+        if (!(labelIsValid && valueIsValid)) return;
+
+        let allAttributes = await this.getAllAttributes(node);
+        for (let i = 0; i < allAttributes.length; i++) {
+          const element = allAttributes[i];
+          if (element.label.get() == old_label) {
+            if (new_label != "") {
+                element.label.set(new_label);
+            }
+            if (new_value != "") {
+                element.value.set(new_value);
+            }
+          }
+        }
+    }
+
     public async getAllAttributes(node: any): Promise<any> {
         const categories = await this.getCategory(node);
         const promises = categories.map(el => {
