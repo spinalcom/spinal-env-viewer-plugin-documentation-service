@@ -1,1 +1,1 @@
-# spinal-env-viewer-plugin-cde-service
+# spinal-env-viewer-plugin-documentation-service

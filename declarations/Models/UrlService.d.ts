@@ -7,4 +7,6 @@ declare class UrlService {
     deleteURL(node: any, label: string): Promise<void>;
     _getUrlData(urlNode: any, urlName?: string): Promise<any>;
 }
+declare const urlService: UrlService;
+export { UrlService, urlService };
 export default UrlService;

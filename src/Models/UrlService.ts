@@ -105,4 +105,10 @@ class UrlService {
 
 }
 
+const urlService = new UrlService;
+
+export {
+    UrlService,
+    urlService
+}
 export default UrlService;

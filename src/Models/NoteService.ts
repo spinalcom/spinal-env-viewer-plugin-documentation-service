@@ -43,7 +43,7 @@ class NoteService {
 
     }
 
-    public async addNote(node: any, userInfo: { username: string, userId: number }, note: string, type?: string, file?: spinal.Model, noteContextId?: string, noteGroupId?: string, viewPoint?: ViewStateInterface) {
+    public async addNote(node: SpinalNode<any>, userInfo: { username: string, userId: number }, note: string, type?: string, file?: spinal.Model, noteContextId?: string, noteGroupId?: string, viewPoint?: ViewStateInterface): Promise<SpinalNode<any>> {
         if (!(node instanceof SpinalNode)) return;
 
         const spinalNote = new SpinalNote(userInfo.username, note, userInfo.userId, type, file, viewPoint);
@@ -77,7 +77,7 @@ class NoteService {
 
     }
 
-    public addFileAsNote(node: SpinalNode<any>, files: any, userInfo: { username: string, userId: number }, noteContextId?: string, noteGroupId?: string) {
+    public addFileAsNote(node: SpinalNode<any>, files: any, userInfo: { username: string, userId: number }, noteContextId?: string, noteGroupId?: string): Promise<any> {
         if (!(Array.isArray(files))) files = [files];
 
         const promises = files.map(async (file) => {
@@ -100,14 +100,14 @@ class NoteService {
 
                 const viewPoint = Object.keys(data.viewPoint).length > 0 ? data.viewPoint : undefined;
 
-                this.addNote(
+                return this.addNote(
                     node, userInfo, data.file.name, type, file, noteContextId, noteGroupId, viewPoint
                 );
             });
         })
     }
 
-    public async getNotes(node: any): Promise<any> {
+    public async getNotes(node: SpinalNode<any>): Promise<Array<{ element: SpinalNote, selectedNode: SpinalNode<any> }>> {
         if (!(node instanceof SpinalNode)) return;
         const messagesNodes = await node.getChildren(NOTE_RELATION);
 
@@ -122,18 +122,20 @@ class NoteService {
         return Promise.all(promises);
     }
 
-    public editNote(element: any, note: string) {
+    public editNote(element: SpinalNote, note: string): SpinalNote {
         let date = new Date();
         element.message.set(note);
         element.date.set(date);
+
+        return element
     }
 
-    public predicate(node: any) {
-        return true;
-    }
+    // public predicate(node: any) {
+    //     return true;
+    // }
 
-    public linkNoteToGroup(contextId: string, groupId: string, noteId: string) {
-        groupManagerService.linkElementToGroup(contextId, groupId, noteId);
+    public linkNoteToGroup(contextId: string, groupId: string, noteId: string): any {
+        return groupManagerService.linkElementToGroup(contextId, groupId, noteId);
     }
 
     public createDefaultContext(): Promise<any> {
@@ -178,4 +180,10 @@ class NoteService {
     }
 }
 
+const noteService = new NoteService()
+
+export {
+    NoteService,
+    noteService
+}
 export default NoteService;

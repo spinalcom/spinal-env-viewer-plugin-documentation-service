@@ -22,9 +22,11 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-import AttributeService from "./Models/AttributeService";
-import NoteService from "./Models/NoteService";
-import UrlService from "./Models/UrlService";
+import { AttributeService, attributeService } from "./Models/AttributeService";
+import { NoteService, noteService } from "./Models/NoteService";
+import { UrlService, urlService } from "./Models/UrlService";
+import { FileExplorer } from "./Models/FileExplorer"
+
 // @ts-ignore
 const globalType: any = typeof window === "undefined" ? global : window;
 
@@ -47,6 +49,7 @@ function applyMixins(derivedConstructor: any, baseConstructors: any[]) {
 
 
 class ServiceDocumentation { }
+
 interface ServiceDocumentation extends AttributeService, NoteService, UrlService { }
 
 applyMixins(ServiceDocumentation, [AttributeService, NoteService, UrlService]);
@@ -55,7 +58,7 @@ const serviceDocumentation = new ServiceDocumentation();
 
 globalType.spinal["serviceDocumentation"] = serviceDocumentation;
 
-export { serviceDocumentation, ServiceDocumentation };
+export { ServiceDocumentation, serviceDocumentation, attributeService, noteService, urlService, FileExplorer };
 
 export default serviceDocumentation;
 

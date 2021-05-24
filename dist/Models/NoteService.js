@@ -32,6 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.noteService = exports.NoteService = void 0;
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const spinal_models_documentation_1 = require("spinal-models-documentation");
 const spinal_env_viewer_plugin_group_manager_service_1 = require("spinal-env-viewer-plugin-group-manager-service");
@@ -87,7 +88,7 @@ class NoteService {
                 let files = FileExplorer_1.FileExplorer.addFileUpload(data.directory, [data.file]);
                 let file = files.length > 0 ? files[0] : undefined;
                 const viewPoint = Object.keys(data.viewPoint).length > 0 ? data.viewPoint : undefined;
-                this.addNote(node, userInfo, data.file.name, type, file, noteContextId, noteGroupId, viewPoint);
+                return this.addNote(node, userInfo, data.file.name, type, file, noteContextId, noteGroupId, viewPoint);
             });
         });
     }
@@ -110,12 +111,13 @@ class NoteService {
         let date = new Date();
         element.message.set(note);
         element.date.set(date);
+        return element;
     }
-    predicate(node) {
-        return true;
-    }
+    // public predicate(node: any) {
+    //     return true;
+    // }
     linkNoteToGroup(contextId, groupId, noteId) {
-        spinal_env_viewer_plugin_group_manager_service_1.groupManagerService.linkElementToGroup(contextId, groupId, noteId);
+        return spinal_env_viewer_plugin_group_manager_service_1.groupManagerService.linkElementToGroup(contextId, groupId, noteId);
     }
     createDefaultContext() {
         return spinal_env_viewer_plugin_group_manager_service_1.groupManagerService.createGroupContext(constants_1.NOTE_CONTEXT_NAME, constants_1.NOTE_TYPE);
@@ -156,5 +158,8 @@ class NoteService {
         });
     }
 }
+exports.NoteService = NoteService;
+const noteService = new NoteService();
+exports.noteService = noteService;
 exports.default = NoteService;
 //# sourceMappingURL=NoteService.js.map
