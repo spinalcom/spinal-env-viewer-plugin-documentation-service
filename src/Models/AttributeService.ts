@@ -156,7 +156,7 @@ class AttributeService {
     }
 
     /**
-     * This method adds(if not exists) an attribute in a category
+     * This method adds(if not exists) or update(if exists) an attribute in a category
      * @param  {SpinalNode<any>} node
      * @param  {ICategory} category
      * @param  {string} label
@@ -175,14 +175,21 @@ class AttributeService {
         // const valueIsValid = typeof value !== "undefined";
 
         // if (!(labelIsValid && valueIsValid)) return;
-
-        if (!this._labelExistInCategory(category, label)) {
+        const found = this._labelExistInCategory(category, label)
+        if (!found) {
             const attributeModel = new SpinalAttribute(label, value, type, unit);
             category.element.push(attributeModel);
             return attributeModel;
         } else {
-            throw new Error(`${label} already exists in this category`);
-
+            // throw new Error(`${label} already exists in this category`);
+            // this.updateAttribute(node, category, label, { value });
+            for (let index = 0; index < category.element.length; index++) {
+                const element = category.element[index];
+                if (element.label.get() === label) {
+                    element.value.set(value);
+                    return element;
+                }
+            }
         }
     }
 
@@ -527,20 +534,20 @@ class AttributeService {
      * @returns boolean
      */
     public _labelExistInCategory(category: ICategory, argAttributeName: string): boolean {
-        let find;
+        let found;
         if (category && category.element) {
             const attributes = category.element instanceof Model ? category.element.get() : category.element;
 
-            find = attributes.find(el => {
+            found = attributes.find(el => {
                 if (el instanceof Model) {
-                    return el.get() === argAttributeName;
+                    return el.label.get() === argAttributeName;
                 } else {
-                    return el === argAttributeName;
+                    return el.label === argAttributeName;
                 }
             })
         }
 
-        return find ? true : false;
+        return found;
     }
 
     /**

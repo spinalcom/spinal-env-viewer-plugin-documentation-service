@@ -44,7 +44,7 @@ declare class AttributeService {
      */
     addAttributeByCategoryName(node: SpinalNode<any>, categoryName: string, label: string, value: string, type?: string, unit?: string): Promise<SpinalAttribute>;
     /**
-     * This method adds(if not exists) an attribute in a category
+     * This method adds(if not exists) or update(if exists) an attribute in a category
      * @param  {SpinalNode<any>} node
      * @param  {ICategory} category
      * @param  {string} label
