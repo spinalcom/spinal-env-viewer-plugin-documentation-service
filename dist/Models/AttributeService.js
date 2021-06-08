@@ -42,7 +42,7 @@ const constants_1 = require("./constants");
 class AttributeService {
     constructor() { }
     /**
-     * This method creates (if not exist ) a category and link it to the node passed in parameter. It returs an object of category
+     * This method creates a category and link it to the node passed in parameter. It returs an object of category
      * @param  {SpinalNode<any>} node - node on which the category must be linked
      * @param  {string} categoryName - The category name
      * @returns Promise
@@ -50,15 +50,51 @@ class AttributeService {
     addCategoryAttribute(node, categoryName) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-                throw new Error("node must be a SpinalNode");
+                throw new Error("Node must be a SpinalNode.");
             if (categoryName.trim().length === 0)
-                throw new Error("category name must be a string and have at leat one character");
-            let categoryFound = yield this._categoryExist(node, categoryName);
-            if (!categoryFound) {
-                const categoryModel = new spinal_env_viewer_graph_service_1.SpinalNode(categoryName, constants_1.CATEGORY_TYPE, new spinal_core_connectorjs_type_1.Lst());
-                categoryFound = yield node.addChild(categoryModel, constants_1.NODE_TO_CATEGORY_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
-            }
+                throw new Error("Category name must be a string and have at leat one character.");
+            const categoryModel = new spinal_env_viewer_graph_service_1.SpinalNode(categoryName, constants_1.CATEGORY_TYPE, new spinal_core_connectorjs_type_1.Lst());
+            const categoryFound = yield node.addChild(categoryModel, constants_1.NODE_TO_CATEGORY_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
             return this._getCategoryElement(categoryFound);
+        });
+    }
+    /**
+     * This method deletes a category from the given node.
+     * @param  {SpinalNode<any>} node - node on which the category to be deleted is
+     * @param  {number} serverId - The server ID for the category to delete
+     * @returns Promise
+     */
+    delCategoryAttribute(node, serverId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
+                throw new Error("Node must be a SpinalNode.");
+            if (serverId === 0)
+                throw new Error("Invalid server ID.");
+            const child = spinal_core_connectorjs_type_1.FileSystem._objects[serverId];
+            if (child instanceof spinal_env_viewer_graph_service_1.SpinalNode) {
+                yield node.removeChild(child, constants_1.NODE_TO_CATEGORY_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+            }
+        });
+    }
+    /**
+     * This method changes the name of a category from the given node.
+     * @param  {SpinalNode<any>} node - node on which the category to be edited is
+     * @param  {number} serverId - The server ID for the category to edit
+     * @param  {string} categoryName - The new category name
+     * @returns Promise
+     */
+    editCategoryAttribute(node, serverId, categoryName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
+                throw new Error("Node must be a SpinalNode.");
+            if (serverId === 0)
+                throw new Error("Invalid server ID.");
+            if (categoryName.trim().length === 0)
+                throw new Error("Category name must be a string and have at leat one character.");
+            const child = spinal_core_connectorjs_type_1.FileSystem._objects[serverId];
+            if (child instanceof spinal_env_viewer_graph_service_1.SpinalNode) {
+                child.info.name.set(categoryName);
+            }
         });
     }
     /**
@@ -296,6 +332,34 @@ class AttributeService {
         });
     }
     /**
+     * This methods updates the attribute with the given id from the given node
+     * @param  {SpinalNode<any>} node
+     * @param  {number} serverId
+     * @param  {string} new_label
+     * @param  {string} new_value
+     * @param  {string} new_type
+     * @param  {string} new_unit
+     * @returns Promise
+     */
+    setAttributeById(node, serverId, new_label, new_value, new_type, new_unit) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const labelIsValid = new_label && new_label.trim().length > 0;
+            const valueIsValid = typeof new_value !== "undefined";
+            if (!(labelIsValid && valueIsValid))
+                return;
+            let allAttributes = yield this.getAllAttributes(node);
+            for (let i = 0; i < allAttributes.length; i++) {
+                const element = allAttributes[i];
+                if (element._server_id == serverId) {
+                    element.label.set(new_label);
+                    element.value.set(new_value);
+                    element.type.set(new_type);
+                    element.unit.set(new_unit);
+                }
+            }
+        });
+    }
+    /**
      * Get all attribute shared with other nodes.
      * @param  {SpinalNode<any>} node
      * @param  {string} categoryName?
@@ -317,12 +381,35 @@ class AttributeService {
     }
     name() {
     }
+    /**
+     * Get all attribute shared with other nodes.
+     * @param  {SpinalNode<any>} node
+     * @param  {string} categoryName?
+     * @returns Promise
+     */
     removeAttributesByLabel(category, label) {
         return __awaiter(this, void 0, void 0, function* () {
             const listAttributes = yield category.element.load();
             for (let i = 0; i < listAttributes.length; i++) {
                 const element = listAttributes[i];
                 if (element.label.get() == label) {
+                    listAttributes.splice(i, 1);
+                }
+            }
+        });
+    }
+    /**
+     * Get all attribute shared with other nodes.
+     * @param  {SpinalNode<any>} node
+     * @param  {string} categoryName?
+     * @returns Promise
+     */
+    removeAttributesById(category, serverId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const listAttributes = yield category.element.load();
+            for (let i = 0; i < listAttributes.length; i++) {
+                const element = listAttributes[i];
+                if (element._server_id == serverId) {
                     listAttributes.splice(i, 1);
                 }
             }
