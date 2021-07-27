@@ -259,7 +259,7 @@ class AttributeService {
             // if (categoryName.trim().length === 0) throw new Error("category name must be a string and have at leat one character");
             const _category = typeof category === "string" ? yield this.getCategoryByName(node, category) : category;
             const res = [];
-            if (category && _category.element) {
+            if (_category && _category.element) {
                 for (let index = 0; index < _category.element.length; index++) {
                     const element = _category.element[index];
                     if (label && element.label.get() === label) {

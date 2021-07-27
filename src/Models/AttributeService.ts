@@ -261,7 +261,7 @@ class AttributeService {
         const _category = typeof category === "string" ? await this.getCategoryByName(node, category) : category;
         const res = [];
 
-        if (category && _category.element) {
+        if (_category && _category.element) {
             for (let index = 0; index < _category.element.length; index++) {
                 const element = _category.element[index];
                 if (label && element.label.get() === label) {

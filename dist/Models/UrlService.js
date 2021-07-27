@@ -94,7 +94,7 @@ class UrlService {
     _getUrlData(urlNode, urlName) {
         return __awaiter(this, void 0, void 0, function* () {
             const element = yield urlNode.getElement();
-            if (urlName && urlName.trim().length > 0 && element.label.get() !== urlName)
+            if (urlName && urlName.trim().length > 0 && element.name.get() !== urlName)
                 return;
             return {
                 element: element,
