@@ -107,6 +107,72 @@ class NoteService {
         })
     }
 
+    
+    /**
+     * Adding a note to a node
+     *
+     * @param {SpinalNode<any>} node node to add the note to
+     * @param {{ username: string, userId: number }} userInfo information of the user posting the note
+     * @param {string} note note to add
+     * @param {string} [type] type of the note
+     * @param {spinal.Model} [file] file to add to the node
+     * @param {ViewStateInterface} [viewPoint] viewpoint to save in the note
+     * @param {string} [noteContextId] contextID of the note
+     * @param {string} [noteGroupId] groupID of the note
+     * @return {*} {Promise<SpinalNode<any>>} note as a node
+     * @memberof NoteService
+     */
+    public async twinAddNote(
+        node: SpinalNode<any>,
+        userInfo: { username: string, userId: number },
+        note: string,
+        type?: string,
+        file?: spinal.Model,
+        viewPoint?: ViewStateInterface,
+        noteContextId?: string,
+        noteGroupId?: string
+        ) : Promise<SpinalNode<any>>
+    {
+        if (!(node instanceof SpinalNode)) return;
+
+        let uploaded = undefined;
+        if (typeof file !== "undefined")
+        {
+            uploaded = FileExplorer.addFileUpload(await this._getOrCreateFileDirectory(node), file);
+        }
+
+        const view = Object.keys(viewPoint).length > 0 ? viewPoint : undefined;
+
+        const spinalNote = new SpinalNote(userInfo.username, note, userInfo.userId, type, uploaded, view);
+        const spinalNode = await node.addChild(spinalNote, NOTE_RELATION, SPINAL_RELATION_PTR_LST_TYPE)
+
+        if (spinalNode && spinalNode.info) {
+            spinalNode.info.name.set(`message-${Date.now()}`);
+            spinalNode.info.type.set(NOTE_TYPE);
+        }
+
+        await this.createAttribute(spinalNode, spinalNote);
+
+        (<any>SpinalGraphService)._addNode(spinalNode);
+
+        let contextId = noteContextId;
+        let groupId = noteGroupId;
+
+        if (typeof contextId === "undefined") {
+            const noteContext = await this.createDefaultContext();
+            contextId = noteContext.getId().get()
+        }
+
+        if (typeof groupId === "undefined") {
+            const groupNode = await this.createDefaultGroup();
+            groupId = groupNode.getId().get()
+        }
+
+        await this.linkNoteToGroup(contextId, groupId, spinalNode.getId().get());
+
+        return spinalNode;
+    }
+
     public async getNotes(node: SpinalNode<any>): Promise<Array<{ element: SpinalNote, selectedNode: SpinalNode<any> }>> {
         if (!(node instanceof SpinalNode)) return;
         const messagesNodes = await node.getChildren(NOTE_RELATION);
