@@ -141,7 +141,11 @@ class NoteService {
             uploaded = FileExplorer.addFileUpload(await this._getOrCreateFileDirectory(node), file);
         }
 
-        const view = Object.keys(viewPoint).length > 0 ? viewPoint : undefined;
+        let view = undefined;
+        if (typeof viewPoint !== "undefined")
+        {
+            view = Object.keys(viewPoint).length > 0 ? viewPoint : undefined;
+        }
 
         const spinalNote = new SpinalNote(userInfo.username, note, userInfo.userId, type, uploaded, view);
         const spinalNode = await node.addChild(spinalNote, NOTE_RELATION, SPINAL_RELATION_PTR_LST_TYPE)
