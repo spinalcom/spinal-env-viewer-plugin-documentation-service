@@ -10,6 +10,16 @@ declare class NoteService {
         username: string;
         userId: number;
     }, noteContextId?: string, noteGroupId?: string): Promise<any>;
+    twinAddNote(
+        node: SpinalNode<any>,
+        userInfo: { username: string, userId: number },
+        note: string,
+        type?: string,
+        file?: spinal.Model,
+        viewPoint?: ViewStateInterface,
+        noteContextId?: string,
+        noteGroupId?: string
+        ) : Promise<SpinalNode<any>>;
     getNotes(node: SpinalNode<any>): Promise<Array<{
         element: SpinalNote;
         selectedNode: SpinalNode<any>;
