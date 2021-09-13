@@ -200,6 +200,22 @@ class NoteService {
         return element
     }
 
+
+    /**
+     * Deletes a note from a node
+     *
+     * @param {SpinalNode<any>} node node to delete from
+     * @param {SpinalNode<any>} note note to delete
+     * @memberof NoteService
+     */
+    public async delNote(node: SpinalNode<any>, note: SpinalNode<any>)
+    {
+        if (!(node instanceof SpinalNode)) throw new Error("Node must be a SpinalNode.");
+        if (!(note instanceof SpinalNode)) throw new Error("Note must be a SpinalNode.");
+
+        await node.removeChild(note, NOTE_RELATION, SPINAL_RELATION_PTR_LST_TYPE);
+    }
+
     // public predicate(node: any) {
     //     return true;
     // }
