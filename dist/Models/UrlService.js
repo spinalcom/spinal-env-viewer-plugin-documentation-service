@@ -32,7 +32,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.urlService = exports.UrlService = void 0;
 const spinal_model_graph_1 = require("spinal-model-graph");
 const documentationModel = require("spinal-models-documentation");
 const constants_1 = require("./constants");

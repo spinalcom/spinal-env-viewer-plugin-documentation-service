@@ -564,6 +564,10 @@ class AttributeService {
         })
     }
 
+    public removeNode(node: any) {
+        node.removeFromGraph();
+    }
+
     // public _getCategoryName(category: ICategory): string {
     //     return
     //     // if (category && category.nameCat) {
@@ -573,9 +577,7 @@ class AttributeService {
     //     // }
     // }
 
-    // public removeNode(node: any) {
-    //     node.removeFromGraph();
-    // }
+
 
 }
 
