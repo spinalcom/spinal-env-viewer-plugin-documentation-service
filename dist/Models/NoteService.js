@@ -91,6 +91,54 @@ class NoteService {
             });
         });
     }
+    /**
+     * Adding a note to a node
+     *
+     * @param {SpinalNode<any>} node node to add the note to
+     * @param {{ username: string, userId: number }} userInfo information of the user posting the note
+     * @param {string} note note to add
+     * @param {string} [type] type of the note
+     * @param {spinal.Model} [file] file to add to the node
+     * @param {ViewStateInterface} [viewPoint] viewpoint to save in the note
+     * @param {string} [noteContextId] contextID of the note
+     * @param {string} [noteGroupId] groupID of the note
+     * @return {*} {Promise<SpinalNode<any>>} note as a node
+     * @memberof NoteService
+     */
+    twinAddNote(node, userInfo, note, type, file, viewPoint, noteContextId, noteGroupId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
+                return;
+            let uploaded = undefined;
+            if (typeof file !== "undefined") {
+                uploaded = FileExplorer_1.FileExplorer.addFileUpload(yield this._getOrCreateFileDirectory(node), file);
+            }
+            let view = undefined;
+            if (typeof viewPoint !== "undefined") {
+                view = Object.keys(viewPoint).length > 0 ? viewPoint : undefined;
+            }
+            const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, userInfo.userId, type, uploaded, view);
+            const spinalNode = yield node.addChild(spinalNote, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+            if (spinalNode && spinalNode.info) {
+                spinalNode.info.name.set(`message-${Date.now()}`);
+                spinalNode.info.type.set(constants_1.NOTE_TYPE);
+            }
+            yield this.createAttribute(spinalNode, spinalNote);
+            spinal_env_viewer_graph_service_1.SpinalGraphService._addNode(spinalNode);
+            let contextId = noteContextId;
+            let groupId = noteGroupId;
+            if (typeof contextId === "undefined") {
+                const noteContext = yield this.createDefaultContext();
+                contextId = noteContext.getId().get();
+            }
+            if (typeof groupId === "undefined") {
+                const groupNode = yield this.createDefaultGroup();
+                groupId = groupNode.getId().get();
+            }
+            yield this.linkNoteToGroup(contextId, groupId, spinalNode.getId().get());
+            return spinalNode;
+        });
+    }
     getNotes(node) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
@@ -111,6 +159,22 @@ class NoteService {
         element.message.set(note);
         element.date.set(date);
         return element;
+    }
+    /**
+     * Deletes a note from a node
+     *
+     * @param {SpinalNode<any>} node node to delete from
+     * @param {SpinalNode<any>} note note to delete
+     * @memberof NoteService
+     */
+    delNote(node, note) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
+                throw new Error("Node must be a SpinalNode.");
+            if (!(note instanceof spinal_env_viewer_graph_service_1.SpinalNode))
+                throw new Error("Note must be a SpinalNode.");
+            yield node.removeChild(note, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+        });
     }
     // public predicate(node: any) {
     //     return true;

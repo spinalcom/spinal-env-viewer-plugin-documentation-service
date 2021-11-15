@@ -1,6 +1,6 @@
 {
   "name": "spinal-env-viewer-plugin-documentation-service",
-  "version": "1.1.10",
+  "version": "1.1.11",
   "description": "",
   "main": "dist/index.js",
   "scripts": {

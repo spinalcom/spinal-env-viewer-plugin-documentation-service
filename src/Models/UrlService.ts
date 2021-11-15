@@ -95,7 +95,7 @@ class UrlService {
     public async _getUrlData(urlNode: any, urlName?: string): Promise<any> {
         const element = await urlNode.getElement();
 
-        if (urlName && urlName.trim().length > 0 && element.label.get() !== urlName) return;
+        if (urlName && urlName.trim().length > 0 && element.name.get() !== urlName) return;
 
         return {
             element: element,

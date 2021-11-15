@@ -5,12 +5,27 @@ declare class AttributeService {
     private instanceCreated;
     constructor();
     /**
-     * This method creates (if not exist ) a category and link it to the node passed in parameter. It returs an object of category
+     * This method creates a category and link it to the node passed in parameter. It returs an object of category
      * @param  {SpinalNode<any>} node - node on which the category must be linked
      * @param  {string} categoryName - The category name
      * @returns Promise
      */
     addCategoryAttribute(node: SpinalNode<any>, categoryName: string): Promise<ICategory>;
+    /**
+     * This method deletes a category from the given node.
+     * @param  {SpinalNode<any>} node - node on which the category to be deleted is
+     * @param  {number} serverId - The server ID for the category to delete
+     * @returns Promise
+     */
+    delCategoryAttribute(node: SpinalNode<any>, serverId: number): Promise<any>;
+    /**
+     * This method changes the name of a category from the given node.
+     * @param  {SpinalNode<any>} node - node on which the category to be edited is
+     * @param  {number} serverId - The server ID for the category to edit
+     * @param  {string} categoryName - The new category name
+     * @returns Promise
+     */
+    editCategoryAttribute(node: SpinalNode<any>, serverId: number, categoryName: string): Promise<any>;
     /**
      * This method takes as parameter a node and return an array of All categories of attributes linked to this node
      * @param  {SpinalNode<any>} node
@@ -85,6 +100,17 @@ declare class AttributeService {
      */
     setAttribute(node: SpinalNode<any>, old_label: string, old_value: string, new_label: string, new_value: string): Promise<void>;
     /**
+     * This methods updates the attribute with the given id from the given node
+     * @param  {SpinalNode<any>} node
+     * @param  {number} serverId
+     * @param  {string} new_label
+     * @param  {string} new_value
+     * @param  {string} new_type
+     * @param  {string} new_unit
+     * @returns Promise
+     */
+    setAttributeById(node: SpinalNode<any>, serverId: number, new_label: string, new_value: string, new_type: string, new_unit: string): Promise<any>;
+    /**
      * Get all attribute shared with other nodes.
      * @param  {SpinalNode<any>} node
      * @param  {string} categoryName?
@@ -95,7 +121,20 @@ declare class AttributeService {
         categories: Array<ICategory>;
     }>>;
     name(): void;
+    /**
+     * Get all attribute shared with other nodes.
+     * @param  {SpinalNode<any>} node
+     * @param  {string} categoryName?
+     * @returns Promise
+     */
     removeAttributesByLabel(category: ICategory, label: string): Promise<void>;
+    /**
+     * Get all attribute shared with other nodes.
+     * @param  {SpinalNode<any>} node
+     * @param  {string} categoryName?
+     * @returns Promise
+     */
+    removeAttributesById(category: ICategory, serverId: number): Promise<void>;
     /**
      * Takes a node of Building and return all attributes
      * @param  {SpinalNode<any>} node
