@@ -40,55 +40,32 @@ const FileExplorer_1 = require("./FileExplorer");
 // import AttributeService from "./AttributeService";
 const globalType = typeof window === "undefined" ? global : window;
 class NoteService {
-    constructor() {
-    }
+    constructor() { }
     addNote(node, userInfo, note, type, file, noteContextId, noteGroupId, viewPoint) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
                 return;
             const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, userInfo.userId, type, file, viewPoint);
-            const spinalNode = yield node.addChild(spinalNote, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
-            if (spinalNode && spinalNode.info) {
-                spinalNode.info.name.set(`message-${Date.now()}`);
-                spinalNode.info.type.set(constants_1.NOTE_TYPE);
+            const noteNode = yield node.addChild(spinalNote, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+            if (noteNode instanceof spinal_env_viewer_graph_service_1.SpinalNode) {
+                noteNode.info.name.set(`message-${Date.now()}`);
+                noteNode.info.type.set(constants_1.NOTE_TYPE);
             }
-            yield this.createAttribute(spinalNode, spinalNote);
-            spinal_env_viewer_graph_service_1.SpinalGraphService._addNode(spinalNode);
-            let contextId = noteContextId;
-            let groupId = noteGroupId;
-            if (typeof contextId === "undefined") {
-                const noteContext = yield this.createDefaultContext();
-                contextId = noteContext.getId().get();
-            }
-            if (typeof groupId === "undefined") {
-                const groupNode = yield this.createDefaultGroup();
-                groupId = groupNode.getId().get();
-            }
-            yield this.linkNoteToGroup(contextId, groupId, spinalNode.getId().get());
-            return spinalNode;
+            yield this.createAttribute(noteNode, spinalNote);
+            yield this.addNoteToContext(noteNode, noteContextId, noteGroupId);
+            return noteNode;
         });
     }
     addFileAsNote(node, files, userInfo, noteContextId, noteGroupId) {
-        if (!(Array.isArray(files)))
-            files = [files];
-        const promises = files.map((file) => __awaiter(this, void 0, void 0, function* () {
-            return {
-                viewPoint: {
-                    viewState: file.viewState,
-                    objectState: file.objectState
-                },
-                file: file,
-                directory: yield this._getOrCreateFileDirectory(node)
-            };
-        }));
-        return Promise.all(promises).then((res) => {
-            return res.map((data) => {
+        return this.addFilesInDirectory(node, files).then((res) => {
+            const promises = res.map((data) => {
                 const type = FileExplorer_1.FileExplorer._getFileType(data.file);
                 let files = FileExplorer_1.FileExplorer.addFileUpload(data.directory, [data.file]);
                 let file = files.length > 0 ? files[0] : undefined;
                 const viewPoint = Object.keys(data.viewPoint).length > 0 ? data.viewPoint : undefined;
                 return this.addNote(node, userInfo, data.file.name, type, file, noteContextId, noteGroupId, viewPoint);
             });
+            return Promise.all(promises);
         });
     }
     /**
@@ -160,6 +137,52 @@ class NoteService {
         element.date.set(date);
         return element;
     }
+    addNoteToContext(noteNode, contextId, groupId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            //@ts-ignore
+            spinal_env_viewer_graph_service_1.SpinalGraphService._addNode(noteNode);
+            if (typeof contextId === "undefined") {
+                const noteContext = yield this.createDefaultContext();
+                contextId = noteContext.getId().get();
+            }
+            if (typeof groupId === "undefined") {
+                const groupNode = yield this.createDefaultGroup();
+                groupId = groupNode.getId().get();
+            }
+            return this.linkNoteToGroup(contextId, groupId, noteNode.getId().get());
+        });
+    }
+    getNotesInNoteContext(noteContext, startNode) {
+        return startNode.findInContext(noteContext, (node) => {
+            let type = node.getType().get();
+            if (type === constants_1.NOTE_TYPE) {
+                //@ts-ignore
+                spinal_env_viewer_graph_service_1.SpinalGraphService._addNode(node);
+                return true;
+            }
+        });
+        // return SpinalGraphService.findInContext(startNodeId, noteContextId, (node) => {
+        //     let type = node.getType().get();
+        //     if (type === NOTE_TYPE) {
+        //         //@ts-ignore
+        //         SpinalGraphService._addNode(node);
+        //         return true;
+        //     }
+        //     return false;
+        // })
+    }
+    getNotesReferencesNodes(notes) {
+        if (!Array.isArray(notes))
+            notes = [notes];
+        const obj = {};
+        const promises = notes.map((note) => __awaiter(this, void 0, void 0, function* () {
+            obj[note.getId().get()] = yield note.getParents(constants_1.NOTE_RELATION);
+            return;
+        }));
+        return Promise.all(promises).then(() => {
+            return obj;
+        });
+    }
     /**
      * Deletes a note from a node
      *
@@ -176,9 +199,6 @@ class NoteService {
             yield node.removeChild(note, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
         });
     }
-    // public predicate(node: any) {
-    //     return true;
-    // }
     linkNoteToGroup(contextId, groupId, noteId) {
         return spinal_env_viewer_plugin_group_manager_service_1.groupManagerService.linkElementToGroup(contextId, groupId, noteId);
     }
@@ -219,6 +239,21 @@ class NoteService {
             }
             return directory;
         });
+    }
+    addFilesInDirectory(noteNode, files) {
+        if (!(Array.isArray(files)))
+            files = [files];
+        const promises = files.map((file) => __awaiter(this, void 0, void 0, function* () {
+            return {
+                viewPoint: {
+                    viewState: file.viewState,
+                    objectState: file.objectState
+                },
+                file: file,
+                directory: yield this._getOrCreateFileDirectory(noteNode)
+            };
+        }));
+        return Promise.all(promises);
     }
 }
 exports.NoteService = NoteService;

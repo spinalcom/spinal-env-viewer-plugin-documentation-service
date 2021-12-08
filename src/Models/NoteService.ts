@@ -22,7 +22,7 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-import { SpinalNode, SPINAL_RELATION_PTR_LST_TYPE, SpinalGraphService } from "spinal-env-viewer-graph-service";
+import { SpinalNode, SPINAL_RELATION_PTR_LST_TYPE, SpinalGraphService, SpinalNodeRef } from "spinal-env-viewer-graph-service";
 import { SpinalNote, ViewStateInterface } from "spinal-models-documentation";
 
 import { groupManagerService } from "spinal-env-viewer-plugin-group-manager-service";
@@ -32,6 +32,7 @@ import {
 } from "./constants";
 
 import { FileExplorer } from "./FileExplorer"
+import { IFileNote } from "../interfaces";
 // import AttributeService from "./AttributeService";
 
 const globalType: any = typeof window === "undefined" ? global : window;
@@ -39,60 +40,30 @@ const globalType: any = typeof window === "undefined" ? global : window;
 
 class NoteService {
 
-    constructor() {
-
-    }
+    constructor() { }
 
     public async addNote(node: SpinalNode<any>, userInfo: { username: string, userId: number }, note: string, type?: string, file?: spinal.Model, noteContextId?: string, noteGroupId?: string, viewPoint?: ViewStateInterface): Promise<SpinalNode<any>> {
         if (!(node instanceof SpinalNode)) return;
 
         const spinalNote = new SpinalNote(userInfo.username, note, userInfo.userId, type, file, viewPoint);
-        const spinalNode = await node.addChild(spinalNote, NOTE_RELATION, SPINAL_RELATION_PTR_LST_TYPE)
+        const noteNode = await node.addChild(spinalNote, NOTE_RELATION, SPINAL_RELATION_PTR_LST_TYPE)
 
-        if (spinalNode && spinalNode.info) {
-            spinalNode.info.name.set(`message-${Date.now()}`);
-            spinalNode.info.type.set(NOTE_TYPE);
+        if (noteNode instanceof SpinalNode) {
+            noteNode.info.name.set(`message-${Date.now()}`);
+            noteNode.info.type.set(NOTE_TYPE);
         }
 
-        await this.createAttribute(spinalNode, spinalNote);
+        await this.createAttribute(noteNode, spinalNote);
+        await this.addNoteToContext(noteNode, noteContextId, noteGroupId);
 
-        (<any>SpinalGraphService)._addNode(spinalNode);
-
-        let contextId = noteContextId;
-        let groupId = noteGroupId;
-
-        if (typeof contextId === "undefined") {
-            const noteContext = await this.createDefaultContext();
-            contextId = noteContext.getId().get()
-        }
-
-        if (typeof groupId === "undefined") {
-            const groupNode = await this.createDefaultGroup();
-            groupId = groupNode.getId().get()
-        }
-
-        await this.linkNoteToGroup(contextId, groupId, spinalNode.getId().get());
-
-        return spinalNode;
+        return noteNode;
 
     }
 
-    public addFileAsNote(node: SpinalNode<any>, files: any, userInfo: { username: string, userId: number }, noteContextId?: string, noteGroupId?: string): Promise<any> {
-        if (!(Array.isArray(files))) files = [files];
+    public addFileAsNote(node: SpinalNode<any>, files: any, userInfo: { username: string, userId: number }, noteContextId?: string, noteGroupId?: string): Promise<SpinalNode<any>[]> {
 
-        const promises = files.map(async (file) => {
-            return {
-                viewPoint: {
-                    viewState: file.viewState,
-                    objectState: file.objectState
-                },
-                file: file,
-                directory: await this._getOrCreateFileDirectory(node)
-            }
-        })
-
-        return Promise.all(promises).then((res) => {
-            return res.map((data: { viewPoint: any, file: any, directory: any }) => {
+        return this.addFilesInDirectory(node, files).then((res) => {
+            const promises = res.map((data: { viewPoint: any, file: any, directory: any }) => {
                 const type = FileExplorer._getFileType(data.file);
 
                 let files = FileExplorer.addFileUpload(data.directory, [data.file]);
@@ -104,10 +75,12 @@ class NoteService {
                     node, userInfo, data.file.name, type, file, noteContextId, noteGroupId, viewPoint
                 );
             });
+
+            return Promise.all(promises);
         })
     }
 
-    
+
     /**
      * Adding a note to a node
      *
@@ -131,19 +104,16 @@ class NoteService {
         viewPoint?: ViewStateInterface,
         noteContextId?: string,
         noteGroupId?: string
-        ) : Promise<SpinalNode<any>>
-    {
+    ): Promise<SpinalNode<any>> {
         if (!(node instanceof SpinalNode)) return;
 
         let uploaded = undefined;
-        if (typeof file !== "undefined")
-        {
+        if (typeof file !== "undefined") {
             uploaded = FileExplorer.addFileUpload(await this._getOrCreateFileDirectory(node), file);
         }
 
         let view = undefined;
-        if (typeof viewPoint !== "undefined")
-        {
+        if (typeof viewPoint !== "undefined") {
             view = Object.keys(viewPoint).length > 0 ? viewPoint : undefined;
         }
 
@@ -177,7 +147,7 @@ class NoteService {
         return spinalNode;
     }
 
-    public async getNotes(node: SpinalNode<any>): Promise<Array<{ element: SpinalNote, selectedNode: SpinalNode<any> }>> {
+    public async getNotes(node: SpinalNode<any>): Promise<{ element: SpinalNote; selectedNode: SpinalNode<any> }[]> {
         if (!(node instanceof SpinalNode)) return;
         const messagesNodes = await node.getChildren(NOTE_RELATION);
 
@@ -201,6 +171,57 @@ class NoteService {
     }
 
 
+    public async addNoteToContext(noteNode: SpinalNode<any>, contextId?: string, groupId?: string) {
+        //@ts-ignore
+        SpinalGraphService._addNode(noteNode);
+
+        if (typeof contextId === "undefined") {
+            const noteContext = await this.createDefaultContext();
+            contextId = noteContext.getId().get()
+        }
+
+        if (typeof groupId === "undefined") {
+            const groupNode = await this.createDefaultGroup();
+            groupId = groupNode.getId().get()
+        }
+
+        return this.linkNoteToGroup(contextId, groupId, noteNode.getId().get());
+    }
+
+    public getNotesInNoteContext(noteContext: SpinalNode<any>, startNode: SpinalNode<any>): Promise<SpinalNode<any>[]> {
+        return startNode.findInContext(noteContext, (node) => {
+            let type = node.getType().get();
+            if (type === NOTE_TYPE) {
+                //@ts-ignore
+                SpinalGraphService._addNode(node);
+                return true;
+            }
+        })
+        // return SpinalGraphService.findInContext(startNodeId, noteContextId, (node) => {
+        //     let type = node.getType().get();
+        //     if (type === NOTE_TYPE) {
+        //         //@ts-ignore
+        //         SpinalGraphService._addNode(node);
+        //         return true;
+        //     }
+        //     return false;
+        // })
+    }
+
+    public getNotesReferencesNodes(notes: SpinalNode<any> | SpinalNode<any>[]): Promise<{ [key: string]: SpinalNode<any>[] }> {
+        if (!Array.isArray(notes)) notes = [notes];
+        const obj = {}
+        const promises = notes.map(async note => {
+            obj[note.getId().get()] = await note.getParents(NOTE_RELATION);
+            return
+        })
+
+        return Promise.all(promises).then(() => {
+            return obj;
+        })
+    }
+
+
     /**
      * Deletes a note from a node
      *
@@ -208,17 +229,13 @@ class NoteService {
      * @param {SpinalNode<any>} note note to delete
      * @memberof NoteService
      */
-    public async delNote(node: SpinalNode<any>, note: SpinalNode<any>)
-    {
+    public async delNote(node: SpinalNode<any>, note: SpinalNode<any>) {
         if (!(node instanceof SpinalNode)) throw new Error("Node must be a SpinalNode.");
         if (!(note instanceof SpinalNode)) throw new Error("Note must be a SpinalNode.");
 
         await node.removeChild(note, NOTE_RELATION, SPINAL_RELATION_PTR_LST_TYPE);
     }
 
-    // public predicate(node: any) {
-    //     return true;
-    // }
 
     public linkNoteToGroup(contextId: string, groupId: string, noteId: string): any {
         return groupManagerService.linkElementToGroup(contextId, groupId, noteId);
@@ -263,6 +280,23 @@ class NoteService {
         }
 
         return directory;
+    }
+
+    private addFilesInDirectory(noteNode: SpinalNode<any>, files: any): Promise<IFileNote[]> {
+        if (!(Array.isArray(files))) files = [files];
+
+        const promises = files.map(async (file) => {
+            return {
+                viewPoint: {
+                    viewState: file.viewState,
+                    objectState: file.objectState
+                },
+                file: file,
+                directory: await this._getOrCreateFileDirectory(noteNode)
+            }
+        })
+
+        return Promise.all(promises);
     }
 }
 

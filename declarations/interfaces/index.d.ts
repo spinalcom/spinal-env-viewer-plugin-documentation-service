@@ -1,2 +1,2 @@
-import { ICategory } from "./ICategory";
-export { ICategory };
+export { ICategory } from "./attributes/ICategory";
+export { IFileNote, IViewState } from "./notes/IFileNote";

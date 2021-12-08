@@ -9,7 +9,7 @@ declare class NoteService {
     addFileAsNote(node: SpinalNode<any>, files: any, userInfo: {
         username: string;
         userId: number;
-    }, noteContextId?: string, noteGroupId?: string): Promise<any>;
+    }, noteContextId?: string, noteGroupId?: string): Promise<SpinalNode<any>[]>;
     /**
      * Adding a note to a node
      *
@@ -28,11 +28,16 @@ declare class NoteService {
         username: string;
         userId: number;
     }, note: string, type?: string, file?: spinal.Model, viewPoint?: ViewStateInterface, noteContextId?: string, noteGroupId?: string): Promise<SpinalNode<any>>;
-    getNotes(node: SpinalNode<any>): Promise<Array<{
+    getNotes(node: SpinalNode<any>): Promise<{
         element: SpinalNote;
         selectedNode: SpinalNode<any>;
-    }>>;
+    }[]>;
     editNote(element: SpinalNote, note: string): SpinalNote;
+    addNoteToContext(noteNode: SpinalNode<any>, contextId?: string, groupId?: string): Promise<any>;
+    getNotesInNoteContext(noteContext: SpinalNode<any>, startNode: SpinalNode<any>): Promise<SpinalNode<any>[]>;
+    getNotesReferencesNodes(notes: SpinalNode<any> | SpinalNode<any>[]): Promise<{
+        [key: string]: SpinalNode<any>[];
+    }>;
     /**
      * Deletes a note from a node
      *
@@ -47,6 +52,7 @@ declare class NoteService {
     createDefaultGroup(): Promise<any>;
     createAttribute(spinalNode: SpinalNode<any>, spinalNote: SpinalNote): Promise<[unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]>;
     private _getOrCreateFileDirectory;
+    private addFilesInDirectory;
 }
 declare const noteService: NoteService;
 export { NoteService, noteService };

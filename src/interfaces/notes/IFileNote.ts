@@ -22,5 +22,13 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-export { ICategory } from "./attributes/ICategory";
-export { IFileNote, IViewState } from "./notes/IFileNote"
+export interface IViewState {
+    viewState: string;
+    objectState: string;
+}
+
+export interface IFileNote {
+    viewPoint?: IViewState;
+    file: any;
+    directory: spinal.Directory<any>;
+}
