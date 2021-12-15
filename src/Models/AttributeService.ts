@@ -48,8 +48,12 @@ class AttributeService {
      * @returns Promise
      */
     public async addCategoryAttribute(node: SpinalNode<any>, categoryName: string): Promise<ICategory> {
+        categoryName = categoryName.trim().toLowerCase();
         if (!(node instanceof SpinalNode)) throw new Error("Node must be a SpinalNode.");
         if (categoryName.trim().length === 0) throw new Error("Category name must be a string and have at leat one character.");
+
+        const categoryExist = await this.getCategoryByName(node, categoryName);
+        if (categoryExist) return categoryExist;
 
         const categoryModel = new SpinalNode(categoryName, CATEGORY_TYPE, new Lst());
         const categoryFound = await node.addChild(categoryModel, NODE_TO_CATEGORY_RELATION, SPINAL_RELATION_PTR_LST_TYPE);
@@ -67,10 +71,26 @@ class AttributeService {
         if (serverId === 0) throw new Error("Invalid server ID.");
 
         const child = FileSystem._objects[serverId]
-        if (child instanceof SpinalNode)
-        {
+        if (child instanceof SpinalNode) {
             await node.removeChild(child, NODE_TO_CATEGORY_RELATION, SPINAL_RELATION_PTR_LST_TYPE);
         }
+    }
+
+
+    public async deleteAttributeCategory(node: SpinalNode<any>, category: SpinalNode<any> | ICategory | string): Promise<void> {
+        let _category;
+        if (category instanceof SpinalNode) {
+            _category = category;
+        } else if (typeof category === 'string') {
+            let temp = await this.getCategoryByName(node, category);
+            _category = temp.node;
+        } else if (category.node instanceof SpinalNode) {
+            _category = category.node
+        }
+
+        if (_category instanceof SpinalNode) return node.removeChild(_category, NODE_TO_CATEGORY_RELATION, SPINAL_RELATION_PTR_LST_TYPE);
+
+        throw new Error("category not found");
     }
 
     /**
@@ -81,13 +101,14 @@ class AttributeService {
      * @returns Promise
      */
     public async editCategoryAttribute(node: SpinalNode<any>, serverId: number, categoryName: string): Promise<any> {
+        categoryName = categoryName.trim().toLowerCase();
+
         if (!(node instanceof SpinalNode)) throw new Error("Node must be a SpinalNode.");
         if (serverId === 0) throw new Error("Invalid server ID.");
-        if (categoryName.trim().length === 0) throw new Error("Category name must be a string and have at leat one character.");
+        if (categoryName.length === 0) throw new Error("Category name must be a string and have at leat one character.");
 
         const child = FileSystem._objects[serverId]
-        if (child instanceof SpinalNode)
-        {
+        if (child instanceof SpinalNode) {
             child.info.name.set(categoryName)
         }
     }
@@ -114,13 +135,14 @@ class AttributeService {
      * @returns Promise
      */
     public async getCategoryByName(node: SpinalNode<any>, categoryName: string): Promise<ICategory> {
+        categoryName = categoryName.trim().toLowerCase()
         if (!(node instanceof SpinalNode)) throw new Error("node must be a spinalNode instance");
-        if (!categoryName || categoryName.trim().length === 0) throw new Error("category name must be a string and have at leat one character");
+        if (!categoryName || categoryName.length === 0) throw new Error("category name must be a string and have at leat one character");
 
         const categories = await this.getCategory(node);
 
         return categories.find(el => {
-            return el.nameCat === categoryName;
+            return el.nameCat.trim().toLowerCase() === categoryName;
         })
     }
 
@@ -134,7 +156,10 @@ class AttributeService {
      */
     public async updateCategoryName(node: SpinalNode<any>, category: SpinalNode<any> | ICategory | string, newName: string): Promise<ICategory> {
 
-        if (!newName || newName.trim().length === 0) throw new Error("category name must be a string and have at leat one character");
+
+        newName = newName.trim().toLowerCase();
+
+        if (!newName || newName.length === 0) throw new Error("category name must be a string and have at leat one character");
 
 
         if (category instanceof SpinalNode) {
@@ -162,10 +187,16 @@ class AttributeService {
      * @param  {string=""} unit
      * @returns Promise
      */
-    public async addAttributeByCategoryName(node: SpinalNode<any>, categoryName: string, label: string, value: string, type: string = "", unit: string = ""): Promise<SpinalAttribute> {
+    public async addAttributeByCategoryName(node: SpinalNode<any>, categoryName: string = "", label: string = "", value: string = "", type: string = "", unit: string = ""): Promise<SpinalAttribute> {
         // const labelIsValid = label && label.trim().length > 0;
         // const valueIsValid = typeof value !== "undefined";
         // if (!(labelIsValid && valueIsValid)) return;
+
+        categoryName = categoryName.trim().toLowerCase();
+        label = label.trim().toLowerCase();
+        value = value.trim().toLowerCase();
+        type = type.trim().toLowerCase();
+        unit = unit.trim().toLowerCase();
 
         if (!(node instanceof SpinalNode)) throw new Error("node must be a spinalNode instance");
         if (!label || label.trim().length === 0) throw new Error("attribute label must be a string and have at leat one character");
@@ -191,7 +222,13 @@ class AttributeService {
      * @param  {string=""} unit
      * @returns SpinalAttribute
      */
-    public addAttributeByCategory(node: SpinalNode<any>, category: ICategory, label: string, value: string, type: string = "", unit: string = ""): SpinalAttribute {
+    public addAttributeByCategory(node: SpinalNode<any>, category: ICategory, label: string = "", value: string = "", type: string = "", unit: string = ""): SpinalAttribute {
+
+
+        label = label.trim().toLowerCase();
+        value = value.trim().toLowerCase();
+        type = type.trim().toLowerCase();
+        unit = unit.trim().toLowerCase();
 
         if (!(node instanceof SpinalNode)) throw new Error("node must be a spinalNode instance");
         if (!label || label.trim().length === 0) throw new Error("attribute label must be a string and have at leat one character");
@@ -211,7 +248,8 @@ class AttributeService {
             // this.updateAttribute(node, category, label, { value });
             for (let index = 0; index < category.element.length; index++) {
                 const element = category.element[index];
-                if (element.label.get() === label) {
+                const elementLabel = element.label.get()
+                if (elementLabel.trim().toLowerCase() === label) {
                     element.value.set(value);
                     return element;
                 }
@@ -253,8 +291,8 @@ class AttributeService {
      * @param  {string} label?
      * @returns Promise
      */
-    public async getAttributesByCategory(node: SpinalNode<any>, category: string | ICategory, label?: string): Promise<Array<SpinalAttribute>> {
-
+    public async getAttributesByCategory(node: SpinalNode<any>, category: string | ICategory, label: string = ""): Promise<Array<SpinalAttribute>> {
+        label = label.trim().toLowerCase()
         if (!(node instanceof SpinalNode)) throw new Error("node must be a spinalNode instance");
         // if (categoryName.trim().length === 0) throw new Error("category name must be a string and have at leat one character");
 
@@ -264,7 +302,7 @@ class AttributeService {
         if (_category && _category.element) {
             for (let index = 0; index < _category.element.length; index++) {
                 const element = _category.element[index];
-                if (label && element.label.get() === label) {
+                if (label && element.label.get().trim().toLowerCase() === label) {
                     res.push(element);
                     break;
                 } else {
@@ -283,7 +321,7 @@ class AttributeService {
             return attributes.map(attr => {
                 for (const key in newValues) {
                     if (Object.prototype.hasOwnProperty.call(newValues, key)) {
-                        const val = newValues[key];
+                        const val = newValues[key].trim().toLowerCase();
                         if (attr[key]) attr[key].set(val);
                     }
                 }
@@ -313,8 +351,13 @@ class AttributeService {
         // valueIsValid = typeof new_value !== "undefined";
         // if (!(labelIsValid && valueIsValid)) return;
 
-        if (!old_label || old_label.trim().length === 0) throw new Error("old_label must be a string and have at leat one character");
-        if (!new_label || new_label.trim().length === 0) throw new Error("new_label must be a string and have at leat one character");
+        old_label = old_label.trim().toLowerCase();
+        old_value = old_value.trim().toLowerCase();
+        new_label = new_label.trim().toLowerCase();
+        new_value = new_value.trim().toLowerCase();
+
+        if (!old_label || old_label.length === 0) throw new Error("old_label must be a string and have at leat one character");
+        if (!new_label || new_label.length === 0) throw new Error("new_label must be a string and have at leat one character");
         if (typeof old_value === "undefined") throw new Error("old_value is required");
         if (typeof new_value === "undefined") throw new Error("new_value is required");
 
@@ -343,6 +386,12 @@ class AttributeService {
      * @returns Promise
      */
     public async setAttributeById(node: SpinalNode<any>, serverId: number, new_label: string, new_value: string, new_type: string, new_unit: string): Promise<any> {
+
+        new_label = new_label.trim().toLowerCase();
+        new_value = new_value.trim().toLowerCase();
+        new_type = new_type.trim().toLowerCase();
+        new_unit = new_unit.trim().toLowerCase();
+
         const labelIsValid = new_label && new_label.trim().length > 0;
         const valueIsValid = typeof new_value !== "undefined";
         if (!(labelIsValid && valueIsValid)) return;
@@ -365,11 +414,13 @@ class AttributeService {
      * @param  {string} categoryName?
      * @returns Promise
      */
-    public async getAttributesShared(node: SpinalNode<any>, categoryName?: string): Promise<Array<{ parentNode: SpinalNode<any>, categories: Array<ICategory> }>> {
+    public async getAttributesShared(node: SpinalNode<any>, categoryName?: string): Promise<Array<{ parentNode: SpinalNode<any>, categories: ICategory[] }>> {
+        categoryName = categoryName.trim().toLowerCase();
+
         const parents = await node.getParents();
         const promises = parents.map(async (parent) => {
             const categories = await this.getCategory(parent);
-            const filterCategory = !categoryName || categoryName.trim().length === 0 ? categories : categories.filter(el => el.nameCat === categoryName);
+            const filterCategory = !categoryName || categoryName.length === 0 ? categories : categories.filter(el => el.nameCat.trim().toLowerCase() === categoryName);
             return {
                 parentNode: parent,
                 categories: filterCategory
@@ -380,24 +431,25 @@ class AttributeService {
     }
 
 
-    public name() {
-
-    }
-
     /**
      * Get all attribute shared with other nodes.
      * @param  {SpinalNode<any>} node
      * @param  {string} categoryName?
      * @returns Promise
      */
-    public async removeAttributesByLabel(category: ICategory, label: string) {
+    public async removeAttributesByLabel(category: ICategory, label: string): Promise<boolean> {
         const listAttributes = await category.element.load();
         for (let i = 0; i < listAttributes.length; i++) {
             const element = listAttributes[i];
-            if (element.label.get() == label) {
+            const elementLabel = element.label.get();
+
+            if (elementLabel.trim().toLowerCase() == label.trim().toLowerCase()) {
                 listAttributes.splice(i, 1);
+                return true;
             }
         }
+
+        return false;
     }
 
     /**
@@ -406,15 +458,17 @@ class AttributeService {
      * @param  {string} categoryName?
      * @returns Promise
      */
-    public async removeAttributesById(category: ICategory, serverId: number) {
+    public async removeAttributesById(category: ICategory, serverId: number): Promise<boolean> {
         const listAttributes = await category.element.load();
         for (let i = 0; i < listAttributes.length; i++) {
             const element = listAttributes[i];
             if (element._server_id == serverId) {
                 listAttributes.splice(i, 1);
+                return true;
             }
         }
 
+        return false;
     }
 
 
@@ -532,9 +586,13 @@ class AttributeService {
         // const valueIsValid = typeof value !== "undefined";
 
         // if (!(labelIsValid && valueIsValid)) return;
+        label = label.trim().toLowerCase();
+        value = value.trim().toLowerCase();
+        type = type.trim().toLowerCase();
+        unit = unit.trim().toLowerCase();
 
         if (!(node instanceof SpinalNode)) throw new Error("node must be a spinalNode instance");
-        if (!label || label.trim().length === 0) throw new Error("attribute label must be a string and have at leat one character");
+        if (!label || label.length === 0) throw new Error("attribute label must be a string and have at leat one character");
         if (typeof value === "undefined") throw new Error("The attribute value is required");
 
         const attributeExist = await this._attributeExist(node, label);

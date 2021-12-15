@@ -21,7 +21,10 @@
  * with this file. If not, see
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
+import { SpinalNode } from "spinal-model-graph";
+import { SpinalURL } from "spinal-models-documentation";
 
-export { ICategory } from "./attributes/ICategory";
-export { IUrl } from "./attributes/IUrl"
-export { IFileNote, IViewState } from "./notes/IFileNote"
+export interface IUrl {
+    element: SpinalURL;
+    node: SpinalNode<any>;
+}

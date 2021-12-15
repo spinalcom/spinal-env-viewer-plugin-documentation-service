@@ -33,58 +33,93 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const spinal_model_graph_1 = require("spinal-model-graph");
-const documentationModel = require("spinal-models-documentation");
+const spinal_models_documentation_1 = require("spinal-models-documentation");
 const constants_1 = require("./constants");
 class UrlService {
     constructor() { }
     addURL(node, urlName, urlLink) {
         return __awaiter(this, void 0, void 0, function* () {
-            const urlNameIsValid = urlName && urlName.trim().length > 0;
-            const urlLinkIsValid = urlLink && urlLink.trim().length > 0;
-            const nodeValid = node instanceof spinal_model_graph_1.SpinalNode || node instanceof spinal_model_graph_1.SpinalContext || node instanceof spinal_model_graph_1.SpinalGraph;
-            if (!(urlNameIsValid && urlLinkIsValid && nodeValid))
-                return;
-            const urlModel = new documentationModel.SpinalURL(urlName, urlLink);
+            urlName = urlName && urlName.trim().toLowerCase();
+            urlLink = urlLink && urlLink.trim().toLowerCase();
+            const urlNameIsValid = urlName && urlName.length > 0;
+            const urlLinkIsValid = urlLink && urlLink.length > 0;
+            if (!(urlNameIsValid && urlLinkIsValid))
+                throw new Error("name or link is invalid");
+            const urlExist = yield this.getURL(node, urlName);
+            if (urlExist)
+                throw new Error(`${urlName} already exist in ${node.getName().get()}`);
+            const urlModel = new spinal_models_documentation_1.SpinalURL(urlName, urlLink);
             const urlNode = yield node.addChild(urlModel, constants_1.URL_RELATION, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE);
             if (urlNode && urlNode.info) {
                 urlNode.info.name.set(`[URL] ${urlName}`);
                 urlNode.info.type.set(constants_1.URL_TYPE);
-                return urlNode;
+                return this._getUrlData(urlNode);
             }
         });
     }
     getURL(node, urlName) {
         return __awaiter(this, void 0, void 0, function* () {
-            const nodeValid = node instanceof spinal_model_graph_1.SpinalNode || node instanceof spinal_model_graph_1.SpinalContext || node instanceof spinal_model_graph_1.SpinalGraph;
-            if (!nodeValid)
-                return;
             const urlNodes = yield node.getChildren(constants_1.URL_RELATION);
             const promises = [];
             for (const urlNode of urlNodes) {
                 promises.push(this._getUrlData(urlNode, urlName));
             }
             const values = yield Promise.all(promises);
-            return urlName && urlName.trim().length > 0 ? values.filter(el => typeof el !== "undefined")[0] : values;
+            if (urlName && urlName.trim().length) {
+                return values.find(({ element }) => {
+                    const elementName = element.name.get();
+                    return elementName.trim().toLowerCase() === urlName.trim().toLowerCase();
+                });
+            }
+            return values;
+        });
+    }
+    updateUrl(argNode, label, newValue) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let _url = yield this.getURL(argNode, label);
+            let url = Array.isArray(_url) ? _url[0] : _url;
+            if (url) {
+                const { node, element } = url;
+                if (node && element) {
+                    const elementUrl = element.URL.get();
+                    const _newValue = newValue.trim().toLowerCase();
+                    if (!!_newValue && elementUrl.trim().toLowerCase() !== _newValue)
+                        element.URL.set(_newValue);
+                }
+                return url;
+            }
         });
     }
     getParents(node, url_relationNames) {
-        const nodeValid = node instanceof spinal_model_graph_1.SpinalNode || node instanceof spinal_model_graph_1.SpinalContext || node instanceof spinal_model_graph_1.SpinalGraph;
-        if (!nodeValid)
-            return Promise.resolve([]);
         return node.getParents(url_relationNames);
     }
     getParentGroup(node) {
-        const nodeValid = node instanceof spinal_model_graph_1.SpinalNode || node instanceof spinal_model_graph_1.SpinalContext || node instanceof spinal_model_graph_1.SpinalGraph;
         return this.getParents(node, []);
     }
     deleteURL(node, label) {
         return __awaiter(this, void 0, void 0, function* () {
-            const nodeValid = node instanceof spinal_model_graph_1.SpinalNode || node instanceof spinal_model_graph_1.SpinalContext || node instanceof spinal_model_graph_1.SpinalGraph;
-            if (!nodeValid)
-                return;
+            // const nodeValid: boolean = node instanceof SpinalNode || node instanceof SpinalContext || node instanceof SpinalGraph;
+            // if (!nodeValid) return;
             const url = yield this.getURL(node, label);
-            if (url && url.node)
-                url.node.removeFromGraph();
+            if (Array.isArray(url))
+                return;
+            if (url && url.node) {
+                return url.node.removeFromGraph();
+            }
+        });
+    }
+    getSharedUrls(node) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const parents = yield node.getParents();
+            const promises = parents.map((parent) => __awaiter(this, void 0, void 0, function* () {
+                let _urls = yield this.getURL(parent);
+                _urls = Array.isArray(_urls) ? _urls : [_urls];
+                return {
+                    node: parent,
+                    urls: _urls.map(el => el.element)
+                };
+            }));
+            return Promise.all(promises);
         });
     }
     //////////////////////////////////////////////////////////////////////////////////
@@ -93,8 +128,8 @@ class UrlService {
     _getUrlData(urlNode, urlName) {
         return __awaiter(this, void 0, void 0, function* () {
             const element = yield urlNode.getElement();
-            if (urlName && urlName.trim().length > 0 && element.name.get() !== urlName)
-                return;
+            // const elementName = element.name.get();
+            // if (urlName && urlName.trim().length > 0 && elementName && elementName.trim().toLowerCase() !== urlName.trim().toLowerCase()) return;
             return {
                 element: element,
                 node: urlNode

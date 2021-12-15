@@ -18,6 +18,7 @@ declare class AttributeService {
      * @returns Promise
      */
     delCategoryAttribute(node: SpinalNode<any>, serverId: number): Promise<any>;
+    deleteAttributeCategory(node: SpinalNode<any>, category: SpinalNode<any> | ICategory | string): Promise<void>;
     /**
      * This method changes the name of a category from the given node.
      * @param  {SpinalNode<any>} node - node on which the category to be edited is
@@ -57,7 +58,7 @@ declare class AttributeService {
      * @param  {string=""} unit
      * @returns Promise
      */
-    addAttributeByCategoryName(node: SpinalNode<any>, categoryName: string, label: string, value: string, type?: string, unit?: string): Promise<SpinalAttribute>;
+    addAttributeByCategoryName(node: SpinalNode<any>, categoryName?: string, label?: string, value?: string, type?: string, unit?: string): Promise<SpinalAttribute>;
     /**
      * This method adds(if not exists) or update(if exists) an attribute in a category
      * @param  {SpinalNode<any>} node
@@ -68,7 +69,7 @@ declare class AttributeService {
      * @param  {string=""} unit
      * @returns SpinalAttribute
      */
-    addAttributeByCategory(node: SpinalNode<any>, category: ICategory, label: string, value: string, type?: string, unit?: string): SpinalAttribute;
+    addAttributeByCategory(node: SpinalNode<any>, category: ICategory, label?: string, value?: string, type?: string, unit?: string): SpinalAttribute;
     /**
      * Returns an array of all SpinalAttirbute with all categories
      * @param  {SpinalNode<any>} node
@@ -118,23 +119,22 @@ declare class AttributeService {
      */
     getAttributesShared(node: SpinalNode<any>, categoryName?: string): Promise<Array<{
         parentNode: SpinalNode<any>;
-        categories: Array<ICategory>;
+        categories: ICategory[];
     }>>;
-    name(): void;
     /**
      * Get all attribute shared with other nodes.
      * @param  {SpinalNode<any>} node
      * @param  {string} categoryName?
      * @returns Promise
      */
-    removeAttributesByLabel(category: ICategory, label: string): Promise<void>;
+    removeAttributesByLabel(category: ICategory, label: string): Promise<boolean>;
     /**
      * Get all attribute shared with other nodes.
      * @param  {SpinalNode<any>} node
      * @param  {string} categoryName?
      * @returns Promise
      */
-    removeAttributesById(category: ICategory, serverId: number): Promise<void>;
+    removeAttributesById(category: ICategory, serverId: number): Promise<boolean>;
     /**
      * Takes a node of Building and return all attributes
      * @param  {SpinalNode<any>} node

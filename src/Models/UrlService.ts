@@ -23,35 +23,39 @@
  */
 
 import { SpinalNode, SpinalGraph, SpinalContext, SPINAL_RELATION_PTR_LST_TYPE } from "spinal-model-graph";
-import * as documentationModel from "spinal-models-documentation";
+import { SpinalURL } from "spinal-models-documentation";
 
 import { URL_RELATION, URL_TYPE } from './constants';
+import { IUrl } from "../interfaces";
 
 class UrlService {
 
     constructor() { }
 
-    public async addURL(node: any, urlName: string, urlLink: string): Promise<any> {
-        const urlNameIsValid: boolean = urlName && urlName.trim().length > 0;
-        const urlLinkIsValid: boolean = urlLink && urlLink.trim().length > 0;
-        const nodeValid: boolean = node instanceof SpinalNode || node instanceof SpinalContext || node instanceof SpinalGraph;
+    public async addURL(node: SpinalNode<any>, urlName: string, urlLink: string): Promise<IUrl> {
+        urlName = urlName && urlName.trim().toLowerCase();
+        urlLink = urlLink && urlLink.trim().toLowerCase();
 
-        if (!(urlNameIsValid && urlLinkIsValid && nodeValid)) return;
+        const urlNameIsValid: boolean = urlName && urlName.length > 0;
+        const urlLinkIsValid: boolean = urlLink && urlLink.length > 0;
+        if (!(urlNameIsValid && urlLinkIsValid)) throw new Error("name or link is invalid");
 
-        const urlModel = new documentationModel.SpinalURL(urlName, urlLink);
+        const urlExist = await this.getURL(node, urlName);
+
+        if (urlExist) throw new Error(`${urlName} already exist in ${node.getName().get()}`);
+
+        const urlModel = new SpinalURL(urlName, urlLink);
 
         const urlNode = await node.addChild(urlModel, URL_RELATION, SPINAL_RELATION_PTR_LST_TYPE);
 
         if (urlNode && urlNode.info) {
             urlNode.info.name.set(`[URL] ${urlName}`);
             urlNode.info.type.set(URL_TYPE);
-            return urlNode;
+            return this._getUrlData(urlNode);
         }
     }
 
-    public async getURL(node: any, urlName?: string): Promise<any> {
-        const nodeValid: boolean = node instanceof SpinalNode || node instanceof SpinalContext || node instanceof SpinalGraph;
-        if (!nodeValid) return;
+    public async getURL(node: SpinalNode<any>, urlName?: string): Promise<IUrl | IUrl[]> {
 
         const urlNodes = await node.getChildren(URL_RELATION);
         const promises = [];
@@ -61,41 +65,75 @@ class UrlService {
         }
 
         const values = await Promise.all(promises);
-
-        return urlName && urlName.trim().length > 0 ? values.filter(el => typeof el !== "undefined")[0] : values;
+        if (urlName && urlName.trim().length) {
+            return values.find(({ element }) => {
+                const elementName = element.name.get();
+                return elementName.trim().toLowerCase() === urlName.trim().toLowerCase()
+            })
+        }
+        return values;
     }
 
-    public getParents(node: any, url_relationNames: Array<string>) {
-        const nodeValid: boolean = node instanceof SpinalNode || node instanceof SpinalContext || node instanceof SpinalGraph;
-        if (!nodeValid) return Promise.resolve([]);
+    public async updateUrl(argNode: SpinalNode<any>, label: string, newValue: string): Promise<IUrl> {
+        let _url = await this.getURL(argNode, label);
+        let url = Array.isArray(_url) ? _url[0] : _url;
 
+        if (url) {
+            const { node, element } = url;
+
+            if (node && element) {
+                const elementUrl = element.URL.get();
+                const _newValue = newValue.trim().toLowerCase();
+                if (!!_newValue && elementUrl.trim().toLowerCase() !== _newValue) element.URL.set(_newValue);
+            }
+
+            return url;
+        }
+    }
+
+    public getParents(node: SpinalNode<any>, url_relationNames: Array<string>) {
         return node.getParents(url_relationNames);
     }
 
-    public getParentGroup(node: any) {
-        const nodeValid: boolean = node instanceof SpinalNode || node instanceof SpinalContext || node instanceof SpinalGraph;
-
+    public getParentGroup(node: SpinalNode<any>) {
         return this.getParents(node, [])
-
     }
 
-    public async deleteURL(node: any, label: string) {
-        const nodeValid: boolean = node instanceof SpinalNode || node instanceof SpinalContext || node instanceof SpinalGraph;
-        if (!nodeValid) return;
+    public async deleteURL(node: SpinalNode<any>, label: string): Promise<void> {
+        // const nodeValid: boolean = node instanceof SpinalNode || node instanceof SpinalContext || node instanceof SpinalGraph;
+        // if (!nodeValid) return;
 
         const url = await this.getURL(node, label);
+        if (Array.isArray(url)) return;
 
-        if (url && url.node) url.node.removeFromGraph();
+        if (url && url.node) {
+            return url.node.removeFromGraph();
+        }
+    }
+
+    public async getSharedUrls(node: SpinalNode<any>): Promise<{ node: SpinalNode<any>; urls: SpinalURL[] }[]> {
+        const parents = await node.getParents();
+        const promises = parents.map(async parent => {
+            let _urls = await this.getURL(parent);
+            _urls = Array.isArray(_urls) ? _urls : [_urls];
+            return {
+                node: parent,
+                urls: _urls.map(el => el.element)
+            }
+        })
+
+        return Promise.all(promises);
     }
 
     //////////////////////////////////////////////////////////////////////////////////
     //                                     PRIVATES                                 //
     //////////////////////////////////////////////////////////////////////////////////
 
-    public async _getUrlData(urlNode: any, urlName?: string): Promise<any> {
+    public async _getUrlData(urlNode: any, urlName?: string): Promise<IUrl> {
         const element = await urlNode.getElement();
+        // const elementName = element.name.get();
 
-        if (urlName && urlName.trim().length > 0 && element.name.get() !== urlName) return;
+        // if (urlName && urlName.trim().length > 0 && elementName && elementName.trim().toLowerCase() !== urlName.trim().toLowerCase()) return;
 
         return {
             element: element,
