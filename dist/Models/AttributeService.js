@@ -279,6 +279,27 @@ class AttributeService {
             });
         });
     }
+    findOneAttributeInCategory(node, category, label = "") {
+        return __awaiter(this, void 0, void 0, function* () {
+            label = label.trim().toLowerCase();
+            if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
+                throw new Error("node must be a spinalNode instance");
+            // if (categoryName.trim().length === 0) throw new Error("category name must be a string and have at leat one character");
+            const _category = typeof category === "string" ? yield this.getCategoryByName(node, category) : category;
+            const res = [];
+            if (_category && _category.element) {
+                for (let index = 0; index < _category.element.length; index++) {
+                    const element = _category.element[index];
+                    if (!!label && element.label.get().trim().toLowerCase() === label) {
+                        // res.push(element);
+                        // break;
+                        return element;
+                    }
+                }
+            }
+            return -1;
+        });
+    }
     /**
      * Takes as parmaters a node and a string(category name) and return all attributes of the category.
      * @param  {SpinalNode<any>} node

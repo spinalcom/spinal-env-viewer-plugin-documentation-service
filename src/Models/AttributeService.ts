@@ -282,6 +282,28 @@ class AttributeService {
 
     }
 
+    public async findOneAttributeInCategory(node: SpinalNode<any>, category: string | ICategory, label: string = ""): Promise<SpinalAttribute | number> {
+        label = label.trim().toLowerCase()
+        if (!(node instanceof SpinalNode)) throw new Error("node must be a spinalNode instance");
+        // if (categoryName.trim().length === 0) throw new Error("category name must be a string and have at leat one character");
+
+        const _category = typeof category === "string" ? await this.getCategoryByName(node, category) : category;
+        const res = [];
+
+        if (_category && _category.element) {
+            for (let index = 0; index < _category.element.length; index++) {
+                const element = _category.element[index];
+                if (!!label && element.label.get().trim().toLowerCase() === label) {
+                    // res.push(element);
+                    // break;
+                    return element
+                }
+            }
+        }
+
+        return -1;
+    }
+
 
 
     /**

@@ -76,6 +76,7 @@ declare class AttributeService {
      * @returns Promise
      */
     getAllAttributes(node: SpinalNode<any>): Promise<Array<SpinalAttribute>>;
+    findOneAttributeInCategory(node: SpinalNode<any>, category: string | ICategory, label?: string): Promise<SpinalAttribute | number>;
     /**
      * Takes as parmaters a node and a string(category name) and return all attributes of the category.
      * @param  {SpinalNode<any>} node
