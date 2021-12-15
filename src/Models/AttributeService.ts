@@ -302,9 +302,10 @@ class AttributeService {
         if (_category && _category.element) {
             for (let index = 0; index < _category.element.length; index++) {
                 const element = _category.element[index];
-                if (label && element.label.get().trim().toLowerCase() === label) {
-                    res.push(element);
-                    break;
+                if (!!label && element.label.get().trim().toLowerCase() === label) {
+                    // res.push(element);
+                    // break;
+                    return [element]
                 } else {
                     res.push(element);
                 }
