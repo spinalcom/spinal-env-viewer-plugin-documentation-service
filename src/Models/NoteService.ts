@@ -264,7 +264,7 @@ class NoteService {
             const category = await service.addCategoryAttribute(spinalNode, categoryName);
 
             const promises = spinalNote._attribute_names.map(key => {
-                return service.addAttributeByCategory(spinalNode, category, key, spinalNote[key]);
+                return service.addAttributeByCategory(spinalNode, category, key, spinalNote[key].get());
             })
 
             return Promise.all(promises);

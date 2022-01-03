@@ -33,8 +33,8 @@ class UrlService {
     constructor() { }
 
     public async addURL(node: SpinalNode<any>, urlName: string, urlLink: string): Promise<IUrl> {
-        urlName = urlName && urlName.trim().toLowerCase();
-        urlLink = urlLink && urlLink.trim().toLowerCase();
+        urlName = urlName && urlName.toString().trim().toLowerCase();
+        urlLink = urlLink && urlLink.toString().trim().toLowerCase();
 
         const urlNameIsValid: boolean = urlName && urlName.length > 0;
         const urlLinkIsValid: boolean = urlLink && urlLink.length > 0;
@@ -65,10 +65,10 @@ class UrlService {
         }
 
         const values = await Promise.all(promises);
-        if (urlName && urlName.trim().length) {
+        if (urlName && urlName.toString().trim().length) {
             return values.find(({ element }) => {
                 const elementName = element.name.get();
-                return elementName.trim().toLowerCase() === urlName.trim().toLowerCase()
+                return elementName.toString().trim().toLowerCase() === urlName.toString().trim().toLowerCase()
             })
         }
         return values;
@@ -83,8 +83,8 @@ class UrlService {
 
             if (node && element) {
                 const elementUrl = element.URL.get();
-                const _newValue = newValue.trim().toLowerCase();
-                if (!!_newValue && elementUrl.trim().toLowerCase() !== _newValue) element.URL.set(_newValue);
+                const _newValue = newValue.toString().trim().toLowerCase();
+                if (!!_newValue && elementUrl.toString().trim().toLowerCase() !== _newValue) element.URL.set(_newValue);
             }
 
             return url;
@@ -133,7 +133,7 @@ class UrlService {
         const element = await urlNode.getElement();
         // const elementName = element.name.get();
 
-        // if (urlName && urlName.trim().length > 0 && elementName && elementName.trim().toLowerCase() !== urlName.trim().toLowerCase()) return;
+        // if (urlName && urlName.toString().trim().length > 0 && elementName && elementName.toString().trim().toLowerCase() !== urlName.toString().trim().toLowerCase()) return;
 
         return {
             element: element,

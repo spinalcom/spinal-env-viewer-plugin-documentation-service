@@ -39,8 +39,8 @@ class UrlService {
     constructor() { }
     addURL(node, urlName, urlLink) {
         return __awaiter(this, void 0, void 0, function* () {
-            urlName = urlName && urlName.trim().toLowerCase();
-            urlLink = urlLink && urlLink.trim().toLowerCase();
+            urlName = urlName && urlName.toString().trim().toLowerCase();
+            urlLink = urlLink && urlLink.toString().trim().toLowerCase();
             const urlNameIsValid = urlName && urlName.length > 0;
             const urlLinkIsValid = urlLink && urlLink.length > 0;
             if (!(urlNameIsValid && urlLinkIsValid))
@@ -65,10 +65,10 @@ class UrlService {
                 promises.push(this._getUrlData(urlNode, urlName));
             }
             const values = yield Promise.all(promises);
-            if (urlName && urlName.trim().length) {
+            if (urlName && urlName.toString().trim().length) {
                 return values.find(({ element }) => {
                     const elementName = element.name.get();
-                    return elementName.trim().toLowerCase() === urlName.trim().toLowerCase();
+                    return elementName.toString().trim().toLowerCase() === urlName.toString().trim().toLowerCase();
                 });
             }
             return values;
@@ -82,8 +82,8 @@ class UrlService {
                 const { node, element } = url;
                 if (node && element) {
                     const elementUrl = element.URL.get();
-                    const _newValue = newValue.trim().toLowerCase();
-                    if (!!_newValue && elementUrl.trim().toLowerCase() !== _newValue)
+                    const _newValue = newValue.toString().trim().toLowerCase();
+                    if (!!_newValue && elementUrl.toString().trim().toLowerCase() !== _newValue)
                         element.URL.set(_newValue);
                 }
                 return url;
@@ -129,7 +129,7 @@ class UrlService {
         return __awaiter(this, void 0, void 0, function* () {
             const element = yield urlNode.getElement();
             // const elementName = element.name.get();
-            // if (urlName && urlName.trim().length > 0 && elementName && elementName.trim().toLowerCase() !== urlName.trim().toLowerCase()) return;
+            // if (urlName && urlName.toString().trim().length > 0 && elementName && elementName.toString().trim().toLowerCase() !== urlName.toString().trim().toLowerCase()) return;
             return {
                 element: element,
                 node: urlNode
