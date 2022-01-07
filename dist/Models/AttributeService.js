@@ -32,6 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.attributeService = exports.AttributeService = void 0;
 // import { SpinalNode, SPINAL_RELATION_PTR_LST_TYPE } from "spinal-model-graph";
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_models_documentation_1 = require("spinal-models-documentation");

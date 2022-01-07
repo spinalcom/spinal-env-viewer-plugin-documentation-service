@@ -32,6 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.noteService = exports.NoteService = void 0;
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const spinal_models_documentation_1 = require("spinal-models-documentation");
 const spinal_env_viewer_plugin_group_manager_service_1 = require("spinal-env-viewer-plugin-group-manager-service");
@@ -88,13 +89,13 @@ class NoteService {
                 return;
             let uploaded = undefined;
             if (typeof file !== "undefined") {
-                uploaded = FileExplorer_1.FileExplorer.addFileUpload(yield this._getOrCreateFileDirectory(node), file);
+                uploaded = FileExplorer_1.FileExplorer.addFileUpload(yield this._getOrCreateFileDirectory(node), [file]);
             }
             let view = undefined;
             if (typeof viewPoint !== "undefined") {
                 view = Object.keys(viewPoint).length > 0 ? viewPoint : undefined;
             }
-            const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, userInfo.userId, type, uploaded, view);
+            const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, userInfo.userId, type, uploaded[0], view);
             const spinalNode = yield node.addChild(spinalNote, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
             if (spinalNode && spinalNode.info) {
                 spinalNode.info.name.set(`message-${Date.now()}`);

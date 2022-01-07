@@ -23,14 +23,15 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FileExplorer = exports.urlService = exports.noteService = exports.attributeService = exports.serviceDocumentation = exports.ServiceDocumentation = void 0;
 const AttributeService_1 = require("./Models/AttributeService");
-exports.attributeService = AttributeService_1.attributeService;
+Object.defineProperty(exports, "attributeService", { enumerable: true, get: function () { return AttributeService_1.attributeService; } });
 const NoteService_1 = require("./Models/NoteService");
-exports.noteService = NoteService_1.noteService;
+Object.defineProperty(exports, "noteService", { enumerable: true, get: function () { return NoteService_1.noteService; } });
 const UrlService_1 = require("./Models/UrlService");
-exports.urlService = UrlService_1.urlService;
+Object.defineProperty(exports, "urlService", { enumerable: true, get: function () { return UrlService_1.urlService; } });
 const FileExplorer_1 = require("./Models/FileExplorer");
-exports.FileExplorer = FileExplorer_1.FileExplorer;
+Object.defineProperty(exports, "FileExplorer", { enumerable: true, get: function () { return FileExplorer_1.FileExplorer; } });
 // @ts-ignore
 const globalType = typeof window === "undefined" ? global : window;
 function applyMixins(derivedConstructor, baseConstructors) {
