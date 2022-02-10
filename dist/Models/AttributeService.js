@@ -49,7 +49,7 @@ class AttributeService {
      */
     addCategoryAttribute(node, categoryName) {
         return __awaiter(this, void 0, void 0, function* () {
-            categoryName = categoryName.toString().trim().toLowerCase();
+            categoryName = categoryName.toString().trim();
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
                 throw new Error("Node must be a SpinalNode.");
             if (categoryName.toString().trim().length === 0)
@@ -107,7 +107,7 @@ class AttributeService {
      */
     editCategoryAttribute(node, serverId, categoryName) {
         return __awaiter(this, void 0, void 0, function* () {
-            categoryName = categoryName.toString().trim().toLowerCase();
+            categoryName = categoryName.toString().trim();
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
                 throw new Error("Node must be a SpinalNode.");
             if (serverId === 0)
@@ -142,14 +142,14 @@ class AttributeService {
      */
     getCategoryByName(node, categoryName) {
         return __awaiter(this, void 0, void 0, function* () {
-            categoryName = categoryName.toString().trim().toLowerCase();
+            categoryName = categoryName.toString().trim();
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
                 throw new Error("node must be a spinalNode instance");
             if (!categoryName || categoryName.length === 0)
                 throw new Error("category name must be a string and have at leat one character");
             const categories = yield this.getCategory(node);
             return categories.find(el => {
-                return el.nameCat.toString().trim().toLowerCase() === categoryName;
+                return el.nameCat.toString().trim() === categoryName;
             });
         });
     }
@@ -162,7 +162,7 @@ class AttributeService {
      */
     updateCategoryName(node, category, newName) {
         return __awaiter(this, void 0, void 0, function* () {
-            newName = newName.toString().trim().toLowerCase();
+            newName = newName.toString().trim();
             if (!newName || newName.length === 0)
                 throw new Error("category name must be a string and have at leat one character");
             if (category instanceof spinal_env_viewer_graph_service_1.SpinalNode) {
@@ -196,11 +196,11 @@ class AttributeService {
             // const labelIsValid = label && label.toString().trim().length > 0;
             // const valueIsValid = typeof value !== "undefined";
             // if (!(labelIsValid && valueIsValid)) return;
-            categoryName = categoryName.toString().trim().toLowerCase();
-            label = label.toString().trim().toLowerCase();
-            value = value.toString().trim().toLowerCase();
-            type = type.toString().trim().toLowerCase();
-            unit = unit.toString().trim().toLowerCase();
+            categoryName = categoryName.toString().trim();
+            label = label.toString().trim();
+            value = value.toString().trim();
+            type = type.toString().trim();
+            unit = unit.toString().trim();
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
                 throw new Error("node must be a spinalNode instance");
             if (!label || label.toString().trim().length === 0)
@@ -227,10 +227,10 @@ class AttributeService {
      * @returns SpinalAttribute
      */
     addAttributeByCategory(node, category, label = "", value = "", type = "", unit = "") {
-        label = label.toString().trim().toLowerCase();
-        value = value.toString().trim().toLowerCase();
-        type = type.toString().trim().toLowerCase();
-        unit = unit.toString().trim().toLowerCase();
+        label = label.toString().trim();
+        value = value.toString().trim();
+        type = type.toString().trim();
+        unit = unit.toString().trim();
         if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
             throw new Error("node must be a spinalNode instance");
         if (!label || label.toString().trim().length === 0)
@@ -252,7 +252,7 @@ class AttributeService {
             for (let index = 0; index < category.element.length; index++) {
                 const element = category.element[index];
                 const elementLabel = element.label.get();
-                if (elementLabel.toString().trim().toLowerCase() === label) {
+                if (elementLabel.toString().trim() === label) {
                     element.value.set(value);
                     return element;
                 }
@@ -282,7 +282,7 @@ class AttributeService {
     }
     findOneAttributeInCategory(node, category, label = "") {
         return __awaiter(this, void 0, void 0, function* () {
-            label = label.toString().trim().toLowerCase();
+            label = label.toString().trim();
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
                 throw new Error("node must be a spinalNode instance");
             // if (categoryName.toString().trim().length === 0) throw new Error("category name must be a string and have at leat one character");
@@ -291,7 +291,7 @@ class AttributeService {
             if (_category && _category.element) {
                 for (let index = 0; index < _category.element.length; index++) {
                     const element = _category.element[index];
-                    if (!!label && element.label.get().toString().trim().toLowerCase() === label) {
+                    if (!!label && element.label.get().toString().trim() === label) {
                         // res.push(element);
                         // break;
                         return element;
@@ -310,7 +310,7 @@ class AttributeService {
      */
     getAttributesByCategory(node, category, label = "") {
         return __awaiter(this, void 0, void 0, function* () {
-            label = label.toString().trim().toLowerCase();
+            label = label.toString().trim();
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
                 throw new Error("node must be a spinalNode instance");
             // if (categoryName.toString().trim().length === 0) throw new Error("category name must be a string and have at leat one character");
@@ -319,7 +319,7 @@ class AttributeService {
             if (_category && _category.element) {
                 for (let index = 0; index < _category.element.length; index++) {
                     const element = _category.element[index];
-                    if (!!label && element.label.get().toString().trim().toLowerCase() === label) {
+                    if (!!label && element.label.get().toString().trim() === label) {
                         // res.push(element);
                         // break;
                         return [element];
@@ -339,7 +339,7 @@ class AttributeService {
                 return attributes.map(attr => {
                     for (const key in newValues) {
                         if (Object.prototype.hasOwnProperty.call(newValues, key)) {
-                            const val = newValues[key].toString().trim().toLowerCase();
+                            const val = newValues[key].toString().trim();
                             if (attr[key])
                                 attr[key].set(val);
                         }
@@ -367,10 +367,10 @@ class AttributeService {
             // labelIsValid = new_label && new_label.toString().trim().length > 0;
             // valueIsValid = typeof new_value !== "undefined";
             // if (!(labelIsValid && valueIsValid)) return;
-            old_label = old_label.toString().trim().toLowerCase();
-            old_value = old_value.toString().trim().toLowerCase();
-            new_label = new_label.toString().trim().toLowerCase();
-            new_value = new_value.toString().trim().toLowerCase();
+            old_label = old_label.toString().trim();
+            old_value = old_value.toString().trim();
+            new_label = new_label.toString().trim();
+            new_value = new_value.toString().trim();
             if (!old_label || old_label.length === 0)
                 throw new Error("old_label must be a string and have at leat one character");
             if (!new_label || new_label.length === 0)
@@ -405,10 +405,10 @@ class AttributeService {
      */
     setAttributeById(node, serverId, new_label, new_value, new_type, new_unit) {
         return __awaiter(this, void 0, void 0, function* () {
-            new_label = new_label.toString().trim().toLowerCase();
-            new_value = new_value.toString().trim().toLowerCase();
-            new_type = new_type.toString().trim().toLowerCase();
-            new_unit = new_unit.toString().trim().toLowerCase();
+            new_label = new_label.toString().trim();
+            new_value = new_value.toString().trim();
+            new_type = new_type.toString().trim();
+            new_unit = new_unit.toString().trim();
             const labelIsValid = new_label && new_label.toString().trim().length > 0;
             const valueIsValid = typeof new_value !== "undefined";
             if (!(labelIsValid && valueIsValid))
@@ -433,11 +433,11 @@ class AttributeService {
      */
     getAttributesShared(node, categoryName) {
         return __awaiter(this, void 0, void 0, function* () {
-            categoryName = categoryName.toString().trim().toLowerCase();
+            categoryName = categoryName.toString().trim();
             const parents = yield node.getParents();
             const promises = parents.map((parent) => __awaiter(this, void 0, void 0, function* () {
                 const categories = yield this.getCategory(parent);
-                const filterCategory = !categoryName || categoryName.length === 0 ? categories : categories.filter(el => el.nameCat.toString().trim().toLowerCase() === categoryName);
+                const filterCategory = !categoryName || categoryName.length === 0 ? categories : categories.filter(el => el.nameCat.toString().trim() === categoryName);
                 return {
                     parentNode: parent,
                     categories: filterCategory
@@ -458,7 +458,7 @@ class AttributeService {
             for (let i = 0; i < listAttributes.length; i++) {
                 const element = listAttributes[i];
                 const elementLabel = element.label.get();
-                if (elementLabel.toString().trim().toLowerCase() == label.toString().trim().toLowerCase()) {
+                if (elementLabel.toString().trim() == label.toString().trim()) {
                     listAttributes.splice(i, 1);
                     return true;
                 }
@@ -582,10 +582,10 @@ class AttributeService {
             // const labelIsValid = label && label.toString().trim().length > 0;
             // const valueIsValid = typeof value !== "undefined";
             // if (!(labelIsValid && valueIsValid)) return;
-            label = label.toString().trim().toLowerCase();
-            value = value.toString().trim().toLowerCase();
-            type = type.toString().trim().toLowerCase();
-            unit = unit.toString().trim().toLowerCase();
+            label = label.toString().trim();
+            value = value.toString().trim();
+            type = type.toString().trim();
+            unit = unit.toString().trim();
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
                 throw new Error("node must be a spinalNode instance");
             if (!label || label.length === 0)
@@ -596,7 +596,7 @@ class AttributeService {
             if (attributeExist) {
                 return attributeExist;
             }
-            const attributeModel = spinal_models_documentation_1.SpinalAttribute(label, value, type, unit);
+            const attributeModel = (0, spinal_models_documentation_1.SpinalAttribute)(label, value, type, unit);
             const attributeNode = new spinal_env_viewer_graph_service_1.SpinalNode(`[Attributes] ${label}`, constants_1.ATTRIBUTE_TYPE, attributeModel);
             yield node.addChild(attributeNode, constants_1.NODE_TO_ATTRIBUTE, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
             return attributeNode;

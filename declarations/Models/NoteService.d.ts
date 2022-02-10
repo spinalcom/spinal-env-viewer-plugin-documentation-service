@@ -50,7 +50,7 @@ declare class NoteService {
     createDefaultContext(): Promise<any>;
     createDefaultCategory(): Promise<any>;
     createDefaultGroup(): Promise<any>;
-    createAttribute(spinalNode: SpinalNode<any>, spinalNote: SpinalNote): Promise<[unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown]>;
+    createAttribute(spinalNode: SpinalNode<any>, spinalNote: SpinalNote): Promise<any>;
     private _getOrCreateFileDirectory;
     private addFilesInDirectory;
 }
