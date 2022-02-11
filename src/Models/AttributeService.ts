@@ -194,7 +194,7 @@ class AttributeService {
 
         categoryName = categoryName.toString().trim();
         label = label.toString().trim();
-        value = value.toString().trim();
+        value = typeof value === "string" ? value.toString().trim() : value;
         type = type.toString().trim();
         unit = unit.toString().trim();
 
@@ -226,7 +226,7 @@ class AttributeService {
 
 
         label = label.toString().trim();
-        value = value.toString().trim();
+        value = typeof value === "string" ? value.toString().trim() : value;
         type = type.toString().trim();
         unit = unit.toString().trim();
 
@@ -375,9 +375,9 @@ class AttributeService {
         // if (!(labelIsValid && valueIsValid)) return;
 
         old_label = old_label.toString().trim();
-        old_value = old_value.toString().trim();
+        old_value = typeof old_value === "string" ? old_value.toString().trim() : old_value;
         new_label = new_label.toString().trim();
-        new_value = new_value.toString().trim();
+        new_value = typeof new_value === "string" ? new_value.toString().trim() : new_value;
 
         if (!old_label || old_label.length === 0) throw new Error("old_label must be a string and have at leat one character");
         if (!new_label || new_label.length === 0) throw new Error("new_label must be a string and have at leat one character");
@@ -411,7 +411,7 @@ class AttributeService {
     public async setAttributeById(node: SpinalNode<any>, serverId: number, new_label: string, new_value: string, new_type: string, new_unit: string): Promise<any> {
 
         new_label = new_label.toString().trim();
-        new_value = new_value.toString().trim();
+        new_value = typeof new_value === "string" ? new_value.toString().trim() : new_value;
         new_type = new_type.toString().trim();
         new_unit = new_unit.toString().trim();
 
@@ -610,7 +610,7 @@ class AttributeService {
 
         // if (!(labelIsValid && valueIsValid)) return;
         label = label.toString().trim();
-        value = value.toString().trim();
+        value = typeof value === "string" ? value.toString().trim() : value;
         type = type.toString().trim();
         unit = unit.toString().trim();
 

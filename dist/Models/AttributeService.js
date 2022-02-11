@@ -198,7 +198,7 @@ class AttributeService {
             // if (!(labelIsValid && valueIsValid)) return;
             categoryName = categoryName.toString().trim();
             label = label.toString().trim();
-            value = value.toString().trim();
+            value = typeof value === "string" ? value.toString().trim() : value;
             type = type.toString().trim();
             unit = unit.toString().trim();
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
@@ -228,7 +228,7 @@ class AttributeService {
      */
     addAttributeByCategory(node, category, label = "", value = "", type = "", unit = "") {
         label = label.toString().trim();
-        value = value.toString().trim();
+        value = typeof value === "string" ? value.toString().trim() : value;
         type = type.toString().trim();
         unit = unit.toString().trim();
         if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
@@ -368,9 +368,9 @@ class AttributeService {
             // valueIsValid = typeof new_value !== "undefined";
             // if (!(labelIsValid && valueIsValid)) return;
             old_label = old_label.toString().trim();
-            old_value = old_value.toString().trim();
+            old_value = typeof old_value === "string" ? old_value.toString().trim() : old_value;
             new_label = new_label.toString().trim();
-            new_value = new_value.toString().trim();
+            new_value = typeof new_value === "string" ? new_value.toString().trim() : new_value;
             if (!old_label || old_label.length === 0)
                 throw new Error("old_label must be a string and have at leat one character");
             if (!new_label || new_label.length === 0)
@@ -406,7 +406,7 @@ class AttributeService {
     setAttributeById(node, serverId, new_label, new_value, new_type, new_unit) {
         return __awaiter(this, void 0, void 0, function* () {
             new_label = new_label.toString().trim();
-            new_value = new_value.toString().trim();
+            new_value = typeof new_value === "string" ? new_value.toString().trim() : new_value;
             new_type = new_type.toString().trim();
             new_unit = new_unit.toString().trim();
             const labelIsValid = new_label && new_label.toString().trim().length > 0;
@@ -583,7 +583,7 @@ class AttributeService {
             // const valueIsValid = typeof value !== "undefined";
             // if (!(labelIsValid && valueIsValid)) return;
             label = label.toString().trim();
-            value = value.toString().trim();
+            value = typeof value === "string" ? value.toString().trim() : value;
             type = type.toString().trim();
             unit = unit.toString().trim();
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
