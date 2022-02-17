@@ -89,7 +89,7 @@ class NoteService {
                 return;
             let uploaded = undefined;
             if (typeof file !== "undefined") {
-                uploaded = FileExplorer_1.FileExplorer.addFileUpload(yield this._getOrCreateFileDirectory(node), [file]);
+                uploaded = FileExplorer_1.FileExplorer.addFileUpload(yield FileExplorer_1.FileExplorer._getOrCreateFileDirectory(node), [file]);
             }
             let view = undefined;
             if (typeof viewPoint !== "undefined") {
@@ -232,15 +232,6 @@ class NoteService {
             }
         });
     }
-    _getOrCreateFileDirectory(node) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let directory = yield FileExplorer_1.FileExplorer.getDirectory(node);
-            if (!directory) {
-                directory = yield FileExplorer_1.FileExplorer.createDirectory(node);
-            }
-            return directory;
-        });
-    }
     addFilesInDirectory(noteNode, files) {
         if (!(Array.isArray(files)))
             files = [files];
@@ -251,7 +242,7 @@ class NoteService {
                     objectState: file.objectState
                 },
                 file: file,
-                directory: yield this._getOrCreateFileDirectory(noteNode)
+                directory: yield FileExplorer_1.FileExplorer._getOrCreateFileDirectory(noteNode)
             };
         }));
         return Promise.all(promises);

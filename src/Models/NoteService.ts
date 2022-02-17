@@ -109,7 +109,7 @@ class NoteService {
 
         let uploaded = undefined;
         if (typeof file !== "undefined") {
-            uploaded = FileExplorer.addFileUpload(await this._getOrCreateFileDirectory(node), [file]);
+            uploaded = FileExplorer.addFileUpload(await FileExplorer._getOrCreateFileDirectory(node), [file]);
         }
 
         let view = undefined;
@@ -272,16 +272,6 @@ class NoteService {
     }
 
 
-    private async _getOrCreateFileDirectory(node: SpinalNode<any>): Promise<any> {
-        let directory = await FileExplorer.getDirectory(node);
-
-        if (!directory) {
-            directory = await FileExplorer.createDirectory(node);
-        }
-
-        return directory;
-    }
-
     private addFilesInDirectory(noteNode: SpinalNode<any>, files: any): Promise<IFileNote[]> {
         if (!(Array.isArray(files))) files = [files];
 
@@ -292,7 +282,7 @@ class NoteService {
                     objectState: file.objectState
                 },
                 file: file,
-                directory: await this._getOrCreateFileDirectory(noteNode)
+                directory: await FileExplorer._getOrCreateFileDirectory(noteNode)
             }
         })
 

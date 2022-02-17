@@ -92,16 +92,37 @@ class FileExplorer {
             ? spinal_models_documentation_1.MESSAGE_TYPES.image
             : spinal_models_documentation_1.MESSAGE_TYPES.file;
     }
-    static addFileUpload(directory, uploadFileList) {
-        const files = [];
-        for (let i = 0; i < uploadFileList.length; i++) {
-            const element = uploadFileList[i];
-            let filePath = new spinal_core_connectorjs_type_1.Path(element);
+    static addFileUpload(directory, files) {
+        const res = [];
+        if (!Array.isArray(files) && !(files instanceof FileList))
+            files = [files];
+        for (let i = 0; i < files.length; i++) {
+            const element = files[i];
+            // let filePath = element instanceof File ? new Path(element) : new Path(element.buffer);
+            //@ts-ignore
+            let filePath = element.buffer ? new spinal_core_connectorjs_type_1.Path(element.buffer) : new spinal_core_connectorjs_type_1.Path(element);
             let myFile = new spinal_core_connectorjs_type_1.File(element.name, filePath, undefined);
             directory.push(myFile);
-            files.push(myFile);
+            res.push(myFile);
         }
-        return files;
+        return res;
+    }
+    static uploadFiles(node, files) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!(Array.isArray(files)))
+                files = [files];
+            const directory = yield this._getOrCreateFileDirectory(node);
+            return this.addFileUpload(directory, files);
+        });
+    }
+    static _getOrCreateFileDirectory(node) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let directory = yield FileExplorer.getDirectory(node);
+            if (!directory) {
+                directory = yield FileExplorer.createDirectory(node);
+            }
+            return directory;
+        });
     }
 }
 exports.FileExplorer = FileExplorer;

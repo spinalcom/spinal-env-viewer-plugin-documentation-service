@@ -10,6 +10,7 @@
     "sourceMap": true,
     "declaration": true,
     "declarationDir": "./declarations",
+    "lib": ["dom"]
 
   },
   "include": [

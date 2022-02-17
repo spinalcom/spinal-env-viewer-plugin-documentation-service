@@ -22,18 +22,18 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 import {
-    SPINAL_RELATION_PTR_LST_TYPE
+    SPINAL_RELATION_PTR_LST_TYPE, SpinalNode
 } from "spinal-env-viewer-graph-service";
 
 import { MESSAGE_TYPES } from "spinal-models-documentation";
 
 
 import { Directory, Path, File } from "spinal-core-connectorjs_type";
-
+import { IFileNote } from "../interfaces";
 
 export class FileExplorer {
 
-    public static async getDirectory(selectedNode): Promise<any> {
+    public static async getDirectory(selectedNode: SpinalNode<any>): Promise<spinal.Directory<any>> {
         if (selectedNode != undefined) {
             const fileNode = await selectedNode.getChildren("hasFiles");
             if (fileNode.length == 0) {
@@ -45,12 +45,12 @@ export class FileExplorer {
         }
     }
 
-    public static async getNbChildren(selectedNode): Promise<any> {
+    public static async getNbChildren(selectedNode: SpinalNode<any>): Promise<number> {
         const fileNode = await selectedNode.getChildren("hasFiles");
         return fileNode.length;
     }
 
-    public static async createDirectory(selectedNode): Promise<any> {
+    public static async createDirectory(selectedNode: SpinalNode<any>): Promise<spinal.Directory<any>> {
         let nbNode = await this.getNbChildren(selectedNode);
         if (nbNode == 0) {
             let myDirectory = new Directory();
@@ -67,7 +67,7 @@ export class FileExplorer {
         }
     }
 
-    public static _getFileType(file): any {
+    public static _getFileType(file): string {
         const imagesExtension = [
             "JPG",
             "PNG",
@@ -89,19 +89,41 @@ export class FileExplorer {
             : MESSAGE_TYPES.file;
     }
 
-    public static addFileUpload(directory, uploadFileList): any {
-        const files = [];
+    public static addFileUpload(directory: spinal.Directory<any>, files: (File | { name: string, buffer: Buffer })[] | FileList | any): spinal.File<any>[] {
+        const res = [];
+        if (!Array.isArray(files) && !(files instanceof FileList)) files = [files];
 
-        for (let i = 0; i < uploadFileList.length; i++) {
-            const element = uploadFileList[i];
-            let filePath = new Path(element);
+        for (let i = 0; i < files.length; i++) {
+            const element = files[i];
+
+
+            // let filePath = element instanceof File ? new Path(element) : new Path(element.buffer);
+            //@ts-ignore
+            let filePath = element.buffer ? new Path(element.buffer) : new Path(element);
             let myFile = new File(element.name, filePath, undefined);
 
             directory.push(myFile);
-            files.push(myFile);
+            res.push(myFile);
         }
 
-        return files
+        return res
+    }
+
+    public static async uploadFiles(node: SpinalNode<any>, files: (File | { name: string, buffer: Buffer })[] | FileList | any): Promise<spinal.File<any>[]> {
+        if (!(Array.isArray(files))) files = [files];
+
+        const directory = await this._getOrCreateFileDirectory(node);
+        return this.addFileUpload(directory, files);
+    }
+
+    public static async _getOrCreateFileDirectory(node: SpinalNode<any>): Promise<spinal.Directory<any>> {
+        let directory = await FileExplorer.getDirectory(node);
+
+        if (!directory) {
+            directory = await FileExplorer.createDirectory(node);
+        }
+
+        return directory;
     }
 }
 

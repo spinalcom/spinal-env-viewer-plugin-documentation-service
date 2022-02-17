@@ -51,7 +51,6 @@ declare class NoteService {
     createDefaultCategory(): Promise<any>;
     createDefaultGroup(): Promise<any>;
     createAttribute(spinalNode: SpinalNode<any>, spinalNote: SpinalNote): Promise<any>;
-    private _getOrCreateFileDirectory;
     private addFilesInDirectory;
 }
 declare const noteService: NoteService;
