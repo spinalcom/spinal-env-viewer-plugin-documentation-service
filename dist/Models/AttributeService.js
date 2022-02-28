@@ -343,13 +343,16 @@ class AttributeService {
             // return res;
         });
     }
-    updateAttribute(node, category, label, newValues) {
+    updateAttribute(node, category, label, newValues, createIt = false) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!label)
-                throw new Error("Label is required");
             const [attribute] = yield this.getAttributesByCategory(node, category, label);
-            if (!attribute)
+            if (!attribute && !createIt)
                 throw new Error("no attribute found");
+            else if (!attribute && createIt && newValues.value) {
+                const _category = typeof category === "string" ? yield this.getCategoryByName(node, category) : category;
+                const lab = newValues.label || label;
+                return this.addAttributeByCategory(node, _category, label, newValues.value);
+            }
             for (const key in newValues) {
                 if (Object.prototype.hasOwnProperty.call(newValues, key)) {
                     const value = newValues[key];
@@ -357,6 +360,7 @@ class AttributeService {
                         attribute[key].set(value);
                 }
             }
+            return attribute;
             // if (attributes && attributes.length > 0) {
             //     return attributes.map(attr => {
             //         for (const key in newValues) {
@@ -368,7 +372,7 @@ class AttributeService {
             //         return attr
             //     })
             // }
-            throw new Error("no attribute found");
+            // throw new Error("no attribute found");
         });
     }
     /**

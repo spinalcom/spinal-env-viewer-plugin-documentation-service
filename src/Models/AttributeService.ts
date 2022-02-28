@@ -320,6 +320,7 @@ class AttributeService {
         if (!_category || !_category.element || _category.element.length === 0) return [];
 
         if (label) {
+
             const labelFound = this._findInLst(_category.element, label);
             return labelFound ? [labelFound] : [];
         }
@@ -356,11 +357,16 @@ class AttributeService {
         // return res;
     }
 
-    public async updateAttribute(node: SpinalNode<any>, category: string | ICategory, label: string, newValues: { label?: string, value?: string, type?: string, unit?: string }): Promise<Array<SpinalAttribute>> {
-        if (!label) throw new Error("Label is required");
+    public async updateAttribute(node: SpinalNode<any>, category: string | ICategory, label: string, newValues: { label?: string, value?: string, type?: string, unit?: string }, createIt = false): Promise<SpinalAttribute> {
 
         const [attribute] = await this.getAttributesByCategory(node, category, label);
-        if (!attribute) throw new Error("no attribute found");
+        if (!attribute && !createIt) throw new Error("no attribute found");
+        else if (!attribute && createIt && newValues.value) {
+            const _category = typeof category === "string" ? await this.getCategoryByName(node, category) : category;
+            const lab = newValues.label || label;
+
+            return this.addAttributeByCategory(node, _category, label, newValues.value)
+        }
 
         for (const key in newValues) {
             if (Object.prototype.hasOwnProperty.call(newValues, key)) {
@@ -368,6 +374,8 @@ class AttributeService {
                 if (attribute[key]) attribute[key].set(value);
             }
         }
+
+        return attribute;
 
         // if (attributes && attributes.length > 0) {
         //     return attributes.map(attr => {
@@ -381,7 +389,7 @@ class AttributeService {
         //     })
         // }
 
-        throw new Error("no attribute found");
+        // throw new Error("no attribute found");
     }
 
 

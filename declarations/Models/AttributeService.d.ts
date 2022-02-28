@@ -90,7 +90,7 @@ declare class AttributeService {
         value?: string;
         type?: string;
         unit?: string;
-    }): Promise<Array<SpinalAttribute>>;
+    }, createIt?: boolean): Promise<SpinalAttribute>;
     /**
      * This methods updates all attributes which have the old_label as label
      * @param  {SpinalNode<any>} node
