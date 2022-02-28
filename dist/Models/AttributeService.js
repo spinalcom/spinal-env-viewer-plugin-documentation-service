@@ -308,45 +308,66 @@ class AttributeService {
      * @param  {string} label?
      * @returns Promise
      */
-    getAttributesByCategory(node, category, label = "") {
+    getAttributesByCategory(node, category, label) {
         return __awaiter(this, void 0, void 0, function* () {
-            label = label.toString().trim();
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
                 throw new Error("node must be a spinalNode instance");
-            // if (categoryName.toString().trim().length === 0) throw new Error("category name must be a string and have at leat one character");
             const _category = typeof category === "string" ? yield this.getCategoryByName(node, category) : category;
+            if (!_category || !_category.element || _category.element.length === 0)
+                return [];
+            if (label) {
+                const labelFound = this._findInLst(_category.element, label);
+                return labelFound ? [labelFound] : [];
+            }
             const res = [];
-            if (_category && _category.element) {
-                for (let index = 0; index < _category.element.length; index++) {
-                    const element = _category.element[index];
-                    if (!!label && element.label.get().toString().trim() === label) {
-                        // res.push(element);
-                        // break;
-                        return [element];
-                    }
-                    else {
-                        res.push(element);
-                    }
-                }
+            for (let index = 0; index < _category.element.length; index++) {
+                const element = _category.element[index];
+                res.push(element);
             }
             return res;
+            // if (categoryName.toString().trim().length === 0) throw new Error("category name must be a string and have at leat one character");
+            // const _category = typeof category === "string" ? await this.getCategoryByName(node, category) : category;
+            // const res = [];
+            // if (_category && _category.element) {
+            //     for (let index = 0; index < _category.element.length; index++) {
+            //         const element = _category.element[index];
+            //         if (!!label && element.label.get().toString().trim() === label) {
+            //             // res.push(element);
+            //             // break;
+            //             return [element]
+            //         } else {
+            //             res.push(element);
+            //         }
+            //     }
+            // }
+            // return res;
         });
     }
     updateAttribute(node, category, label, newValues) {
         return __awaiter(this, void 0, void 0, function* () {
-            const attributes = yield this.getAttributesByCategory(node, category, label);
-            if (attributes && attributes.length > 0) {
-                return attributes.map(attr => {
-                    for (const key in newValues) {
-                        if (Object.prototype.hasOwnProperty.call(newValues, key)) {
-                            const val = newValues[key].toString().trim();
-                            if (attr[key])
-                                attr[key].set(val);
-                        }
-                    }
-                    return attr;
-                });
+            if (!label)
+                throw new Error("Label is required");
+            const [attribute] = yield this.getAttributesByCategory(node, category, label);
+            if (!attribute)
+                throw new Error("no attribute found");
+            for (const key in newValues) {
+                if (Object.prototype.hasOwnProperty.call(newValues, key)) {
+                    const value = newValues[key];
+                    if (attribute[key])
+                        attribute[key].set(value);
+                }
             }
+            // if (attributes && attributes.length > 0) {
+            //     return attributes.map(attr => {
+            //         for (const key in newValues) {
+            //             if (Object.prototype.hasOwnProperty.call(newValues, key)) {
+            //                 const val = newValues[key].toString().trim();
+            //                 if (attr[key]) attr[key].set(val);
+            //             }
+            //         }
+            //         return attr
+            //     })
+            // }
             throw new Error("no attribute found");
         });
     }
@@ -692,6 +713,21 @@ class AttributeService {
     }
     removeNode(node) {
         node.removeFromGraph();
+    }
+    // public _getCategoryName(category: ICategory): string {
+    //     return
+    //     // if (category && category.nameCat) {
+    //     //     return category.name instanceof Model ? category.name.get() : category.name;
+    //     // } else if (category) {
+    //     //     return category instanceof Model ? category.get() : category;
+    //     // }
+    // }
+    _findInLst(Lst, value) {
+        for (let index = 0; index < Lst.length; index++) {
+            const element = Lst[index];
+            if (element.label.get() == value)
+                return element;
+        }
     }
 }
 exports.AttributeService = AttributeService;

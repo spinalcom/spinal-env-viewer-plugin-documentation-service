@@ -196,6 +196,7 @@ declare class AttributeService {
      */
     _attributeExist(node: SpinalNode<any>, argAttributeName: string): Promise<SpinalNode<any>>;
     removeNode(node: any): void;
+    private _findInLst;
 }
 declare const attributeService: AttributeService;
 export { AttributeService, attributeService };

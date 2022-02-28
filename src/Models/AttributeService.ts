@@ -313,47 +313,75 @@ class AttributeService {
      * @param  {string} label?
      * @returns Promise
      */
-    public async getAttributesByCategory(node: SpinalNode<any>, category: string | ICategory, label: string = ""): Promise<Array<SpinalAttribute>> {
-        label = label.toString().trim()
-        if (!(node instanceof SpinalNode)) throw new Error("node must be a spinalNode instance");
-        // if (categoryName.toString().trim().length === 0) throw new Error("category name must be a string and have at leat one character");
+    public async getAttributesByCategory(node: SpinalNode<any>, category: string | ICategory, label?: string): Promise<Array<SpinalAttribute>> {
 
+        if (!(node instanceof SpinalNode)) throw new Error("node must be a spinalNode instance");
         const _category = typeof category === "string" ? await this.getCategoryByName(node, category) : category;
+        if (!_category || !_category.element || _category.element.length === 0) return [];
+
+        if (label) {
+            const labelFound = this._findInLst(_category.element, label);
+            return labelFound ? [labelFound] : [];
+        }
+
         const res = [];
 
-        if (_category && _category.element) {
-            for (let index = 0; index < _category.element.length; index++) {
-                const element = _category.element[index];
-                if (!!label && element.label.get().toString().trim() === label) {
-                    // res.push(element);
-                    // break;
-                    return [element]
-                } else {
-                    res.push(element);
-                }
-
-            }
+        for (let index = 0; index < _category.element.length; index++) {
+            const element = _category.element[index];
+            res.push(element)
         }
 
         return res;
+
+
+        // if (categoryName.toString().trim().length === 0) throw new Error("category name must be a string and have at leat one character");
+
+        // const _category = typeof category === "string" ? await this.getCategoryByName(node, category) : category;
+        // const res = [];
+
+        // if (_category && _category.element) {
+        //     for (let index = 0; index < _category.element.length; index++) {
+        //         const element = _category.element[index];
+        //         if (!!label && element.label.get().toString().trim() === label) {
+        //             // res.push(element);
+        //             // break;
+        //             return [element]
+        //         } else {
+        //             res.push(element);
+        //         }
+
+        //     }
+        // }
+
+        // return res;
     }
 
     public async updateAttribute(node: SpinalNode<any>, category: string | ICategory, label: string, newValues: { label?: string, value?: string, type?: string, unit?: string }): Promise<Array<SpinalAttribute>> {
-        const attributes = await this.getAttributesByCategory(node, category, label);
-        if (attributes && attributes.length > 0) {
-            return attributes.map(attr => {
-                for (const key in newValues) {
-                    if (Object.prototype.hasOwnProperty.call(newValues, key)) {
-                        const val = newValues[key].toString().trim();
-                        if (attr[key]) attr[key].set(val);
-                    }
-                }
-                return attr
-            })
+        if (!label) throw new Error("Label is required");
+
+        const [attribute] = await this.getAttributesByCategory(node, category, label);
+        if (!attribute) throw new Error("no attribute found");
+
+        for (const key in newValues) {
+            if (Object.prototype.hasOwnProperty.call(newValues, key)) {
+                const value = newValues[key];
+                if (attribute[key]) attribute[key].set(value);
+            }
         }
 
-        throw new Error("no attribute found");
+        // if (attributes && attributes.length > 0) {
+        //     return attributes.map(attr => {
+        //         for (const key in newValues) {
+        //             if (Object.prototype.hasOwnProperty.call(newValues, key)) {
+        //                 const val = newValues[key].toString().trim();
+        //                 if (attr[key]) attr[key].set(val);
+        //             }
+        //         }
+        //         return attr
+        //     })
+        // }
 
+        throw new Error("no attribute found");
     }
 
 
@@ -735,6 +763,12 @@ class AttributeService {
     //     // }
     // }
 
+    private _findInLst(Lst: spinal.Lst<SpinalAttribute>, value: string): SpinalAttribute {
+        for (let index = 0; index < Lst.length; index++) {
+            const element = Lst[index];
+            if (element.label.get() == value) return element;
+        }
+    }
 
 
 }
