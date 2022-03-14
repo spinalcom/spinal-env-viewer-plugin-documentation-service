@@ -1,36 +1,6 @@
 {
-  "_args": [
-    [
-      "git+https://github.com/spinalcom/spinal-env-viewer-plugin-documentation-service.git",
-      "/home/dregni/Documents/SpinalCom/BOS/spinal_viewer_town_hall_8010/module/spinal-browser-spinaltwin"
-    ]
-  ],
-  "_from": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-documentation-service.git",
-  "_id": "spinal-env-viewer-plugin-documentation-service@git+https://github.com/spinalcom/spinal-env-viewer-plugin-documentation-service.git#4529134e6521a2b501a00ad7ed0e6dde0c0a8356",
-  "_inBundle": false,
-  "_integrity": "",
-  "_location": "/spinal-env-viewer-plugin-documentation-service",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "git",
-    "raw": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-documentation-service.git",
-    "rawSpec": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-documentation-service.git",
-    "saveSpec": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-documentation-service.git",
-    "fetchSpec": "https://github.com/spinalcom/spinal-env-viewer-plugin-documentation-service.git",
-    "gitCommittish": null
-  },
-  "_requiredBy": [
-    "/",
-    "/spinal-env-viewer-plugin-control-endpoint-service",
-    "/spinal-env-viewer-plugin-documentation",
-    "/spinal-env-viewer-task-service",
-    "/spinal-model-bmsnetwork",
-    "/spinal-model-timeseries",
-    "/spinal-service-ticket"
-  ],
-  "_resolved": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-documentation-service.git#4529134e6521a2b501a00ad7ed0e6dde0c0a8356",
-  "_spec": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-documentation-service.git",
-  "_where": "/home/dregni/Documents/SpinalCom/BOS/spinal_viewer_town_hall_8010/module/spinal-browser-spinaltwin",
+  "version": "1.4.13",
+  "types": "declarations",
   "author": "",
   "dependencies": {
     "spinal-core-connectorjs_type": "git+https://github.com/spinalcom/spinal-core-connectorjs_type.git",
@@ -54,6 +24,4 @@
     "dev": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "types": "declarations",
-  "version": "1.4.13"
 }
