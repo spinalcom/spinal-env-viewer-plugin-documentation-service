@@ -23,35 +23,39 @@
  */
 
 const URL_RELATION: string = 'hasURL';
-const URL_TYPE: string = "SpinalURL";
+const URL_TYPE: string = 'SpinalURL';
 
+const NOTE_RELATION: string = 'hasNotes';
+const NOTE_TYPE: string = 'SpinalNote';
+const NOTE_CONTEXT_NAME: string = 'Default Note Context';
+const NOTE_CATEGORY_NAME: string = 'Default Note Category';
+const NOTE_GROUP_NAME: string = 'Default Note Group';
 
-const NOTE_RELATION: string = "hasNotes";
-const NOTE_TYPE: string = "SpinalNote";
-const NOTE_CONTEXT_NAME: string = "Default Note Context";
-const NOTE_CATEGORY_NAME: string = "Default Note Category";
-const NOTE_GROUP_NAME: string = "Default Note Group";
-
-const NODE_TO_CATEGORY_RELATION: string = "hasCategoryAttributes";
-const NODE_TO_ATTRIBUTE: string = "hasAttributes";
+const NODE_TO_CATEGORY_RELATION: string = 'hasCategoryAttributes';
+const NODE_TO_ATTRIBUTE: string = 'hasAttributes';
 const CATEGORY_TYPE: string = 'categoryAttributes';
-const ATTRIBUTE_TYPE: string = "SpinalAttributes";
-const BUILDINGINFORMATION: string[] = ["Titre", "Bâtiment", "Surface", "Adresse", "Ville"];
-const BUILDINGINFORMATIONCATNAME: string = "Spinal Building Information";
-
+const ATTRIBUTE_TYPE: string = 'SpinalAttributes';
+const BUILDINGINFORMATION: string[] = [
+  'Titre',
+  'Bâtiment',
+  'Surface',
+  'Adresse',
+  'Ville',
+];
+const BUILDINGINFORMATIONCATNAME: string = 'Spinal Building Information';
 
 export {
-    URL_RELATION,
-    URL_TYPE,
-    NOTE_RELATION,
-    NOTE_TYPE,
-    NOTE_CONTEXT_NAME,
-    NOTE_CATEGORY_NAME,
-    NOTE_GROUP_NAME,
-    NODE_TO_CATEGORY_RELATION,
-    NODE_TO_ATTRIBUTE,
-    CATEGORY_TYPE,
-    ATTRIBUTE_TYPE,
-    BUILDINGINFORMATION,
-    BUILDINGINFORMATIONCATNAME
-}
+  URL_RELATION,
+  URL_TYPE,
+  NOTE_RELATION,
+  NOTE_TYPE,
+  NOTE_CONTEXT_NAME,
+  NOTE_CATEGORY_NAME,
+  NOTE_GROUP_NAME,
+  NODE_TO_CATEGORY_RELATION,
+  NODE_TO_ATTRIBUTE,
+  CATEGORY_TYPE,
+  ATTRIBUTE_TYPE,
+  BUILDINGINFORMATION,
+  BUILDINGINFORMATIONCATNAME,
+};

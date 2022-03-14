@@ -1,15 +1,13 @@
 {
-  "version": "1.4.13",
+  "version": "1.4.14",
   "types": "declarations",
   "author": "",
   "dependencies": {
     "spinal-core-connectorjs_type": "git+https://github.com/spinalcom/spinal-core-connectorjs_type.git",
     "spinal-env-viewer-graph-service": "git+https://github.com/spinalcom/Spinal-Graph-Service.git",
-    "spinal-env-viewer-plugin-bimobjectservice": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-bimobjectservice.git",
     "spinal-env-viewer-plugin-group-manager-service": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-group-manager-service.git",
-    "spinal-env-viewer-room-manager": "git+https://github.com/spinalcom/spinal-env-viewer-room-manager.git",
-    "spinal-models-documentation": "git+https://github.com/spinalcom/spinal-models-documentation.git",
-    "vue": "^2.0.1"
+    "spinal-env-viewer-context-geographic-service": "git+https://github.com/spinalcom/spinal-env-viewer-context-geographic-service.git",
+    "spinal-models-documentation": "git+https://github.com/spinalcom/spinal-models-documentation.git"
   },
   "description": "",
   "devDependencies": {

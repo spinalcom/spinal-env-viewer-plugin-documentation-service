@@ -22,79 +22,24 @@
  * with this file. If not, see
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FileExplorer = exports.urlService = exports.noteService = exports.attributeService = exports.serviceDocumentation = exports.ServiceDocumentation = void 0;
-const AttributeService_1 = require("./Models/AttributeService");
-Object.defineProperty(exports, "attributeService", { enumerable: true, get: function () { return AttributeService_1.attributeService; } });
-const NoteService_1 = require("./Models/NoteService");
-Object.defineProperty(exports, "noteService", { enumerable: true, get: function () { return NoteService_1.noteService; } });
-const UrlService_1 = require("./Models/UrlService");
-Object.defineProperty(exports, "urlService", { enumerable: true, get: function () { return UrlService_1.urlService; } });
-const FileExplorer_1 = require("./Models/FileExplorer");
-Object.defineProperty(exports, "FileExplorer", { enumerable: true, get: function () { return FileExplorer_1.FileExplorer; } });
-// @ts-ignore
-const globalType = typeof window === "undefined" ? global : window;
-function applyMixins(derivedConstructor, baseConstructors) {
-    baseConstructors.forEach(baseConstructor => {
-        Object.getOwnPropertyNames(baseConstructor.prototype)
-            .forEach(name => {
-            Object.defineProperty(derivedConstructor.prototype, name, Object.
-                getOwnPropertyDescriptor(baseConstructor.prototype, name));
-        });
-    });
-}
-class ServiceDocumentation {
-}
-exports.ServiceDocumentation = ServiceDocumentation;
-applyMixins(ServiceDocumentation, [AttributeService_1.AttributeService, NoteService_1.NoteService, UrlService_1.UrlService]);
-const serviceDocumentation = new ServiceDocumentation();
-exports.serviceDocumentation = serviceDocumentation;
-globalType.spinal["serviceDocumentation"] = serviceDocumentation;
-exports.default = serviceDocumentation;
-/*
-
-class ServiceDocumentation implements AttributeService, NoteService, UrlService {
-
-    ///////////////////////////////////////////////////////////////////////
-    //                       Attribute Service                           //
-    ///////////////////////////////////////////////////////////////////////
-
-    addCategoryAttribute: (node: any, label: string) => Promise<any>;
-    getCategoryByName: (node: any, categoryName: string) => Promise<any>;
-    getCategory: (node: any) => Promise<any>;
-    getAttributesByCategory: (node: any, categoryName: string) => Promise<any[]>;
-    addAttributeByCategory: (node: any, category: any, label: string, value: string) => void;
-    addAttributeByCategoryName: (node: any, categoryName: string, label: string, value: string) => Promise<void>;
-    addAttribute: (node: any, label: string, value: string) => Promise<void>;
-    getAllAttributes: (node: any) => Promise<any>;
-    getAttributes: (node: any) => Promise<any>;
-    compareAttr: (listAttr1: any, listAttr2: any) => any[];
-    getAttributesShared: (listOfdbId: number[]) => Promise<any>;
-    getBuildingInformationAttributes: (node: any) => Promise<any[]>;
-    setBuildingInformationAttributes: (node: any) => Promise<any[]>;
-    findAttributesByLabel: (node: any, label: string, category?: any) => Promise<any>;
-    removeAttributesByLabel: (node: any, label: string) => void;
-
-    ///////////////////////////////////////////////////////////////////////
-    //                         NOTE Service                              //
-    ///////////////////////////////////////////////////////////////////////
-
-    addNote: (node: any, userInfo: { username: string; userId: number; }, note: string) => Promise<void>;
-    getNotes: (node: any) => Promise<any>;
-    editNote: (element: any, note: string) => void;
-    predicate: (node: any) => boolean;
-
-    ///////////////////////////////////////////////////////////////////////
-    //                          URL Service                              //
-    ///////////////////////////////////////////////////////////////////////
-
-    addURL: (node: any, urlName: string, urlLink: string) => Promise<any>;
-    getURL: (node: any, urlName?: string) => Promise<any>;
-    getParents: (node: any, relationNames: string[]) => Promise<any>;
-    getParentGroup: (node: any) => void;
-    deleteURL: (node: any, label: string) => Promise<void>;
-
-}
-
-*/
+const ServiceDocumentation_1 = require("./Models/ServiceDocumentation");
+__exportStar(require("./Models/constants"), exports);
+__exportStar(require("./interfaces/index"), exports);
+__exportStar(require("./Models/AttributeService"), exports);
+__exportStar(require("./Models/FileExplorer"), exports);
+__exportStar(require("./Models/NoteService"), exports);
+__exportStar(require("./Models/UrlService"), exports);
+__exportStar(require("./Models/ServiceDocumentation"), exports);
+exports.default = ServiceDocumentation_1.serviceDocumentation;
 //# sourceMappingURL=index.js.map

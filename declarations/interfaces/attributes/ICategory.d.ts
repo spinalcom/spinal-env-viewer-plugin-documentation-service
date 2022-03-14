@@ -1,4 +1,4 @@
-import { SpinalNode } from "spinal-env-viewer-graph-service";
+import type { SpinalNode } from 'spinal-env-viewer-graph-service';
 export interface ICategory {
     nameCat: string;
     node: SpinalNode<any>;

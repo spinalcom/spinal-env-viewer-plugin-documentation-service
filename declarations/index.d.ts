@@ -1,11 +1,9 @@
-import { AttributeService, attributeService } from "./Models/AttributeService";
-import { NoteService, noteService } from "./Models/NoteService";
-import { UrlService, urlService } from "./Models/UrlService";
-import { FileExplorer } from "./Models/FileExplorer";
-declare class ServiceDocumentation {
-}
-interface ServiceDocumentation extends AttributeService, NoteService, UrlService {
-}
-declare const serviceDocumentation: ServiceDocumentation;
-export { ServiceDocumentation, serviceDocumentation, attributeService, noteService, urlService, FileExplorer };
+import { serviceDocumentation } from './Models/ServiceDocumentation';
+export * from './Models/constants';
+export * from './interfaces/index';
+export * from './Models/AttributeService';
+export * from './Models/FileExplorer';
+export * from './Models/NoteService';
+export * from './Models/UrlService';
+export * from './Models/ServiceDocumentation';
 export default serviceDocumentation;

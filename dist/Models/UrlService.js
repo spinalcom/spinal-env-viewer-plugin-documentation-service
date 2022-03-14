@@ -38,6 +38,13 @@ const spinal_models_documentation_1 = require("spinal-models-documentation");
 const constants_1 = require("./constants");
 class UrlService {
     constructor() { }
+    /**
+     * @param {SpinalNode<any>} node
+     * @param {string} urlName
+     * @param {string} urlLink
+     * @return {*}  {Promise<IUrl>}
+     * @memberof UrlService
+     */
     addURL(node, urlName, urlLink) {
         return __awaiter(this, void 0, void 0, function* () {
             urlName = urlName && urlName.toString().trim();
@@ -45,7 +52,7 @@ class UrlService {
             const urlNameIsValid = urlName && urlName.length > 0;
             const urlLinkIsValid = urlLink && urlLink.length > 0;
             if (!(urlNameIsValid && urlLinkIsValid))
-                throw new Error("name or link is invalid");
+                throw new Error('name or link is invalid');
             const urlExist = yield this.getURL(node, urlName);
             if (urlExist)
                 throw new Error(`${urlName} already exist in ${node.getName().get()}`);
@@ -58,6 +65,12 @@ class UrlService {
             }
         });
     }
+    /**
+     * @param {SpinalNode<any>} node
+     * @param {string} [urlName]
+     * @return {*}  {(Promise<IUrl | IUrl[]>)}
+     * @memberof UrlService
+     */
     getURL(node, urlName) {
         return __awaiter(this, void 0, void 0, function* () {
             const urlNodes = yield node.getChildren(constants_1.URL_RELATION);
@@ -75,6 +88,13 @@ class UrlService {
             return values;
         });
     }
+    /**
+     * @param {SpinalNode<any>} argNode
+     * @param {string} label
+     * @param {string} newValue
+     * @return {*}  {Promise<IUrl>}
+     * @memberof UrlService
+     */
     updateUrl(argNode, label, newValue) {
         return __awaiter(this, void 0, void 0, function* () {
             let _url = yield this.getURL(argNode, label);
@@ -91,16 +111,31 @@ class UrlService {
             }
         });
     }
+    /**
+     * @param {SpinalNode<any>} node
+     * @param {Array<string>} url_relationNames
+     * @return {*}  {Promise<SpinalNode<any>[]>}
+     * @memberof UrlService
+     */
     getParents(node, url_relationNames) {
         return node.getParents(url_relationNames);
     }
+    /**
+     * @param {SpinalNode<any>} node
+     * @return {*}  {Promise<SpinalNode<any>[]>}
+     * @memberof UrlService
+     */
     getParentGroup(node) {
         return this.getParents(node, []);
     }
+    /**
+     * @param {SpinalNode<any>} node
+     * @param {string} label
+     * @return {*}  {Promise<void>}
+     * @memberof UrlService
+     */
     deleteURL(node, label) {
         return __awaiter(this, void 0, void 0, function* () {
-            // const nodeValid: boolean = node instanceof SpinalNode || node instanceof SpinalContext || node instanceof SpinalGraph;
-            // if (!nodeValid) return;
             const url = yield this.getURL(node, label);
             if (Array.isArray(url))
                 return;
@@ -109,6 +144,11 @@ class UrlService {
             }
         });
     }
+    /**
+     * @param {SpinalNode<any>} node
+     * @return {*}  {Promise<{ node: SpinalNode<any>; urls: SpinalURL[] }[]>}
+     * @memberof UrlService
+     */
     getSharedUrls(node) {
         return __awaiter(this, void 0, void 0, function* () {
             const parents = yield node.getParents();
@@ -117,7 +157,7 @@ class UrlService {
                 _urls = Array.isArray(_urls) ? _urls : [_urls];
                 return {
                     node: parent,
-                    urls: _urls.map(el => el.element)
+                    urls: _urls.map((el) => el.element),
                 };
             }));
             return Promise.all(promises);
@@ -126,20 +166,24 @@ class UrlService {
     //////////////////////////////////////////////////////////////////////////////////
     //                                     PRIVATES                                 //
     //////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @param {*} urlNode
+     * @param {string} [urlName]
+     * @return {*}  {Promise<IUrl>}
+     * @memberof UrlService
+     */
     _getUrlData(urlNode, urlName) {
         return __awaiter(this, void 0, void 0, function* () {
             const element = yield urlNode.getElement();
-            // const elementName = element.name.get();
-            // if (urlName && urlName.toString().trim().length > 0 && elementName && elementName.toString().trim() !== urlName.toString().trim()) return;
             return {
                 element: element,
-                node: urlNode
+                node: urlNode,
             };
         });
     }
 }
 exports.UrlService = UrlService;
-const urlService = new UrlService;
+const urlService = new UrlService();
 exports.urlService = urlService;
 exports.default = UrlService;
 //# sourceMappingURL=UrlService.js.map

@@ -22,131 +22,188 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-import { SpinalNode, SpinalGraph, SpinalContext, SPINAL_RELATION_PTR_LST_TYPE } from "spinal-model-graph";
-import { SpinalURL } from "spinal-models-documentation";
-
+import { SpinalNode, SPINAL_RELATION_PTR_LST_TYPE } from 'spinal-model-graph';
+import { SpinalURL } from 'spinal-models-documentation';
+import type { IUrl } from '../interfaces';
 import { URL_RELATION, URL_TYPE } from './constants';
-import { IUrl } from "../interfaces";
 
 class UrlService {
+  constructor() {}
 
-    constructor() { }
+  /**
+   * @param {SpinalNode<any>} node
+   * @param {string} urlName
+   * @param {string} urlLink
+   * @return {*}  {Promise<IUrl>}
+   * @memberof UrlService
+   */
+  public async addURL(
+    node: SpinalNode<any>,
+    urlName: string,
+    urlLink: string
+  ): Promise<IUrl> {
+    urlName = urlName && urlName.toString().trim();
+    urlLink = urlLink && urlLink.toString().trim();
 
-    public async addURL(node: SpinalNode<any>, urlName: string, urlLink: string): Promise<IUrl> {
-        urlName = urlName && urlName.toString().trim();
-        urlLink = urlLink && urlLink.toString().trim();
+    const urlNameIsValid: boolean = urlName && urlName.length > 0;
+    const urlLinkIsValid: boolean = urlLink && urlLink.length > 0;
+    if (!(urlNameIsValid && urlLinkIsValid))
+      throw new Error('name or link is invalid');
 
-        const urlNameIsValid: boolean = urlName && urlName.length > 0;
-        const urlLinkIsValid: boolean = urlLink && urlLink.length > 0;
-        if (!(urlNameIsValid && urlLinkIsValid)) throw new Error("name or link is invalid");
+    const urlExist = await this.getURL(node, urlName);
 
-        const urlExist = await this.getURL(node, urlName);
+    if (urlExist)
+      throw new Error(`${urlName} already exist in ${node.getName().get()}`);
 
-        if (urlExist) throw new Error(`${urlName} already exist in ${node.getName().get()}`);
+    const urlModel = new SpinalURL(urlName, urlLink);
 
-        const urlModel = new SpinalURL(urlName, urlLink);
+    const urlNode = await node.addChild(
+      urlModel,
+      URL_RELATION,
+      SPINAL_RELATION_PTR_LST_TYPE
+    );
 
-        const urlNode = await node.addChild(urlModel, URL_RELATION, SPINAL_RELATION_PTR_LST_TYPE);
+    if (urlNode && urlNode.info) {
+      urlNode.info.name.set(`[URL] ${urlName}`);
+      urlNode.info.type.set(URL_TYPE);
+      return this._getUrlData(urlNode);
+    }
+  }
 
-        if (urlNode && urlNode.info) {
-            urlNode.info.name.set(`[URL] ${urlName}`);
-            urlNode.info.type.set(URL_TYPE);
-            return this._getUrlData(urlNode);
-        }
+  /**
+   * @param {SpinalNode<any>} node
+   * @param {string} [urlName]
+   * @return {*}  {(Promise<IUrl | IUrl[]>)}
+   * @memberof UrlService
+   */
+  public async getURL(
+    node: SpinalNode<any>,
+    urlName?: string
+  ): Promise<IUrl | IUrl[]> {
+    const urlNodes = await node.getChildren(URL_RELATION);
+    const promises = [];
+
+    for (const urlNode of urlNodes) {
+      promises.push(this._getUrlData(urlNode, urlName));
     }
 
-    public async getURL(node: SpinalNode<any>, urlName?: string): Promise<IUrl | IUrl[]> {
-
-        const urlNodes = await node.getChildren(URL_RELATION);
-        const promises = [];
-
-        for (const urlNode of urlNodes) {
-            promises.push(this._getUrlData(urlNode, urlName));
-        }
-
-        const values = await Promise.all(promises);
-        if (urlName && urlName.toString().trim().length) {
-            return values.find(({ element }) => {
-                const elementName = element.name.get();
-                return elementName.toString().trim() === urlName.toString().trim()
-            })
-        }
-        return values;
+    const values = await Promise.all(promises);
+    if (urlName && urlName.toString().trim().length) {
+      return values.find(({ element }) => {
+        const elementName = element.name.get();
+        return elementName.toString().trim() === urlName.toString().trim();
+      });
     }
+    return values;
+  }
 
-    public async updateUrl(argNode: SpinalNode<any>, label: string, newValue: string): Promise<IUrl> {
-        let _url = await this.getURL(argNode, label);
-        let url = Array.isArray(_url) ? _url[0] : _url;
+  /**
+   * @param {SpinalNode<any>} argNode
+   * @param {string} label
+   * @param {string} newValue
+   * @return {*}  {Promise<IUrl>}
+   * @memberof UrlService
+   */
+  public async updateUrl(
+    argNode: SpinalNode<any>,
+    label: string,
+    newValue: string
+  ): Promise<IUrl> {
+    let _url = await this.getURL(argNode, label);
+    let url = Array.isArray(_url) ? _url[0] : _url;
 
-        if (url) {
-            const { node, element } = url;
+    if (url) {
+      const { node, element } = url;
 
-            if (node && element) {
-                const elementUrl = element.URL.get();
-                const _newValue = newValue.toString().trim();
-                if (!!_newValue && elementUrl.toString().trim() !== _newValue) element.URL.set(_newValue);
-            }
+      if (node && element) {
+        const elementUrl = element.URL.get();
+        const _newValue = newValue.toString().trim();
+        if (!!_newValue && elementUrl.toString().trim() !== _newValue)
+          element.URL.set(_newValue);
+      }
 
-            return url;
-        }
+      return url;
     }
+  }
 
-    public getParents(node: SpinalNode<any>, url_relationNames: Array<string>) {
-        return node.getParents(url_relationNames);
+  /**
+   * @param {SpinalNode<any>} node
+   * @param {Array<string>} url_relationNames
+   * @return {*}  {Promise<SpinalNode<any>[]>}
+   * @memberof UrlService
+   */
+  public getParents(
+    node: SpinalNode<any>,
+    url_relationNames: Array<string>
+  ): Promise<SpinalNode<any>[]> {
+    return node.getParents(url_relationNames);
+  }
+
+  /**
+   * @param {SpinalNode<any>} node
+   * @return {*}  {Promise<SpinalNode<any>[]>}
+   * @memberof UrlService
+   */
+  public getParentGroup(node: SpinalNode<any>): Promise<SpinalNode<any>[]> {
+    return this.getParents(node, []);
+  }
+
+  /**
+   * @param {SpinalNode<any>} node
+   * @param {string} label
+   * @return {*}  {Promise<void>}
+   * @memberof UrlService
+   */
+  public async deleteURL(node: SpinalNode<any>, label: string): Promise<void> {
+    const url = await this.getURL(node, label);
+    if (Array.isArray(url)) return;
+
+    if (url && url.node) {
+      return url.node.removeFromGraph();
     }
+  }
 
-    public getParentGroup(node: SpinalNode<any>) {
-        return this.getParents(node, [])
-    }
+  /**
+   * @param {SpinalNode<any>} node
+   * @return {*}  {Promise<{ node: SpinalNode<any>; urls: SpinalURL[] }[]>}
+   * @memberof UrlService
+   */
+  public async getSharedUrls(
+    node: SpinalNode<any>
+  ): Promise<{ node: SpinalNode<any>; urls: SpinalURL[] }[]> {
+    const parents = await node.getParents();
+    const promises = parents.map(async (parent) => {
+      let _urls = await this.getURL(parent);
+      _urls = Array.isArray(_urls) ? _urls : [_urls];
+      return {
+        node: parent,
+        urls: _urls.map((el) => el.element),
+      };
+    });
 
-    public async deleteURL(node: SpinalNode<any>, label: string): Promise<void> {
-        // const nodeValid: boolean = node instanceof SpinalNode || node instanceof SpinalContext || node instanceof SpinalGraph;
-        // if (!nodeValid) return;
+    return Promise.all(promises);
+  }
 
-        const url = await this.getURL(node, label);
-        if (Array.isArray(url)) return;
+  //////////////////////////////////////////////////////////////////////////////////
+  //                                     PRIVATES                                 //
+  //////////////////////////////////////////////////////////////////////////////////
 
-        if (url && url.node) {
-            return url.node.removeFromGraph();
-        }
-    }
-
-    public async getSharedUrls(node: SpinalNode<any>): Promise<{ node: SpinalNode<any>; urls: SpinalURL[] }[]> {
-        const parents = await node.getParents();
-        const promises = parents.map(async parent => {
-            let _urls = await this.getURL(parent);
-            _urls = Array.isArray(_urls) ? _urls : [_urls];
-            return {
-                node: parent,
-                urls: _urls.map(el => el.element)
-            }
-        })
-
-        return Promise.all(promises);
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////
-    //                                     PRIVATES                                 //
-    //////////////////////////////////////////////////////////////////////////////////
-
-    public async _getUrlData(urlNode: any, urlName?: string): Promise<IUrl> {
-        const element = await urlNode.getElement();
-        // const elementName = element.name.get();
-
-        // if (urlName && urlName.toString().trim().length > 0 && elementName && elementName.toString().trim() !== urlName.toString().trim()) return;
-
-        return {
-            element: element,
-            node: urlNode
-        }
-    }
-
+  /**
+   * @param {*} urlNode
+   * @param {string} [urlName]
+   * @return {*}  {Promise<IUrl>}
+   * @memberof UrlService
+   */
+  public async _getUrlData(urlNode: any, urlName?: string): Promise<IUrl> {
+    const element = await urlNode.getElement();
+    return {
+      element: element,
+      node: urlNode,
+    };
+  }
 }
 
-const urlService = new UrlService;
+const urlService = new UrlService();
 
-export {
-    UrlService,
-    urlService
-}
+export { UrlService, urlService };
 export default UrlService;
