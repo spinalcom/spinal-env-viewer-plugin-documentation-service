@@ -22,6 +22,8 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
+
+
 export interface IViewState {
   viewState: string;
   objectState: string;
@@ -29,6 +31,6 @@ export interface IViewState {
 
 export interface IFileNote {
   viewPoint?: IViewState;
-  file: any;
+  file: File;
   directory: spinal.Directory<any>;
 }

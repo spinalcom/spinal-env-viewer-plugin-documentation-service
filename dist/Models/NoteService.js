@@ -44,9 +44,9 @@ class NoteService {
     /**
      * @param {SpinalNode<any>} node
      * @param {{ username: string; userId: number }} userInfo
-     * @param {string} note
+     * @param {string} note - Your message or File name
      * @param {string} [type]
-     * @param {spinal.Model} [file]
+     * @param {spinal.File} [file] - Spinal File
      * @param {string} [noteContextId]
      * @param {string} [noteGroupId]
      * @param {ViewStateInterface} [viewPoint]
@@ -54,15 +54,19 @@ class NoteService {
      * @memberof NoteService
      */
     addNote(node, userInfo, note, type, file, noteContextId, noteGroupId, viewPoint) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-                return;
-            const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, userInfo.userId.toString(), type, file, viewPoint);
-            const noteNode = yield node.addChild(spinalNote, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
-            if (noteNode instanceof spinal_env_viewer_graph_service_1.SpinalNode) {
-                noteNode.info.name.set(`message-${Date.now()}`);
-                noteNode.info.type.set(constants_1.NOTE_TYPE);
-            }
+                throw "node must be a SpinalNode";
+            if (!(file instanceof spinal.File))
+                throw "File must be a SpinalFile";
+            const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, (_a = userInfo.userId) === null || _a === void 0 ? void 0 : _a.toString(), type, file, viewPoint);
+            const noteNode = new spinal_env_viewer_graph_service_1.SpinalNode(`message-${Date.now()}`, constants_1.NOTE_TYPE, spinalNote);
+            yield node.addChild(noteNode, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+            // if (noteNode instanceof SpinalNode) {
+            //   noteNode.info.name.set(`message-${Date.now()}`);
+            //   noteNode.info.type.set(NOTE_TYPE);
+            // }
             yield this.createAttribute(noteNode, spinalNote);
             yield this.addNoteToContext(noteNode, noteContextId, noteGroupId);
             return noteNode;
@@ -79,6 +83,8 @@ class NoteService {
      */
     addFileAsNote(node, files, userInfo, noteContextId, noteGroupId) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (files instanceof FileList)
+                files = Array.from(files);
             const res = yield this.addFilesInDirectory(node, files);
             const promises = res.map((data) => {
                 const type = FileExplorer_1.FileExplorer._getFileType(data.file);
@@ -97,7 +103,7 @@ class NoteService {
      * @param {{ username: string, userId: number }} userInfo information of the user posting the note
      * @param {string} note note to add
      * @param {string} [type] type of the note
-     * @param {spinal.Model} [file] file to add to the node
+     * @param {File} [file] file to add to the node
      * @param {ViewStateInterface} [viewPoint] viewpoint to save in the note
      * @param {string} [noteContextId] contextID of the note
      * @param {string} [noteGroupId] groupID of the note
@@ -105,6 +111,7 @@ class NoteService {
      * @memberof NoteService
      */
     twinAddNote(node, userInfo, note, type, file, viewPoint, noteContextId, noteGroupId) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
                 return;
@@ -116,7 +123,7 @@ class NoteService {
             if (typeof viewPoint !== 'undefined') {
                 view = Object.keys(viewPoint).length > 0 ? viewPoint : undefined;
             }
-            const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, userInfo.userId.toString(), type, uploaded[0], view);
+            const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, (_a = userInfo.userId) === null || _a === void 0 ? void 0 : _a.toString(), type, uploaded[0], view);
             const spinalNode = yield node.addChild(spinalNote, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
             if (spinalNode && spinalNode.info) {
                 spinalNode.info.name.set(`message-${Date.now()}`);

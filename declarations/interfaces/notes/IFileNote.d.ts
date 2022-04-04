@@ -4,6 +4,6 @@ export interface IViewState {
 }
 export interface IFileNote {
     viewPoint?: IViewState;
-    file: any;
+    file: File;
     directory: spinal.Directory<any>;
 }

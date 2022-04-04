@@ -83,7 +83,7 @@ export class FileExplorer {
 
   /**
    * @static
-   * @param {File} file
+   * @param {File} file - HTML File
    * @return {*}  {string}
    * @memberof FileExplorer
    */
@@ -112,7 +112,7 @@ export class FileExplorer {
   /**
    * @static
    * @param {spinal.Directory<any>} directory
-   * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files
+   * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files - HTML Files
    * @return {*}  {spinal.File<any>[]}
    * @memberof FileExplorer
    */
@@ -141,7 +141,7 @@ export class FileExplorer {
   /**
    * @static
    * @param {SpinalNode<any>} node
-   * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files
+   * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files - HTML Files
    * @return {*}  {Promise<spinal.File<any>[]>}
    * @memberof FileExplorer
    */

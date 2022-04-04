@@ -7,9 +7,9 @@ declare class NoteService {
     /**
      * @param {SpinalNode<any>} node
      * @param {{ username: string; userId: number }} userInfo
-     * @param {string} note
+     * @param {string} note - Your message or File name
      * @param {string} [type]
-     * @param {spinal.Model} [file]
+     * @param {spinal.File} [file] - Spinal File
      * @param {string} [noteContextId]
      * @param {string} [noteGroupId]
      * @param {ViewStateInterface} [viewPoint]
@@ -19,7 +19,7 @@ declare class NoteService {
     addNote(node: SpinalNode<any>, userInfo: {
         username: string;
         userId: number;
-    }, note: string, type?: string, file?: spinal.Model, noteContextId?: string, noteGroupId?: string, viewPoint?: ViewStateInterface): Promise<SpinalNode<any>>;
+    }, note: string, type?: string, file?: spinal.File<spinal.Model>, noteContextId?: string, noteGroupId?: string, viewPoint?: ViewStateInterface): Promise<SpinalNode<any>>;
     /**
      * @param {SpinalNode<any>} node
      * @param {*} files
@@ -29,7 +29,7 @@ declare class NoteService {
      * @return {*}  {Promise<SpinalNode<any>[]>}
      * @memberof NoteService
      */
-    addFileAsNote(node: SpinalNode<any>, files: any, userInfo: {
+    addFileAsNote(node: SpinalNode<any>, files: File | File[] | FileList | any, userInfo: {
         username: string;
         userId: number;
     }, noteContextId?: string, noteGroupId?: string): Promise<SpinalNode<any>[]>;
@@ -40,7 +40,7 @@ declare class NoteService {
      * @param {{ username: string, userId: number }} userInfo information of the user posting the note
      * @param {string} note note to add
      * @param {string} [type] type of the note
-     * @param {spinal.Model} [file] file to add to the node
+     * @param {File} [file] file to add to the node
      * @param {ViewStateInterface} [viewPoint] viewpoint to save in the note
      * @param {string} [noteContextId] contextID of the note
      * @param {string} [noteGroupId] groupID of the note
@@ -50,7 +50,7 @@ declare class NoteService {
     twinAddNote(node: SpinalNode<any>, userInfo: {
         username: string;
         userId: number;
-    }, note: string, type?: string, file?: spinal.Model, viewPoint?: ViewStateInterface, noteContextId?: string, noteGroupId?: string): Promise<SpinalNode<any>>;
+    }, note: string, type?: string, file?: File, viewPoint?: ViewStateInterface, noteContextId?: string, noteGroupId?: string): Promise<SpinalNode<any>>;
     /**
      * @param {SpinalNode<any>} node
      * @return {*}  {Promise<{ element: SpinalNote; selectedNode: SpinalNode<any> }[]>}

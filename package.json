@@ -4,10 +4,11 @@
   "author": "",
   "dependencies": {
     "spinal-core-connectorjs_type": "git+https://github.com/spinalcom/spinal-core-connectorjs_type.git",
+    "spinal-env-viewer-context-geographic-service": "git+https://github.com/spinalcom/spinal-env-viewer-context-geographic-service.git",
     "spinal-env-viewer-graph-service": "git+https://github.com/spinalcom/Spinal-Graph-Service.git",
     "spinal-env-viewer-plugin-group-manager-service": "git+https://github.com/spinalcom/spinal-env-viewer-plugin-group-manager-service.git",
-    "spinal-env-viewer-context-geographic-service": "git+https://github.com/spinalcom/spinal-env-viewer-context-geographic-service.git",
-    "spinal-models-documentation": "git+https://github.com/spinalcom/spinal-models-documentation.git"
+    "spinal-models-documentation": "git+https://github.com/spinalcom/spinal-models-documentation.git",
+    "typedoc": "^0.22.13"
   },
   "description": "",
   "devDependencies": {
