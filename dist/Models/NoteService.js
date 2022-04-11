@@ -58,7 +58,7 @@ class NoteService {
         return __awaiter(this, void 0, void 0, function* () {
             if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
                 throw "node must be a SpinalNode";
-            if (!(file instanceof spinal.File))
+            if (file && !(file instanceof spinal.File))
                 throw "File must be a SpinalFile";
             const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, (_a = userInfo.userId) === null || _a === void 0 ? void 0 : _a.toString(), type, file, viewPoint);
             const noteNode = new spinal_env_viewer_graph_service_1.SpinalNode(`message-${Date.now()}`, constants_1.NOTE_TYPE, spinalNote);

@@ -60,7 +60,7 @@ class NoteService {
     viewPoint?: ViewStateInterface
   ): Promise<SpinalNode<any>> {
     if (!(node instanceof SpinalNode)) throw "node must be a SpinalNode";
-    if (!(file instanceof spinal.File)) throw "File must be a SpinalFile";
+    if (file && !(file instanceof spinal.File)) throw "File must be a SpinalFile";
 
     const spinalNote = new SpinalNote(
       userInfo.username,
