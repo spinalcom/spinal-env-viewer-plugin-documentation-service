@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import { File as spinalFile } from 'spinal-core-connectorjs_type';
 import { SpinalNode } from 'spinal-env-viewer-graph-service';
 export declare class FileExplorer {
     /**
@@ -30,7 +31,7 @@ export declare class FileExplorer {
      * @return {*}  {spinal.File<any>[]}
      * @memberof FileExplorer
      */
-    static addFileUpload(directory: spinal.Directory<any>, files: (File | {
+    static addFileUpload(directory: spinal.Directory<any>, files: (spinalFile | {
         name: string;
         buffer: Buffer;
     })[] | FileList | any): spinal.File<any>[];
@@ -41,7 +42,7 @@ export declare class FileExplorer {
      * @return {*}  {Promise<spinal.File<any>[]>}
      * @memberof FileExplorer
      */
-    static uploadFiles(node: SpinalNode<any>, files: (File | {
+    static uploadFiles(node: SpinalNode<any>, files: (spinalFile | {
         name: string;
         buffer: Buffer;
     })[] | FileList | any): Promise<spinal.File<any>[]>;

@@ -21,7 +21,11 @@
  * with this file. If not, see
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
-import { Directory, File, Path } from 'spinal-core-connectorjs_type';
+import {
+  Directory,
+  File as spinalFile,
+  Path,
+} from 'spinal-core-connectorjs_type';
 import {
   SpinalNode,
   SPINAL_RELATION_PTR_LST_TYPE,
@@ -118,18 +122,19 @@ export class FileExplorer {
    */
   public static addFileUpload(
     directory: spinal.Directory<any>,
-    files: (File | { name: string; buffer: Buffer })[] | FileList | any
+    files: (spinalFile | { name: string; buffer: Buffer })[] | FileList | any
   ): spinal.File<any>[] {
     const res = [];
-    if (!Array.isArray(files) && !(files instanceof FileList)) files = [files];
-
+    if (!Array.isArray(files)) files = [files];
+    if (typeof FileList !== 'undefined' && !(files instanceof FileList))
+      files = [files];
     for (let i = 0; i < files.length; i++) {
       const element = files[i];
 
-      let filePath = element.buffer
+      let filePath: spinal.Path = element.buffer
         ? new Path(element.buffer)
         : new Path(element);
-      let myFile = new File(element.name, filePath, undefined);
+      let myFile = new spinalFile(element.name, filePath, undefined);
 
       directory.push(myFile);
       res.push(myFile);
@@ -147,7 +152,7 @@ export class FileExplorer {
    */
   public static async uploadFiles(
     node: SpinalNode<any>,
-    files: (File | { name: string; buffer: Buffer })[] | FileList | any
+    files: (spinalFile | { name: string; buffer: Buffer })[] | FileList | any
   ): Promise<spinal.File<any>[]> {
     if (!Array.isArray(files)) files = [files];
 

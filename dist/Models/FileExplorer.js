@@ -119,7 +119,9 @@ class FileExplorer {
      */
     static addFileUpload(directory, files) {
         const res = [];
-        if (!Array.isArray(files) && !(files instanceof FileList))
+        if (!Array.isArray(files))
+            files = [files];
+        if (typeof FileList !== 'undefined' && !(files instanceof FileList))
             files = [files];
         for (let i = 0; i < files.length; i++) {
             const element = files[i];

@@ -1,17 +1,19 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "*": ["types/*"]
-    },
-    "target": "es2015",
+    "baseUrl": "./",
+    "skipLibCheck": true,
+    "target": "es6",
     "module": "commonjs",
     "outDir": "dist",
-    "sourceMap": true,
+    "declarationDir": "declarations",
+    "esModuleInterop": false,
+    "typeRoots": [
+      "node_modules/@types",
+      "src/types",
+      "jest"
+    ],
     "declaration": true,
-    "declarationDir": "./declarations",
-    "lib": ["dom"]
-
+    "sourceMap": true
   },
   "include": [
     "src/**/*.ts",

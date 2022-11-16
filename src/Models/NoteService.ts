@@ -22,20 +22,36 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-import type { SpinalNodeRef } from 'spinal-env-viewer-graph-service';
-import { SpinalNode, SpinalGraphService, SPINAL_RELATION_PTR_LST_TYPE } from 'spinal-env-viewer-graph-service';
+import type {
+  SpinalContext,
+  SpinalNodeRef,
+} from 'spinal-env-viewer-graph-service';
+import {
+  SpinalNode,
+  SpinalGraphService,
+  SPINAL_RELATION_PTR_LST_TYPE,
+} from 'spinal-env-viewer-graph-service';
 import { groupManagerService } from 'spinal-env-viewer-plugin-group-manager-service';
 import { SpinalNote } from 'spinal-models-documentation';
-import type { ViewStateInterface, SpinalAttribute } from 'spinal-models-documentation';
+import type {
+  ViewStateInterface,
+  SpinalAttribute,
+} from 'spinal-models-documentation';
 
 import type { IFileNote } from '../interfaces';
-import { NOTE_CATEGORY_NAME, NOTE_CONTEXT_NAME, NOTE_GROUP_NAME, NOTE_RELATION, NOTE_TYPE } from './constants';
+import {
+  NOTE_CATEGORY_NAME,
+  NOTE_CONTEXT_NAME,
+  NOTE_GROUP_NAME,
+  NOTE_RELATION,
+  NOTE_TYPE,
+} from './constants';
 import { FileExplorer } from './FileExplorer';
 
 const globalType: any = typeof window === 'undefined' ? global : window;
 
 class NoteService {
-  constructor() { }
+  constructor() {}
 
   /**
    * @param {SpinalNode<any>} node
@@ -59,8 +75,9 @@ class NoteService {
     noteGroupId?: string,
     viewPoint?: ViewStateInterface
   ): Promise<SpinalNode<any>> {
-    if (!(node instanceof SpinalNode)) throw "node must be a SpinalNode";
-    if (file && !(file instanceof spinal.File)) throw "File must be a SpinalFile";
+    if (!(node instanceof SpinalNode)) throw 'node must be a SpinalNode';
+    if (file && !(file instanceof spinal.File))
+      throw 'File must be a SpinalFile';
 
     const spinalNote = new SpinalNote(
       userInfo.username,
@@ -71,12 +88,12 @@ class NoteService {
       viewPoint
     );
 
-    const noteNode = new SpinalNode(`message-${Date.now()}`, NOTE_TYPE, spinalNote);
-    await node.addChild(
-      noteNode,
-      NOTE_RELATION,
-      SPINAL_RELATION_PTR_LST_TYPE
+    const noteNode = new SpinalNode(
+      `message-${Date.now()}`,
+      NOTE_TYPE,
+      spinalNote
     );
+    await node.addChild(noteNode, NOTE_RELATION, SPINAL_RELATION_PTR_LST_TYPE);
 
     // if (noteNode instanceof SpinalNode) {
     //   noteNode.info.name.set(`message-${Date.now()}`);
@@ -105,7 +122,8 @@ class NoteService {
     noteContextId?: string,
     noteGroupId?: string
   ): Promise<SpinalNode<any>[]> {
-    if (files instanceof FileList) files = Array.from(files);
+    if (typeof FileList !== 'undefined' && files instanceof FileList)
+      files = Array.from(files);
     const res = await this.addFilesInDirectory(node, files);
     const promises = res.map(
       (data: { viewPoint: any; file: any; directory: any }) => {
@@ -352,7 +370,7 @@ class NoteService {
    * @return {*}  {Promise<SpinalNodeRef>}
    * @memberof NoteService
    */
-  public createDefaultContext(): Promise<SpinalNodeRef> {
+  public createDefaultContext(): Promise<SpinalContext> {
     return groupManagerService.createGroupContext(NOTE_CONTEXT_NAME, NOTE_TYPE);
   }
 
@@ -360,7 +378,7 @@ class NoteService {
    * @return {*}  {Promise<SpinalNodeRef>}
    * @memberof NoteService
    */
-  public async createDefaultCategory(): Promise<SpinalNodeRef> {
+  public async createDefaultCategory(): Promise<SpinalNode> {
     const context = await this.createDefaultContext();
     return groupManagerService.addCategory(
       context.getId().get(),
@@ -373,7 +391,7 @@ class NoteService {
    * @return {*}  {Promise<SpinalNodeRef>}
    * @memberof NoteService
    */
-  public async createDefaultGroup(): Promise<SpinalNodeRef> {
+  public async createDefaultGroup(): Promise<SpinalNode> {
     const context = await this.createDefaultContext();
     const category = await this.createDefaultCategory();
 

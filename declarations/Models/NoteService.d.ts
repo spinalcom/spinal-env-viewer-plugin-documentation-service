@@ -1,4 +1,4 @@
-import type { SpinalNodeRef } from 'spinal-env-viewer-graph-service';
+import type { SpinalContext } from 'spinal-env-viewer-graph-service';
 import { SpinalNode } from 'spinal-env-viewer-graph-service';
 import { SpinalNote } from 'spinal-models-documentation';
 import type { ViewStateInterface, SpinalAttribute } from 'spinal-models-documentation';
@@ -115,17 +115,17 @@ declare class NoteService {
      * @return {*}  {Promise<SpinalNodeRef>}
      * @memberof NoteService
      */
-    createDefaultContext(): Promise<SpinalNodeRef>;
+    createDefaultContext(): Promise<SpinalContext>;
     /**
      * @return {*}  {Promise<SpinalNodeRef>}
      * @memberof NoteService
      */
-    createDefaultCategory(): Promise<SpinalNodeRef>;
+    createDefaultCategory(): Promise<SpinalNode>;
     /**
      * @return {*}  {Promise<SpinalNodeRef>}
      * @memberof NoteService
      */
-    createDefaultGroup(): Promise<SpinalNodeRef>;
+    createDefaultGroup(): Promise<SpinalNode>;
     /**
      * @param {SpinalNode<any>} spinalNode
      * @param {SpinalNote} spinalNote

@@ -1,8 +1,9 @@
 {
-  "version": "1.4.14",
+  "version": "1.4.15",
   "types": "declarations",
   "author": "",
   "dependencies": {
+    "@types/node": "^18.11.9",
     "spinal-core-connectorjs_type": "git+https://github.com/spinalcom/spinal-core-connectorjs_type.git",
     "spinal-env-viewer-context-geographic-service": "git+https://github.com/spinalcom/spinal-env-viewer-context-geographic-service.git",
     "spinal-env-viewer-graph-service": "git+https://github.com/spinalcom/Spinal-Graph-Service.git",
