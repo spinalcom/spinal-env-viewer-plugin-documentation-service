@@ -118,11 +118,11 @@ class FileExplorer {
      * @memberof FileExplorer
      */
     static addFileUpload(directory, files) {
+        const isFileList = typeof FileList !== 'undefined' && files instanceof FileList;
+        if (!isFileList && !Array.isArray(files))
+            files = [files];
+        console.log("files", files);
         const res = [];
-        if (!Array.isArray(files))
-            files = [files];
-        if (typeof FileList !== 'undefined' && !(files instanceof FileList))
-            files = [files];
         for (let i = 0; i < files.length; i++) {
             const element = files[i];
             let filePath = element.buffer
@@ -143,7 +143,8 @@ class FileExplorer {
      */
     static uploadFiles(node, files) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!Array.isArray(files))
+            const isFileList = typeof FileList !== 'undefined' && files instanceof FileList;
+            if (!isFileList && !Array.isArray(files))
                 files = [files];
             const directory = yield this._getOrCreateFileDirectory(node);
             return this.addFileUpload(directory, files);

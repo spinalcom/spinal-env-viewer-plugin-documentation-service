@@ -124,10 +124,13 @@ export class FileExplorer {
     directory: spinal.Directory<any>,
     files: (spinalFile | { name: string; buffer: Buffer })[] | FileList | any
   ): spinal.File<any>[] {
+    const isFileList = typeof FileList !== 'undefined' && files instanceof FileList;
+
+    if (!isFileList && !Array.isArray(files)) files = [files];
+
+    console.log("files", files)
     const res = [];
-    if (!Array.isArray(files)) files = [files];
-    if (typeof FileList !== 'undefined' && !(files instanceof FileList))
-      files = [files];
+
     for (let i = 0; i < files.length; i++) {
       const element = files[i];
 
@@ -154,7 +157,8 @@ export class FileExplorer {
     node: SpinalNode<any>,
     files: (spinalFile | { name: string; buffer: Buffer })[] | FileList | any
   ): Promise<spinal.File<any>[]> {
-    if (!Array.isArray(files)) files = [files];
+    const isFileList = typeof FileList !== 'undefined' && files instanceof FileList;
+    if (!isFileList && !Array.isArray(files)) files = [files];
 
     const directory = await this._getOrCreateFileDirectory(node);
     return this.addFileUpload(directory, files);
