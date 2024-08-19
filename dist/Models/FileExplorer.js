@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileExplorer = void 0;
 /*
@@ -43,19 +34,17 @@ class FileExplorer {
      * @return {*}  {Promise<spinal.Directory<spinal.File<spinal.Path>>>}
      * @memberof FileExplorer
      */
-    static getDirectory(selectedNode) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (selectedNode != undefined) {
-                const fileNode = yield selectedNode.getChildren('hasFiles');
-                if (fileNode.length == 0) {
-                    return undefined;
-                }
-                else {
-                    let directory = yield fileNode[0].getElement();
-                    return directory;
-                }
+    static async getDirectory(selectedNode) {
+        if (selectedNode != undefined) {
+            const fileNode = await selectedNode.getChildren('hasFiles');
+            if (fileNode.length == 0) {
+                return undefined;
             }
-        });
+            else {
+                let directory = await fileNode[0].getElement();
+                return directory;
+            }
+        }
     }
     /**
      * @static
@@ -63,26 +52,22 @@ class FileExplorer {
      * @return {*}  {Promise<number>}
      * @memberof FileExplorer
      */
-    static getNbChildren(selectedNode) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const fileNode = yield selectedNode.getChildren('hasFiles');
-            return fileNode.length;
-        });
+    static async getNbChildren(selectedNode) {
+        const fileNode = await selectedNode.getChildren('hasFiles');
+        return fileNode.length;
     }
-    static createDirectory(selectedNode) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let nbNode = yield this.getNbChildren(selectedNode);
-            if (nbNode == 0) {
-                let myDirectory = new spinal_core_connectorjs_type_1.Directory();
-                let node = yield selectedNode.addChild(myDirectory, 'hasFiles', spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
-                node.info.name.set('[Files]');
-                node.info.type.set('SpinalFiles');
-                return myDirectory;
-            }
-            else {
-                return this.getDirectory(selectedNode);
-            }
-        });
+    static async createDirectory(selectedNode) {
+        let nbNode = await this.getNbChildren(selectedNode);
+        if (nbNode == 0) {
+            let myDirectory = new spinal_core_connectorjs_type_1.Directory();
+            let node = await selectedNode.addChild(myDirectory, 'hasFiles', spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+            node.info.name.set('[Files]');
+            node.info.type.set('SpinalFiles');
+            return myDirectory;
+        }
+        else {
+            return this.getDirectory(selectedNode);
+        }
     }
     /**
      * @static
@@ -141,23 +126,19 @@ class FileExplorer {
      * @return {*}  {Promise<spinal.File<any>[]>}
      * @memberof FileExplorer
      */
-    static uploadFiles(node, files) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const isFileList = typeof FileList !== 'undefined' && files instanceof FileList;
-            if (!isFileList && !Array.isArray(files))
-                files = [files];
-            const directory = yield this._getOrCreateFileDirectory(node);
-            return this.addFileUpload(directory, files);
-        });
+    static async uploadFiles(node, files) {
+        const isFileList = typeof FileList !== 'undefined' && files instanceof FileList;
+        if (!isFileList && !Array.isArray(files))
+            files = [files];
+        const directory = await this._getOrCreateFileDirectory(node);
+        return this.addFileUpload(directory, files);
     }
-    static _getOrCreateFileDirectory(node) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let directory = yield FileExplorer.getDirectory(node);
-            if (!directory) {
-                directory = yield FileExplorer.createDirectory(node);
-            }
-            return directory;
-        });
+    static async _getOrCreateFileDirectory(node) {
+        let directory = await FileExplorer.getDirectory(node);
+        if (!directory) {
+            directory = await FileExplorer.createDirectory(node);
+        }
+        return directory;
     }
 }
 exports.FileExplorer = FileExplorer;

@@ -44,7 +44,7 @@ import {
  * @class AttributeService
  */
 class AttributeService {
-  constructor() {}
+  constructor() { }
 
   /**
    * This method creates a category and link it to the node passed in parameter. It returs an object of category
@@ -599,8 +599,8 @@ class AttributeService {
         !categoryName || categoryName.length === 0
           ? categories
           : categories.filter(
-              (el) => el.nameCat.toString().trim() === categoryName
-            );
+            (el) => el.nameCat.toString().trim() === categoryName
+          );
       return {
         parentNode: parent,
         categories: filterCategory,
@@ -684,26 +684,23 @@ class AttributeService {
 
   /**
    * Takes a node of Building and creates all attributes
-   * @param {SpinalNode<any>} node
+   * @param {SpinalNode<any> | string} node node or nodeId
    * @return {*}  {Promise<SpinalAttribute[]>}
    * @memberof AttributeService
    */
   public async setBuildingInformationAttributes(
-    node: SpinalNode<any>
+    node: SpinalNode<any> | string
   ): Promise<SpinalAttribute[]> {
     if (!(node instanceof SpinalNode))
       node = SpinalGraphService.getRealNode(node);
 
-    if (
-      node &&
-      node.getType().get() === geographicService.constants.BUILDING_TYPE
-    ) {
+    if (node && node.getType().get() === geographicService.constants.BUILDING_TYPE) {
       const category = await this.addCategoryAttribute(
         node,
         BUILDINGINFORMATIONCATNAME
       );
       const promises = BUILDINGINFORMATION.map((el) => {
-        return this.addAttributeByCategory(node, category, el, 'To configure');
+        return this.addAttributeByCategory(node as SpinalNode<any>, category, el, 'To configure');
       });
 
       await Promise.all(promises);
@@ -736,6 +733,97 @@ class AttributeService {
 
     return data.find((el) => el.label.get() === label);
   }
+
+
+  /**
+   * Retrieves attributes based on a given node and document schema.
+   * e.g. `getAttrBySchema(node, { 'Cat1': ['Attr1', 'Attr2'] as const, 'Cat2': ['Attr3'] as const })`
+   * => `{ 'Cat1': { 'Attr1': 'Value1', 'Attr2': 'Value2' }, 'Cat2': { 'Attr3': 'Value3' } }`
+   * 
+   * @template T - The type of the document schema.
+   * @param {SpinalNode} node - The node to retrieve attributes from.
+   * @param {T} docSchema - The document schema to match attributes against.
+   * @returns {Promise<{ [K in keyof T]: { [V in T[K][number]]: string; }; }>} - A promise that resolves to an object containing the matched attributes.
+   */
+  public async getAttrBySchema<T extends Record<string, readonly string[]>>(node: SpinalNode, docSchema: T): Promise<{
+    [K in keyof T]: {
+      [V in T[K][number]]: string;
+    };
+  }> {
+    const cats = await node.getChildren(NODE_TO_CATEGORY_RELATION);
+    const promises: Promise<{
+      key: string;
+      attrs: Lst<SpinalAttribute>;
+    }>[] = [];
+    for (const key in docSchema) {
+      if (Object.prototype.hasOwnProperty.call(docSchema, key)) {
+        const catFound = cats.find((cat) => cat.info.name.get() === key);
+        if (catFound) {
+          promises.push(catFound.getElement(true).then((attrs) => {
+            return {
+              key,
+              attrs
+            }
+          }))
+        }
+      }
+    }
+    const res = await Promise.all(promises);
+    const docRes: any = {};
+    for (const { key, attrs } of res) {
+      docRes[key] = {};
+      for (const attr of attrs) {
+        if (docSchema[key].includes(attr.label.get())) {
+          const attrName = attr.label.get();
+          const attrValue = attr.value.get();
+          docRes[key][attrName] = attrValue;
+        }
+      }
+    }
+    return docRes;
+  }
+
+
+  /**
+   * Creates or updates attributes and categories in bulk for a given node.
+   * 
+   * @param node - The SpinalNode to create or update attributes and categories for.
+   * @param categoryName - The name of the category.
+   * @param attrsToUp - The attributes to create or update, represented as a record where the keys are the attribute labels and the values are the attribute values.
+   * @returns A Promise that resolves when the attributes and categories have been created or updated.
+   */
+  public async createOrUpdateAttrsAndCategories(node: SpinalNode<any>, categoryName: string, attrsToUp: Record<string, string>): Promise<void> {
+    async function getCatNode(node: SpinalNode, name: string) {
+      const children = await node.getChildren(NODE_TO_CATEGORY_RELATION);
+      for (const child of children) {
+        if (child.info.name.get() === name) return child;
+      }
+    }
+    const catNode = await getCatNode(node, categoryName);
+    let cat: ICategory;
+    if (!catNode) {
+      cat = await attributeService.addCategoryAttribute(node, categoryName);
+    } else {
+      cat = {
+        element: <Lst>(await catNode.getElement(true)),
+        nameCat: categoryName,
+        node
+      }
+    }
+    const attrs = await attributeService.getAttributesByCategory(node, cat);
+    for (const label in attrsToUp) {
+      if (Object.prototype.hasOwnProperty.call(attrsToUp, label)) {
+        const value = attrsToUp[label];
+        let attr = attrs.find((itm) => itm.label.get() === label);
+        if (attr) {
+          attr.value.set(value);
+        } else {
+          attributeService.addAttributeByCategory(node, cat, label, value);
+        }
+      }
+    }
+  }
+
 
   ///////////////////////////////////////////////////////////////////
   //              ATTRIBUTES LINKED DIRECTLY TO NODE               //

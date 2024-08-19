@@ -22,15 +22,6 @@
  * with this file. If not, see
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.noteService = exports.NoteService = void 0;
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
@@ -53,24 +44,21 @@ class NoteService {
      * @return {*}  {Promise<SpinalNode<any>>}
      * @memberof NoteService
      */
-    addNote(node, userInfo, note, type, file, noteContextId, noteGroupId, viewPoint) {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-                throw 'node must be a SpinalNode';
-            if (file && !(file instanceof spinal.File))
-                throw 'File must be a SpinalFile';
-            const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, (_a = userInfo.userId) === null || _a === void 0 ? void 0 : _a.toString(), type, file, viewPoint);
-            const noteNode = new spinal_env_viewer_graph_service_1.SpinalNode(`message-${Date.now()}`, constants_1.NOTE_TYPE, spinalNote);
-            yield node.addChild(noteNode, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
-            // if (noteNode instanceof SpinalNode) {
-            //   noteNode.info.name.set(`message-${Date.now()}`);
-            //   noteNode.info.type.set(NOTE_TYPE);
-            // }
-            yield this.createAttribute(noteNode, spinalNote);
-            yield this.addNoteToContext(noteNode, noteContextId, noteGroupId);
-            return noteNode;
-        });
+    async addNote(node, userInfo, note, type, file, noteContextId, noteGroupId, viewPoint) {
+        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
+            throw 'node must be a SpinalNode';
+        if (file && !(file instanceof spinal.File))
+            throw 'File must be a SpinalFile';
+        const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, userInfo.userId?.toString(), type, file, viewPoint);
+        const noteNode = new spinal_env_viewer_graph_service_1.SpinalNode(`message-${Date.now()}`, constants_1.NOTE_TYPE, spinalNote);
+        await node.addChild(noteNode, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+        // if (noteNode instanceof SpinalNode) {
+        //   noteNode.info.name.set(`message-${Date.now()}`);
+        //   noteNode.info.type.set(NOTE_TYPE);
+        // }
+        await this.createAttribute(noteNode, spinalNote);
+        await this.addNoteToContext(noteNode, noteContextId, noteGroupId);
+        return noteNode;
     }
     /**
      * @param {SpinalNode<any>} node
@@ -81,20 +69,18 @@ class NoteService {
      * @return {*}  {Promise<SpinalNode<any>[]>}
      * @memberof NoteService
      */
-    addFileAsNote(node, files, userInfo, noteContextId, noteGroupId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (typeof FileList !== 'undefined' && files instanceof FileList)
-                files = Array.from(files);
-            const res = yield this.addFilesInDirectory(node, files);
-            const promises = res.map((data) => {
-                const type = FileExplorer_1.FileExplorer._getFileType(data.file);
-                let files_1 = FileExplorer_1.FileExplorer.addFileUpload(data.directory, [data.file]);
-                let file_1 = files_1.length > 0 ? files_1[0] : undefined;
-                const viewPoint = Object.keys(data.viewPoint).length > 0 ? data.viewPoint : undefined;
-                return this.addNote(node, userInfo, data.file.name, type, file_1, noteContextId, noteGroupId, viewPoint);
-            });
-            return yield Promise.all(promises);
+    async addFileAsNote(node, files, userInfo, noteContextId, noteGroupId) {
+        if (typeof FileList !== 'undefined' && files instanceof FileList)
+            files = Array.from(files);
+        const res = await this.addFilesInDirectory(node, files);
+        const promises = res.map((data) => {
+            const type = FileExplorer_1.FileExplorer._getFileType(data.file);
+            let files_1 = FileExplorer_1.FileExplorer.addFileUpload(data.directory, [data.file]);
+            let file_1 = files_1.length > 0 ? files_1[0] : undefined;
+            const viewPoint = Object.keys(data.viewPoint).length > 0 ? data.viewPoint : undefined;
+            return this.addNote(node, userInfo, data.file.name, type, file_1, noteContextId, noteGroupId, viewPoint);
         });
+        return await Promise.all(promises);
     }
     /**
      * Adding a note to a node
@@ -110,60 +96,55 @@ class NoteService {
      * @return {*} {Promise<SpinalNode<any>>} note as a node
      * @memberof NoteService
      */
-    twinAddNote(node, userInfo, note, type, file, viewPoint, noteContextId, noteGroupId) {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-                return;
-            let uploaded = undefined;
-            if (typeof file !== 'undefined') {
-                uploaded = FileExplorer_1.FileExplorer.addFileUpload(yield FileExplorer_1.FileExplorer._getOrCreateFileDirectory(node), [file]);
-            }
-            let view = undefined;
-            if (typeof viewPoint !== 'undefined') {
-                view = Object.keys(viewPoint).length > 0 ? viewPoint : undefined;
-            }
-            const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, (_a = userInfo.userId) === null || _a === void 0 ? void 0 : _a.toString(), type, uploaded[0], view);
-            const spinalNode = yield node.addChild(spinalNote, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
-            if (spinalNode && spinalNode.info) {
-                spinalNode.info.name.set(`message-${Date.now()}`);
-                spinalNode.info.type.set(constants_1.NOTE_TYPE);
-            }
-            yield this.createAttribute(spinalNode, spinalNote);
-            spinal_env_viewer_graph_service_1.SpinalGraphService._addNode(spinalNode);
-            let contextId = noteContextId;
-            let groupId = noteGroupId;
-            if (typeof contextId === 'undefined') {
-                const noteContext = yield this.createDefaultContext();
-                contextId = noteContext.getId().get();
-            }
-            if (typeof groupId === 'undefined') {
-                const groupNode = yield this.createDefaultGroup();
-                groupId = groupNode.getId().get();
-            }
-            yield this.linkNoteToGroup(contextId, groupId, spinalNode.getId().get());
-            return spinalNode;
-        });
+    async twinAddNote(node, userInfo, note, type, file, viewPoint, noteContextId, noteGroupId) {
+        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
+            return;
+        let uploaded = undefined;
+        if (typeof file !== 'undefined') {
+            uploaded = FileExplorer_1.FileExplorer.addFileUpload(await FileExplorer_1.FileExplorer._getOrCreateFileDirectory(node), [file]);
+        }
+        let view = undefined;
+        if (typeof viewPoint !== 'undefined') {
+            view = Object.keys(viewPoint).length > 0 ? viewPoint : undefined;
+        }
+        const spinalNote = new spinal_models_documentation_1.SpinalNote(userInfo.username, note, userInfo.userId?.toString(), type, uploaded[0], view);
+        const spinalNode = await node.addChild(spinalNote, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+        if (spinalNode && spinalNode.info) {
+            spinalNode.info.name.set(`message-${Date.now()}`);
+            spinalNode.info.type.set(constants_1.NOTE_TYPE);
+        }
+        await this.createAttribute(spinalNode, spinalNote);
+        spinal_env_viewer_graph_service_1.SpinalGraphService._addNode(spinalNode);
+        let contextId = noteContextId;
+        let groupId = noteGroupId;
+        if (typeof contextId === 'undefined') {
+            const noteContext = await this.createDefaultContext();
+            contextId = noteContext.getId().get();
+        }
+        if (typeof groupId === 'undefined') {
+            const groupNode = await this.createDefaultGroup();
+            groupId = groupNode.getId().get();
+        }
+        await this.linkNoteToGroup(contextId, groupId, spinalNode.getId().get());
+        return spinalNode;
     }
     /**
      * @param {SpinalNode<any>} node
      * @return {*}  {Promise<{ element: SpinalNote; selectedNode: SpinalNode<any> }[]>}
      * @memberof NoteService
      */
-    getNotes(node) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-                return;
-            const messagesNodes = yield node.getChildren(constants_1.NOTE_RELATION);
-            const promises = messagesNodes.map((el) => __awaiter(this, void 0, void 0, function* () {
-                const element = yield el.getElement();
-                return {
-                    element: element,
-                    selectedNode: el,
-                };
-            }));
-            return Promise.all(promises);
+    async getNotes(node) {
+        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
+            return;
+        const messagesNodes = await node.getChildren(constants_1.NOTE_RELATION);
+        const promises = messagesNodes.map(async (el) => {
+            const element = await el.getElement();
+            return {
+                element: element,
+                selectedNode: el,
+            };
         });
+        return Promise.all(promises);
     }
     /**
      * @param {SpinalNote} element
@@ -184,20 +165,18 @@ class NoteService {
      * @return {*}  {Promise<{ old_group: string; newGroup: string }>}
      * @memberof NoteService
      */
-    addNoteToContext(noteNode, contextId, groupId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            //@ts-ignore
-            spinal_env_viewer_graph_service_1.SpinalGraphService._addNode(noteNode);
-            if (typeof contextId === 'undefined') {
-                const noteContext = yield this.createDefaultContext();
-                contextId = noteContext.getId().get();
-            }
-            if (typeof groupId === 'undefined') {
-                const groupNode = yield this.createDefaultGroup();
-                groupId = groupNode.getId().get();
-            }
-            return this.linkNoteToGroup(contextId, groupId, noteNode.getId().get());
-        });
+    async addNoteToContext(noteNode, contextId, groupId) {
+        //@ts-ignore
+        spinal_env_viewer_graph_service_1.SpinalGraphService._addNode(noteNode);
+        if (typeof contextId === 'undefined') {
+            const noteContext = await this.createDefaultContext();
+            contextId = noteContext.getId().get();
+        }
+        if (typeof groupId === 'undefined') {
+            const groupNode = await this.createDefaultGroup();
+            groupId = groupNode.getId().get();
+        }
+        return this.linkNoteToGroup(contextId, groupId, noteNode.getId().get());
     }
     /**
      * @param {SpinalNode<any>} noteContext
@@ -220,18 +199,16 @@ class NoteService {
      * @return {*}  {Promise<{ [key: string]: SpinalNode<any>[] }>}
      * @memberof NoteService
      */
-    getNotesReferencesNodes(notes) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!Array.isArray(notes))
-                notes = [notes];
-            const obj = {};
-            const promises = notes.map((note) => __awaiter(this, void 0, void 0, function* () {
-                obj[note.getId().get()] = yield note.getParents(constants_1.NOTE_RELATION);
-                return;
-            }));
-            yield Promise.all(promises);
-            return obj;
+    async getNotesReferencesNodes(notes) {
+        if (!Array.isArray(notes))
+            notes = [notes];
+        const obj = {};
+        const promises = notes.map(async (note) => {
+            obj[note.getId().get()] = await note.getParents(constants_1.NOTE_RELATION);
+            return;
         });
+        await Promise.all(promises);
+        return obj;
     }
     /**
      * Deletes a note from a node
@@ -239,14 +216,12 @@ class NoteService {
      * @param {SpinalNode<any>} note note to delete
      * @memberof NoteService
      */
-    delNote(node, note) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-                throw new Error('Node must be a SpinalNode.');
-            if (!(note instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-                throw new Error('Note must be a SpinalNode.');
-            yield node.removeChild(note, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
-        });
+    async delNote(node, note) {
+        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
+            throw new Error('Node must be a SpinalNode.');
+        if (!(note instanceof spinal_env_viewer_graph_service_1.SpinalNode))
+            throw new Error('Note must be a SpinalNode.');
+        await node.removeChild(note, constants_1.NOTE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
     }
     /**
      * @param {string} contextId
@@ -269,22 +244,18 @@ class NoteService {
      * @return {*}  {Promise<SpinalNodeRef>}
      * @memberof NoteService
      */
-    createDefaultCategory() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const context = yield this.createDefaultContext();
-            return spinal_env_viewer_plugin_group_manager_service_1.groupManagerService.addCategory(context.getId().get(), constants_1.NOTE_CATEGORY_NAME, 'add');
-        });
+    async createDefaultCategory() {
+        const context = await this.createDefaultContext();
+        return spinal_env_viewer_plugin_group_manager_service_1.groupManagerService.addCategory(context.getId().get(), constants_1.NOTE_CATEGORY_NAME, 'add');
     }
     /**
      * @return {*}  {Promise<SpinalNodeRef>}
      * @memberof NoteService
      */
-    createDefaultGroup() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const context = yield this.createDefaultContext();
-            const category = yield this.createDefaultCategory();
-            return spinal_env_viewer_plugin_group_manager_service_1.groupManagerService.addGroup(context.getId().get(), category.getId().get(), constants_1.NOTE_GROUP_NAME, '#FFF000');
-        });
+    async createDefaultGroup() {
+        const context = await this.createDefaultContext();
+        const category = await this.createDefaultCategory();
+        return spinal_env_viewer_plugin_group_manager_service_1.groupManagerService.addGroup(context.getId().get(), category.getId().get(), constants_1.NOTE_GROUP_NAME, '#FFF000');
     }
     /**
      * @param {SpinalNode<any>} spinalNode
@@ -292,18 +263,16 @@ class NoteService {
      * @return {*}  {Promise<SpinalAttribute[]>}
      * @memberof NoteService
      */
-    createAttribute(spinalNode, spinalNote) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const categoryName = 'default';
-            const service = globalType.spinal.serviceDocumentation;
-            if (service) {
-                const category = yield service.addCategoryAttribute(spinalNode, categoryName);
-                const promises = spinalNote._attribute_names.map((key) => {
-                    return service.addAttributeByCategory(spinalNode, category, key, spinalNote[key].get());
-                });
-                return Promise.all(promises);
-            }
-        });
+    async createAttribute(spinalNode, spinalNote) {
+        const categoryName = 'default';
+        const service = globalType.spinal.serviceDocumentation;
+        if (service) {
+            const category = await service.addCategoryAttribute(spinalNode, categoryName);
+            const promises = spinalNote._attribute_names.map((key) => {
+                return service.addAttributeByCategory(spinalNode, category, key, spinalNote[key].get());
+            });
+            return Promise.all(promises);
+        }
     }
     /**
      * @private
@@ -315,16 +284,16 @@ class NoteService {
     addFilesInDirectory(noteNode, files) {
         if (!Array.isArray(files))
             files = [files];
-        const promises = files.map((file) => __awaiter(this, void 0, void 0, function* () {
+        const promises = files.map(async (file) => {
             return {
                 viewPoint: {
                     viewState: file.viewState,
                     objectState: file.objectState,
                 },
                 file: file,
-                directory: yield FileExplorer_1.FileExplorer._getOrCreateFileDirectory(noteNode),
+                directory: await FileExplorer_1.FileExplorer._getOrCreateFileDirectory(noteNode),
             };
-        }));
+        });
         return Promise.all(promises);
     }
 }

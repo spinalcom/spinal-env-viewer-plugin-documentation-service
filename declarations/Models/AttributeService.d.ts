@@ -184,11 +184,11 @@ declare class AttributeService {
     getBuildingInformationAttributes(node: SpinalNode<any>): Promise<SpinalAttribute[]>;
     /**
      * Takes a node of Building and creates all attributes
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode<any> | string} node node or nodeId
      * @return {*}  {Promise<SpinalAttribute[]>}
      * @memberof AttributeService
      */
-    setBuildingInformationAttributes(node: SpinalNode<any>): Promise<SpinalAttribute[]>;
+    setBuildingInformationAttributes(node: SpinalNode<any> | string): Promise<SpinalAttribute[]>;
     /**
      * @param {SpinalNode<any>} node
      * @param {string} label
@@ -197,6 +197,30 @@ declare class AttributeService {
      * @memberof AttributeService
      */
     findAttributesByLabel(node: SpinalNode<any>, label: string, category?: ICategory): Promise<SpinalAttribute>;
+    /**
+     * Retrieves attributes based on a given node and document schema.
+     * e.g. `getAttrBySchema(node, { 'Cat1': ['Attr1', 'Attr2'] as const, 'Cat2': ['Attr3'] as const })`
+     * => `{ 'Cat1': { 'Attr1': 'Value1', 'Attr2': 'Value2' }, 'Cat2': { 'Attr3': 'Value3' } }`
+     *
+     * @template T - The type of the document schema.
+     * @param {SpinalNode} node - The node to retrieve attributes from.
+     * @param {T} docSchema - The document schema to match attributes against.
+     * @returns {Promise<{ [K in keyof T]: { [V in T[K][number]]: string; }; }>} - A promise that resolves to an object containing the matched attributes.
+     */
+    getAttrBySchema<T extends Record<string, readonly string[]>>(node: SpinalNode, docSchema: T): Promise<{
+        [K in keyof T]: {
+            [V in T[K][number]]: string;
+        };
+    }>;
+    /**
+     * Creates or updates attributes and categories in bulk for a given node.
+     *
+     * @param node - The SpinalNode to create or update attributes and categories for.
+     * @param categoryName - The name of the category.
+     * @param attrsToUp - The attributes to create or update, represented as a record where the keys are the attribute labels and the values are the attribute values.
+     * @returns A Promise that resolves when the attributes and categories have been created or updated.
+     */
+    createOrUpdateAttrsAndCategories(node: SpinalNode<any>, categoryName: string, attrsToUp: Record<string, string>): Promise<void>;
     /**
      * This methods link directily the attribute to the node without use category.
      * @param {SpinalNode<any>} node
