@@ -21,11 +21,8 @@
  * with this file. If not, see
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
-import {
-  Directory,
-  File as spinalFile,
-  Path,
-} from 'spinal-core-connectorjs_type';
+
+import { Directory, File as spinalFile, Path } from 'spinal-core-connectorjs';
 import {
   SpinalNode,
   SPINAL_RELATION_PTR_LST_TYPE,
@@ -113,6 +110,19 @@ export class FileExplorer {
       : MESSAGE_TYPES.file;
   }
 
+  static getMimeType(file: File): string {
+    const extension = /[^.]+$/.exec(file.name)[0];
+    const mimeTypes = {
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      bmp: 'image/bmp',
+      pdf: 'application/pdf',
+      json: 'application/json',
+    };
+    return mimeTypes[extension.toLowerCase()] || 'application/octet-stream';
+  }
+
   /**
    * @static
    * @param {spinal.Directory<any>} directory
@@ -124,19 +134,20 @@ export class FileExplorer {
     directory: spinal.Directory<any>,
     files: (spinalFile | { name: string; buffer: Buffer })[] | FileList | any
   ): spinal.File<any>[] {
-    const isFileList = typeof FileList !== 'undefined' && files instanceof FileList;
+    const isFileList =
+      typeof FileList !== 'undefined' && files instanceof FileList;
 
     if (!isFileList && !Array.isArray(files)) files = [files];
 
-    console.log("files", files)
+    console.log('files', files);
     const res = [];
 
     for (let i = 0; i < files.length; i++) {
       const element = files[i];
 
       let filePath: spinal.Path = element.buffer
-        ? new Path(element.buffer)
-        : new Path(element);
+        ? new Path(element.buffer, FileExplorer.getMimeType(element.name))
+        : new Path(element, FileExplorer.getMimeType(element.name));
       let myFile = new spinalFile(element.name, filePath, undefined);
 
       directory.push(myFile);
@@ -157,7 +168,8 @@ export class FileExplorer {
     node: SpinalNode<any>,
     files: (spinalFile | { name: string; buffer: Buffer })[] | FileList | any
   ): Promise<spinal.File<any>[]> {
-    const isFileList = typeof FileList !== 'undefined' && files instanceof FileList;
+    const isFileList =
+      typeof FileList !== 'undefined' && files instanceof FileList;
     if (!isFileList && !Array.isArray(files)) files = [files];
 
     const directory = await this._getOrCreateFileDirectory(node);

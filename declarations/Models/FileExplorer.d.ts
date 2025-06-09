@@ -1,5 +1,6 @@
 /// <reference types="node" />
-import { File as spinalFile } from 'spinal-core-connectorjs_type';
+/// <reference types="node" />
+import { File as spinalFile } from 'spinal-core-connectorjs';
 import { SpinalNode } from 'spinal-env-viewer-graph-service';
 export declare class FileExplorer {
     /**
@@ -24,6 +25,7 @@ export declare class FileExplorer {
      * @memberof FileExplorer
      */
     static _getFileType(file: File): string;
+    static getMimeType(file: File): string;
     /**
      * @static
      * @param {spinal.Directory<any>} directory

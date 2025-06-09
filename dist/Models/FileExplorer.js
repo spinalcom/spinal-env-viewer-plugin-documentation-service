@@ -1,6 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FileExplorer = void 0;
 /*
  * Copyright 2020 SpinalCom - www.spinalcom.com
  *
@@ -24,7 +22,9 @@ exports.FileExplorer = void 0;
  * with this file. If not, see
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
-const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FileExplorer = void 0;
+const spinal_core_connectorjs_1 = require("spinal-core-connectorjs");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const spinal_models_documentation_1 = require("spinal-models-documentation");
 class FileExplorer {
@@ -59,7 +59,7 @@ class FileExplorer {
     static async createDirectory(selectedNode) {
         let nbNode = await this.getNbChildren(selectedNode);
         if (nbNode == 0) {
-            let myDirectory = new spinal_core_connectorjs_type_1.Directory();
+            let myDirectory = new spinal_core_connectorjs_1.Directory();
             let node = await selectedNode.addChild(myDirectory, 'hasFiles', spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
             node.info.name.set('[Files]');
             node.info.type.set('SpinalFiles');
@@ -95,6 +95,18 @@ class FileExplorer {
             ? spinal_models_documentation_1.MESSAGE_TYPES.image
             : spinal_models_documentation_1.MESSAGE_TYPES.file;
     }
+    static getMimeType(file) {
+        const extension = /[^.]+$/.exec(file.name)[0];
+        const mimeTypes = {
+            jpg: 'image/jpeg',
+            jpeg: 'image/jpeg',
+            png: 'image/png',
+            bmp: 'image/bmp',
+            pdf: 'application/pdf',
+            json: 'application/json',
+        };
+        return mimeTypes[extension.toLowerCase()] || 'application/octet-stream';
+    }
     /**
      * @static
      * @param {spinal.Directory<any>} directory
@@ -106,14 +118,14 @@ class FileExplorer {
         const isFileList = typeof FileList !== 'undefined' && files instanceof FileList;
         if (!isFileList && !Array.isArray(files))
             files = [files];
-        console.log("files", files);
+        console.log('files', files);
         const res = [];
         for (let i = 0; i < files.length; i++) {
             const element = files[i];
             let filePath = element.buffer
-                ? new spinal_core_connectorjs_type_1.Path(element.buffer)
-                : new spinal_core_connectorjs_type_1.Path(element);
-            let myFile = new spinal_core_connectorjs_type_1.File(element.name, filePath, undefined);
+                ? new spinal_core_connectorjs_1.Path(element.buffer, FileExplorer.getMimeType(element.name))
+                : new spinal_core_connectorjs_1.Path(element, FileExplorer.getMimeType(element.name));
+            let myFile = new spinal_core_connectorjs_1.File(element.name, filePath, undefined);
             directory.push(myFile);
             res.push(myFile);
         }
