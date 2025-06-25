@@ -25,7 +25,7 @@ export declare class FileExplorer {
      * @memberof FileExplorer
      */
     static _getFileType(file: File): string;
-    static getMimeType(file: File): string;
+    static getMimeType(fileName: string): string;
     /**
      * @static
      * @param {spinal.Directory<any>} directory

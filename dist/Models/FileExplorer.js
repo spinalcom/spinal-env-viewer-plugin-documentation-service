@@ -95,8 +95,8 @@ class FileExplorer {
             ? spinal_models_documentation_1.MESSAGE_TYPES.image
             : spinal_models_documentation_1.MESSAGE_TYPES.file;
     }
-    static getMimeType(file) {
-        const extension = /[^.]+$/.exec(file.name)[0];
+    static getMimeType(fileName) {
+        const extension = /[^.]+$/.exec(fileName)[0];
         const mimeTypes = {
             jpg: 'image/jpeg',
             jpeg: 'image/jpeg',

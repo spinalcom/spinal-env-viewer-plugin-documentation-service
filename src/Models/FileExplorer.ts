@@ -110,8 +110,8 @@ export class FileExplorer {
       : MESSAGE_TYPES.file;
   }
 
-  static getMimeType(file: File): string {
-    const extension = /[^.]+$/.exec(file.name)[0];
+  static getMimeType(fileName: string): string {
+    const extension = /[^.]+$/.exec(fileName)[0];
     const mimeTypes = {
       jpg: 'image/jpeg',
       jpeg: 'image/jpeg',
