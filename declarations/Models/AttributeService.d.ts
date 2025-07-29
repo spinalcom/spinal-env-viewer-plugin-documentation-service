@@ -68,24 +68,24 @@ declare class AttributeService {
      * @param {string} [categoryName='']
      * @param {string} [label='']
      * @param {string} [value='']
-     * @param {string} [type='']
-     * @param {string} [unit='']
+     * @param {string} [type]
+     * @param {string} [unit]
      * @return {*}  {Promise<SpinalAttribute>}
      * @memberof AttributeService
      */
-    addAttributeByCategoryName(node: SpinalNode<any>, categoryName?: string, label?: string, value?: string, type?: string, unit?: string): Promise<SpinalAttribute>;
+    addAttributeByCategoryName(node: SpinalNode<any>, categoryName: string, label: string, value?: string, type?: string, unit?: string): Promise<SpinalAttribute>;
     /**
      * This method adds(if not exists) or update(if exists) an attribute in a category
      * @param {SpinalNode<any>} node
      * @param {ICategory} category
      * @param {string} [label='']
      * @param {string} [value='']
-     * @param {string} [type='']
-     * @param {string} [unit='']
+     * @param {string} [type]
+     * @param {string} [unit]
      * @return {*}  {SpinalAttribute}
      * @memberof AttributeService
      */
-    addAttributeByCategory(node: SpinalNode<any>, category: ICategory, label?: string, value?: string, type?: string, unit?: string): SpinalAttribute;
+    addAttributeByCategory(node: SpinalNode<any>, category: ICategory, label: string, value: string, type?: string, unit?: string): SpinalAttribute;
     /**
      * Returns an array of all SpinalAttirbute with all categories
      * @param {SpinalNode<any>} node
@@ -147,7 +147,7 @@ declare class AttributeService {
      * @return {*}  {Promise<void>}
      * @memberof AttributeService
      */
-    setAttributeById(node: SpinalNode<any>, serverId: number, new_label: string, new_value: string, new_type: string, new_unit: string): Promise<void>;
+    setAttributeById(node: SpinalNode<any>, serverId: number, new_label: string, new_value: string, new_type?: string, new_unit?: string): Promise<void>;
     /**
      * Get all attribute shared with other nodes.
      * @param  {SpinalNode<any>} node

@@ -22,7 +22,7 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-import { FileSystem, Lst, Model } from 'spinal-core-connectorjs_type';
+import { FileSystem, Lst, Model, Str } from 'spinal-core-connectorjs';
 import geographicService from 'spinal-env-viewer-context-geographic-service';
 import {
   SpinalGraphService,
@@ -44,7 +44,7 @@ import {
  * @class AttributeService
  */
 class AttributeService {
-  constructor() { }
+  constructor() {}
 
   /**
    * This method creates a category and link it to the node passed in parameter. It returs an object of category
@@ -249,37 +249,35 @@ class AttributeService {
    * @param {string} [categoryName='']
    * @param {string} [label='']
    * @param {string} [value='']
-   * @param {string} [type='']
-   * @param {string} [unit='']
+   * @param {string} [type]
+   * @param {string} [unit]
    * @return {*}  {Promise<SpinalAttribute>}
    * @memberof AttributeService
    */
   public async addAttributeByCategoryName(
     node: SpinalNode<any>,
-    categoryName: string = '',
-    label: string = '',
+    categoryName: string,
+    label: string,
     value: string = '',
-    type: string = '',
-    unit: string = ''
+    type?: string,
+    unit?: string
   ): Promise<SpinalAttribute> {
     categoryName = categoryName.toString().trim();
-    label = label.toString().trim();
-    value = typeof value === 'string' ? value.toString().trim() : value;
-    type = type.toString().trim();
-    unit = unit.toString().trim();
+    label = label?.toString().trim();
+    value = value?.toString().trim();
+    type = type?.toString().trim();
+    unit = unit?.toString().trim();
 
     if (!(node instanceof SpinalNode))
       throw new Error('node must be a spinalNode instance');
-    if (!label || label.toString().trim().length === 0)
+    if (!label || label.length === 0)
       throw new Error(
         'attribute label must be a string and have at leat one character'
       );
-    if (!categoryName || categoryName.toString().trim().length === 0)
+    if (!categoryName || categoryName.length === 0)
       throw new Error(
         'category name must be a string and have at leat one character'
       );
-    if (typeof value === 'undefined')
-      throw new Error('The attribute value is required');
 
     let category = await this.getCategoryByName(node, categoryName);
 
@@ -303,27 +301,27 @@ class AttributeService {
    * @param {ICategory} category
    * @param {string} [label='']
    * @param {string} [value='']
-   * @param {string} [type='']
-   * @param {string} [unit='']
+   * @param {string} [type]
+   * @param {string} [unit]
    * @return {*}  {SpinalAttribute}
    * @memberof AttributeService
    */
   public addAttributeByCategory(
     node: SpinalNode<any>,
     category: ICategory,
-    label: string = '',
-    value: string = '',
-    type: string = '',
-    unit: string = ''
+    label: string,
+    value: string,
+    type?: string,
+    unit?: string
   ): SpinalAttribute {
-    label = label.toString().trim();
-    value = typeof value === 'string' ? value.toString().trim() : value;
-    type = type.toString().trim();
-    unit = unit.toString().trim();
+    label = label?.toString().trim();
+    value = value?.toString().trim();
+    type = type?.toString().trim();
+    unit = unit?.toString().trim();
 
     if (!(node instanceof SpinalNode))
       throw new Error('node must be a spinalNode instance');
-    if (!label || label.toString().trim().length === 0)
+    if (!label || label.length === 0)
       throw new Error(
         'attribute label must be a string and have at leat one character'
       );
@@ -337,10 +335,11 @@ class AttributeService {
       return attributeModel;
     } else {
       for (let index = 0; index < category.element.length; index++) {
-        const element = category.element[index];
+        const element: SpinalAttribute = category.element[index];
+        element.upgradeDate();
         const elementLabel = element.label.get();
         if (elementLabel.toString().trim() === label) {
-          element.value.set(value);
+          element.setValue(value);
           return element;
         }
       }
@@ -360,17 +359,13 @@ class AttributeService {
     const promises = categories.map((el) => {
       return this.getAttributesByCategory(node, el.node.info.name.get());
     });
-
-    return Promise.all(promises).then((res) => {
-      const result = [];
-
-      for (let index = 0; index < res.length; index++) {
-        const element: Array<SpinalAttribute> = res[index];
-        result.push(...element);
-      }
-
-      return result;
-    });
+    const attributeResults = await Promise.all(promises);
+    const result = [];
+    for (const attrs of attributeResults) {
+      result.push(...attrs);
+    }
+    result.forEach((el) => el.upgradeDate());
+    return result;
   }
 
   /**
@@ -395,6 +390,7 @@ class AttributeService {
     if (_category && _category.element) {
       for (let index = 0; index < _category.element.length; index++) {
         const element = _category.element[index];
+        element.upgradeDate();
         if (!!label && element.label.get().toString().trim() === label) {
           return element;
         }
@@ -435,6 +431,7 @@ class AttributeService {
 
     for (let index = 0; index < _category.element.length; index++) {
       const element = _category.element[index];
+      element.upgradeDate();
       res.push(element);
     }
 
@@ -468,23 +465,17 @@ class AttributeService {
         typeof category === 'string'
           ? await this.getCategoryByName(node, category)
           : category;
-      const lab = newValues.label || label;
-
       return this.addAttributeByCategory(
         node,
         _category,
         label,
-        newValues.value
+        newValues.value?.toString().trim()
       );
     }
-
-    for (const key in newValues) {
-      if (Object.prototype.hasOwnProperty.call(newValues, key)) {
-        const value = newValues[key];
-        if (attribute[key]) attribute[key].set(value);
-      }
-    }
-
+    if (newValues.label) attribute.setLabel(newValues.label);
+    if (newValues.value) attribute.setValue(newValues.value);
+    if (newValues.type) attribute.setType(newValues.type);
+    if (newValues.unit) attribute.setUnit(newValues.unit);
     return attribute;
   }
 
@@ -530,11 +521,13 @@ class AttributeService {
       const element = allAttributes[i];
       if (element.label.get() == old_label) {
         if (new_label != '') {
-          element.label.set(new_label);
+          element.setLabel(new_label);
         }
         if (new_value != '') {
-          element.value.set(new_value);
+          element.setValue(new_value);
         }
+      } else {
+        element.upgradeDate();
       }
     }
   }
@@ -555,14 +548,13 @@ class AttributeService {
     serverId: number,
     new_label: string,
     new_value: string,
-    new_type: string,
-    new_unit: string
+    new_type?: string,
+    new_unit?: string
   ): Promise<void> {
     new_label = new_label.toString().trim();
-    new_value =
-      typeof new_value === 'string' ? new_value.toString().trim() : new_value;
-    new_type = new_type.toString().trim();
-    new_unit = new_unit.toString().trim();
+    new_value = new_value.toString().trim();
+    new_type = new_type?.toString().trim();
+    new_unit = new_unit?.toString().trim();
 
     const labelIsValid = new_label && new_label.toString().trim().length > 0;
     const valueIsValid = typeof new_value !== 'undefined';
@@ -572,10 +564,10 @@ class AttributeService {
     for (let i = 0; i < allAttributes.length; i++) {
       const element = allAttributes[i];
       if (element._server_id == serverId) {
-        element.label.set(new_label);
-        element.value.set(new_value);
-        element.type.set(new_type);
-        element.unit.set(new_unit);
+        if (new_label) element.setLabel(new_label);
+        if (new_value) element.setValue(new_value);
+        if (new_type) element.setType(new_type);
+        if (new_unit) element.setUnit(new_unit);
       }
     }
   }
@@ -599,8 +591,8 @@ class AttributeService {
         !categoryName || categoryName.length === 0
           ? categories
           : categories.filter(
-            (el) => el.nameCat.toString().trim() === categoryName
-          );
+              (el) => el.nameCat.toString().trim() === categoryName
+            );
       return {
         parentNode: parent,
         categories: filterCategory,
@@ -629,7 +621,7 @@ class AttributeService {
       if (elementLabel.toString().trim() == label.toString().trim()) {
         listAttributes.splice(i, 1);
         return true;
-      }
+      } else element.upgradeDate();
     }
 
     return false;
@@ -649,6 +641,7 @@ class AttributeService {
     const listAttributes = await category.element.load();
     for (let i = 0; i < listAttributes.length; i++) {
       const element = listAttributes[i];
+      element.upgradeDate();
       if (element._server_id == serverId) {
         listAttributes.splice(i, 1);
         return true;
@@ -694,13 +687,21 @@ class AttributeService {
     if (!(node instanceof SpinalNode))
       node = SpinalGraphService.getRealNode(node);
 
-    if (node && node.getType().get() === geographicService.constants.BUILDING_TYPE) {
+    if (
+      node &&
+      node.getType().get() === geographicService.constants.BUILDING_TYPE
+    ) {
       const category = await this.addCategoryAttribute(
         node,
         BUILDINGINFORMATIONCATNAME
       );
       const promises = BUILDINGINFORMATION.map((el) => {
-        return this.addAttributeByCategory(node as SpinalNode<any>, category, el, 'To configure');
+        return this.addAttributeByCategory(
+          node as SpinalNode<any>,
+          category,
+          el,
+          'To configure'
+        );
       });
 
       await Promise.all(promises);
@@ -734,18 +735,20 @@ class AttributeService {
     return data.find((el) => el.label.get() === label);
   }
 
-
   /**
    * Retrieves attributes based on a given node and document schema.
    * e.g. `getAttrBySchema(node, { 'Cat1': ['Attr1', 'Attr2'] as const, 'Cat2': ['Attr3'] as const })`
    * => `{ 'Cat1': { 'Attr1': 'Value1', 'Attr2': 'Value2' }, 'Cat2': { 'Attr3': 'Value3' } }`
-   * 
+   *
    * @template T - The type of the document schema.
    * @param {SpinalNode} node - The node to retrieve attributes from.
    * @param {T} docSchema - The document schema to match attributes against.
    * @returns {Promise<{ [K in keyof T]: { [V in T[K][number]]: string; }; }>} - A promise that resolves to an object containing the matched attributes.
    */
-  public async getAttrBySchema<T extends Record<string, readonly string[]>>(node: SpinalNode, docSchema: T): Promise<{
+  public async getAttrBySchema<T extends Record<string, readonly string[]>>(
+    node: SpinalNode,
+    docSchema: T
+  ): Promise<{
     [K in keyof T]: {
       [V in T[K][number]]: string;
     };
@@ -759,12 +762,14 @@ class AttributeService {
       if (Object.prototype.hasOwnProperty.call(docSchema, key)) {
         const catFound = cats.find((cat) => cat.info.name.get() === key);
         if (catFound) {
-          promises.push(catFound.getElement(true).then((attrs) => {
-            return {
-              key,
-              attrs
-            }
-          }))
+          promises.push(
+            catFound.getElement(true).then((attrs) => {
+              return {
+                key,
+                attrs,
+              };
+            })
+          );
         }
       }
     }
@@ -773,6 +778,7 @@ class AttributeService {
     for (const { key, attrs } of res) {
       docRes[key] = {};
       for (const attr of attrs) {
+        attr.upgradeDate();
         if (docSchema[key].includes(attr.label.get())) {
           const attrName = attr.label.get();
           const attrValue = attr.value.get();
@@ -783,16 +789,19 @@ class AttributeService {
     return docRes;
   }
 
-
   /**
    * Creates or updates attributes and categories in bulk for a given node.
-   * 
+   *
    * @param node - The SpinalNode to create or update attributes and categories for.
    * @param categoryName - The name of the category.
    * @param attrsToUp - The attributes to create or update, represented as a record where the keys are the attribute labels and the values are the attribute values.
    * @returns A Promise that resolves when the attributes and categories have been created or updated.
    */
-  public async createOrUpdateAttrsAndCategories(node: SpinalNode<any>, categoryName: string, attrsToUp: Record<string, string>): Promise<void> {
+  public async createOrUpdateAttrsAndCategories(
+    node: SpinalNode<any>,
+    categoryName: string,
+    attrsToUp: Record<string, string>
+  ): Promise<void> {
     async function getCatNode(node: SpinalNode, name: string) {
       const children = await node.getChildren(NODE_TO_CATEGORY_RELATION);
       for (const child of children) {
@@ -805,25 +814,25 @@ class AttributeService {
       cat = await attributeService.addCategoryAttribute(node, categoryName);
     } else {
       cat = {
-        element: <Lst>(await catNode.getElement(true)),
+        element: <Lst>await catNode.getElement(true),
         nameCat: categoryName,
-        node
-      }
+        node,
+      };
     }
     const attrs = await attributeService.getAttributesByCategory(node, cat);
+    attrs.forEach((attr) => attr.upgradeDate());
     for (const label in attrsToUp) {
       if (Object.prototype.hasOwnProperty.call(attrsToUp, label)) {
         const value = attrsToUp[label];
         let attr = attrs.find((itm) => itm.label.get() === label);
         if (attr) {
-          attr.value.set(value);
+          attr.setValue(value);
         } else {
           attributeService.addAttributeByCategory(node, cat, label, value);
         }
       }
     }
   }
-
 
   ///////////////////////////////////////////////////////////////////
   //              ATTRIBUTES LINKED DIRECTLY TO NODE               //
@@ -843,17 +852,17 @@ class AttributeService {
     node: SpinalNode<any>,
     label: string,
     value: string,
-    type: string = '',
-    unit: string = ''
+    type?: string,
+    unit?: string
   ): Promise<SpinalNode<any>> {
     // const labelIsValid = label && label.toString().trim().length > 0;
     // const valueIsValid = typeof value !== "undefined";
 
     // if (!(labelIsValid && valueIsValid)) return;
     label = label.toString().trim();
-    value = typeof value === 'string' ? value.toString().trim() : value;
-    type = type.toString().trim();
-    unit = unit.toString().trim();
+    value = value.toString().trim();
+    type = type?.toString().trim();
+    unit = unit?.toString().trim();
 
     if (!(node instanceof SpinalNode))
       throw new Error('node must be a spinalNode instance');
