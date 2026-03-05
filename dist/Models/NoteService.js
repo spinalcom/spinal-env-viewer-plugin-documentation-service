@@ -56,7 +56,7 @@ class NoteService {
         //   noteNode.info.name.set(`message-${Date.now()}`);
         //   noteNode.info.type.set(NOTE_TYPE);
         // }
-        await this.createAttribute(noteNode, spinalNote);
+        // await this.createAttribute(noteNode, spinalNote);
         await this.addNoteToContext(noteNode, noteContextId, noteGroupId);
         return noteNode;
     }
@@ -113,7 +113,7 @@ class NoteService {
             spinalNode.info.name.set(`message-${Date.now()}`);
             spinalNode.info.type.set(constants_1.NOTE_TYPE);
         }
-        await this.createAttribute(spinalNode, spinalNote);
+        // await this.createAttribute(spinalNode, spinalNote);
         spinal_env_viewer_graph_service_1.SpinalGraphService._addNode(spinalNode);
         let contextId = noteContextId;
         let groupId = noteGroupId;
