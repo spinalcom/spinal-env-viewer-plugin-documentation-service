@@ -100,7 +100,7 @@ class NoteService {
     //   noteNode.info.type.set(NOTE_TYPE);
     // }
 
-    await this.createAttribute(noteNode, spinalNote);
+    // await this.createAttribute(noteNode, spinalNote);
     await this.addNoteToContext(noteNode, noteContextId, noteGroupId);
 
     return noteNode;
@@ -208,7 +208,7 @@ class NoteService {
       spinalNode.info.type.set(NOTE_TYPE);
     }
 
-    await this.createAttribute(spinalNode, spinalNote);
+    // await this.createAttribute(spinalNode, spinalNote);
 
     (<any>SpinalGraphService)._addNode(spinalNode);
 
