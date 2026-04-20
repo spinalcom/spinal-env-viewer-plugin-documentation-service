@@ -32,7 +32,9 @@ const globalType = typeof window === 'undefined' ? global : window;
 function applyMixins(derivedConstructor, baseConstructors) {
     baseConstructors.forEach((baseConstructor) => {
         Object.getOwnPropertyNames(baseConstructor.prototype).forEach((name) => {
-            Object.defineProperty(derivedConstructor.prototype, name, Object.getOwnPropertyDescriptor(baseConstructor.prototype, name));
+            Object.defineProperty(derivedConstructor.prototype, name, 
+            // @ts-ignore
+            Object.getOwnPropertyDescriptor(baseConstructor.prototype, name));
         });
     });
 }

@@ -26,117 +26,106 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.urlService = exports.UrlService = void 0;
 const spinal_model_graph_1 = require("spinal-model-graph");
 const spinal_models_documentation_1 = require("spinal-models-documentation");
+const zodUtils_1 = require("../utils/zodUtils");
 const constants_1 = require("./constants");
 class UrlService {
     constructor() { }
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {string} urlName
      * @param {string} urlLink
      * @return {*}  {Promise<IUrl>}
      * @memberof UrlService
      */
     async addURL(node, urlName, urlLink) {
-        urlName = urlName && urlName.toString().trim();
-        urlLink = urlLink && urlLink.toString().trim();
-        const urlNameIsValid = urlName && urlName.length > 0;
-        const urlLinkIsValid = urlLink && urlLink.length > 0;
-        if (!(urlNameIsValid && urlLinkIsValid))
-            throw new Error('name or link is invalid');
+        urlName = zodUtils_1.validateString.parse(urlName);
+        urlLink = zodUtils_1.validateString.parse(urlLink);
+        node = zodUtils_1.validateSpinalNode.parse(node);
         const urlExist = await this.getURL(node, urlName);
         if (urlExist)
             throw new Error(`${urlName} already exist in ${node.getName().get()}`);
         const urlModel = new spinal_models_documentation_1.SpinalURL(urlName, urlLink);
-        const urlNode = await node.addChild(urlModel, constants_1.URL_RELATION, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE);
-        if (urlNode && urlNode.info) {
-            urlNode.info.name.set(`[URL] ${urlName}`);
-            urlNode.info.type.set(constants_1.URL_TYPE);
-            return this._getUrlData(urlNode);
-        }
+        const urlNode = new spinal_model_graph_1.SpinalNode(`[URL] ${urlName}`, constants_1.URL_TYPE, urlModel);
+        await node.addChild(urlNode, constants_1.URL_RELATION, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE);
+        return this._getUrlData(urlNode);
     }
-    /**
-     * @param {SpinalNode<any>} node
-     * @param {string} [urlName]
-     * @return {*}  {(Promise<IUrl | IUrl[]>)}
-     * @memberof UrlService
-     */
     async getURL(node, urlName) {
+        urlName = zodUtils_1.validateStringOptional.parse(urlName);
         const urlNodes = await node.getChildren(constants_1.URL_RELATION);
         const promises = [];
         for (const urlNode of urlNodes) {
-            promises.push(this._getUrlData(urlNode, urlName));
+            promises.push(this._getUrlData(urlNode));
         }
         const values = await Promise.all(promises);
-        if (urlName && urlName.toString().trim().length) {
+        if (urlName) {
             return values.find(({ element }) => {
                 const elementName = element.name.get();
-                return elementName.toString().trim() === urlName.toString().trim();
+                return elementName.toString().trim() === urlName;
             });
         }
         return values;
     }
     /**
-     * @param {SpinalNode<any>} argNode
+     * @param {SpinalNode} argNode
      * @param {string} label
      * @param {string} newValue
      * @return {*}  {Promise<IUrl>}
      * @memberof UrlService
      */
     async updateUrl(argNode, label, newValue) {
-        let _url = await this.getURL(argNode, label);
-        let url = Array.isArray(_url) ? _url[0] : _url;
+        newValue = zodUtils_1.validateString.parse(newValue);
+        let url = await this.getURL(argNode, label);
         if (url) {
             const { node, element } = url;
             if (node && element) {
                 const elementUrl = element.URL.get();
-                const _newValue = newValue.toString().trim();
-                if (!!_newValue && elementUrl.toString().trim() !== _newValue)
-                    element.URL.set(_newValue);
+                if (elementUrl.toString().trim() !== newValue)
+                    element.URL.set(newValue);
             }
             return url;
         }
     }
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {Array<string>} url_relationNames
-     * @return {*}  {Promise<SpinalNode<any>[]>}
+     * @return {*}  {Promise<SpinalNode[]>}
      * @memberof UrlService
+     * @deprecated
      */
     getParents(node, url_relationNames) {
         return node.getParents(url_relationNames);
     }
     /**
-     * @param {SpinalNode<any>} node
-     * @return {*}  {Promise<SpinalNode<any>[]>}
+     * @param {SpinalNode} node
+     * @return {*}  {Promise<SpinalNode[]>}
      * @memberof UrlService
+     * @deprecated
      */
     getParentGroup(node) {
         return this.getParents(node, []);
     }
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {string} label
      * @return {*}  {Promise<void>}
      * @memberof UrlService
      */
     async deleteURL(node, label) {
+        label = zodUtils_1.validateString.parse(label);
         const url = await this.getURL(node, label);
-        if (Array.isArray(url))
-            return;
         if (url && url.node) {
             return url.node.removeFromGraph();
         }
     }
     /**
-     * @param {SpinalNode<any>} node
-     * @return {*}  {Promise<{ node: SpinalNode<any>; urls: SpinalURL[] }[]>}
+     * @param {SpinalNode} node
+     * @return {*}  {Promise<{ node: SpinalNode; urls: SpinalURL[] }[]>}
      * @memberof UrlService
      */
     async getSharedUrls(node) {
         const parents = await node.getParents();
         const promises = parents.map(async (parent) => {
-            let _urls = await this.getURL(parent);
-            _urls = Array.isArray(_urls) ? _urls : [_urls];
+            const _urls = await this.getURL(parent);
             return {
                 node: parent,
                 urls: _urls.map((el) => el.element),
@@ -153,7 +142,7 @@ class UrlService {
      * @return {*}  {Promise<IUrl>}
      * @memberof UrlService
      */
-    async _getUrlData(urlNode, urlName) {
+    async _getUrlData(urlNode) {
         const element = await urlNode.getElement();
         return {
             element: element,

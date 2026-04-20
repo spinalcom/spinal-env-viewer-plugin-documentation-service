@@ -1,65 +1,64 @@
-import type { SpinalContext } from 'spinal-env-viewer-graph-service';
-import { SpinalNode } from 'spinal-env-viewer-graph-service';
-import { SpinalNote } from 'spinal-models-documentation';
-import type { ViewStateInterface, SpinalAttribute } from 'spinal-models-documentation';
+import { type SpinalContext, SpinalNode } from 'spinal-model-graph';
+import { File as SpinalFile } from 'spinal-core-connectorjs';
+import { SpinalNote, type ViewStateInterface, type SpinalAttribute } from 'spinal-models-documentation';
 declare class NoteService {
     constructor();
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {{ username: string; userId: number }} userInfo
      * @param {string} note - Your message or File name
      * @param {string} [type]
-     * @param {spinal.File} [file] - Spinal File
+     * @param {SpinalFile} [file] - Spinal File
      * @param {string} [noteContextId]
      * @param {string} [noteGroupId]
      * @param {ViewStateInterface} [viewPoint]
-     * @return {*}  {Promise<SpinalNode<any>>}
+     * @return {*}  {Promise<SpinalNode>}
      * @memberof NoteService
      */
-    addNote(node: SpinalNode<any>, userInfo: {
+    addNote(node: SpinalNode, userInfo: {
         username: string;
         userId: number;
-    }, note: string, type?: string, file?: spinal.File<spinal.Model>, noteContextId?: string, noteGroupId?: string, viewPoint?: ViewStateInterface): Promise<SpinalNode<any>>;
+    }, note: string, type?: string, file?: SpinalFile, noteContextId?: string, noteGroupId?: string, viewPoint?: ViewStateInterface): Promise<SpinalNode>;
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {*} files
      * @param {{ username: string; userId: number }} userInfo
      * @param {string} [noteContextId]
      * @param {string} [noteGroupId]
-     * @return {*}  {Promise<SpinalNode<any>[]>}
+     * @return {*}  {Promise<SpinalNode[]>}
      * @memberof NoteService
      */
-    addFileAsNote(node: SpinalNode<any>, files: File | File[] | FileList | any, userInfo: {
+    addFileAsNote(node: SpinalNode, files: File | File[] | FileList | any, userInfo: {
         username: string;
         userId: number;
-    }, noteContextId?: string, noteGroupId?: string): Promise<SpinalNode<any>[]>;
+    }, noteContextId?: string, noteGroupId?: string): Promise<SpinalNode[]>;
     /**
      * Adding a note to a node
      *
-     * @param {SpinalNode<any>} node node to add the note to
+     * @param {SpinalNode} node node to add the note to
      * @param {{ username: string, userId: number }} userInfo information of the user posting the note
      * @param {string} note note to add
      * @param {string} [type] type of the note
-     * @param {File} [file] file to add to the node
+     * @param {File} [file] html file to add to the node
      * @param {ViewStateInterface} [viewPoint] viewpoint to save in the note
      * @param {string} [noteContextId] contextID of the note
      * @param {string} [noteGroupId] groupID of the note
-     * @return {*} {Promise<SpinalNode<any>>} note as a node
+     * @return {*} {Promise<SpinalNode>} note as a node
      * @memberof NoteService
      */
-    twinAddNote(node: SpinalNode<any>, userInfo: {
+    twinAddNote(node: SpinalNode, userInfo: {
         username: string;
         userId: number;
-    }, note: string, type?: string, file?: File, viewPoint?: ViewStateInterface, noteContextId?: string, noteGroupId?: string): Promise<SpinalNode<any>>;
+    }, note: string, type?: string, file?: File, viewPoint?: ViewStateInterface, noteContextId?: string, noteGroupId?: string): Promise<SpinalNode | undefined>;
     /**
-     * @param {SpinalNode<any>} node
-     * @return {*}  {Promise<{ element: SpinalNote; selectedNode: SpinalNode<any> }[]>}
+     * @param {SpinalNode} node
+     * @return {*}  {Promise<{ element: SpinalNote; selectedNode: SpinalNode }[]>}
      * @memberof NoteService
      */
-    getNotes(node: SpinalNode<any>): Promise<{
+    getNotes(node: SpinalNode): Promise<{
         element: SpinalNote;
-        selectedNode: SpinalNode<any>;
-    }[]>;
+        selectedNode: SpinalNode;
+    }[] | undefined>;
     /**
      * @param {SpinalNote} element
      * @param {string} note
@@ -68,38 +67,36 @@ declare class NoteService {
      */
     editNote(element: SpinalNote, note: string): SpinalNote;
     /**
-     * @param {SpinalNode<any>} noteNode
+     * @param {SpinalNode} noteNode
      * @param {string} [contextId]
      * @param {string} [groupId]
      * @return {*}  {Promise<{ old_group: string; newGroup: string }>}
      * @memberof NoteService
      */
-    addNoteToContext(noteNode: SpinalNode<any>, contextId?: string, groupId?: string): Promise<{
+    addNoteToContext(noteNode: SpinalNode, contextId?: string, groupId?: string): Promise<{
         old_group: string;
         newGroup: string;
     }>;
     /**
-     * @param {SpinalNode<any>} noteContext
-     * @param {SpinalNode<any>} startNode
-     * @return {*}  {Promise<SpinalNode<any>[]>}
+     * @param {SpinalNode} noteContext
+     * @param {SpinalNode} startNode
+     * @return {*}  {Promise<SpinalNode[]>}
      * @memberof NoteService
      */
-    getNotesInNoteContext(noteContext: SpinalNode<any>, startNode: SpinalNode<any>): Promise<SpinalNode<any>[]>;
+    getNotesInNoteContext(noteContext: SpinalNode, startNode: SpinalNode): Promise<SpinalNode[]>;
     /**
-     * @param {(SpinalNode<any> | SpinalNode<any>[])} notes
-     * @return {*}  {Promise<{ [key: string]: SpinalNode<any>[] }>}
+     * @param {(SpinalNode | SpinalNode[])} notes
+     * @return {*}  {Promise<{ [key: string]: SpinalNode[] }>}
      * @memberof NoteService
      */
-    getNotesReferencesNodes(notes: SpinalNode<any> | SpinalNode<any>[]): Promise<{
-        [key: string]: SpinalNode<any>[];
-    }>;
+    getNotesReferencesNodes(notes: SpinalNode | SpinalNode[]): Promise<Record<string, SpinalNode[]>>;
     /**
      * Deletes a note from a node
-     * @param {SpinalNode<any>} node node to delete from
-     * @param {SpinalNode<any>} note note to delete
+     * @param {SpinalNode} node node to delete from
+     * @param {SpinalNode} note note to delete
      * @memberof NoteService
      */
-    delNote(node: SpinalNode<any>, note: SpinalNode<any>): Promise<void>;
+    delNote(node: SpinalNode, note: SpinalNode): Promise<void>;
     /**
      * @param {string} contextId
      * @param {string} groupId
@@ -127,20 +124,20 @@ declare class NoteService {
      */
     createDefaultGroup(): Promise<SpinalNode>;
     /**
-     * @param {SpinalNode<any>} spinalNode
+     * @param {SpinalNode} spinalNode
      * @param {SpinalNote} spinalNote
      * @return {*}  {Promise<SpinalAttribute[]>}
      * @memberof NoteService
      */
-    createAttribute(spinalNode: SpinalNode<any>, spinalNote: SpinalNote): Promise<SpinalAttribute[]>;
+    createAttribute(spinalNode: SpinalNode, spinalNote: SpinalNote): Promise<SpinalAttribute[]>;
     /**
      * @private
-     * @param {SpinalNode<any>} noteNode
+     * @param {SpinalNode} noteNode
      * @param {(any | any[])} files
      * @return {*}  {Promise<IFileNote[]>}
      * @memberof NoteService
      */
-    private addFilesInDirectory;
+    private prepareFileDirectories;
 }
 declare const noteService: NoteService;
 export { NoteService, noteService };

@@ -1,10 +1,10 @@
 /*
- * Copyright 2022 SpinalCom - www.spinalcom.com
+ * Copyright 2026 SpinalCom - www.spinalcom.com
  *
  * This file is part of SpinalCore.
  *
  * Please read all of the following terms and conditions
- * of the Free Software license Agreement ("Agreement")
+ * of the Software license Agreement ("Agreement")
  * carefully.
  *
  * This Agreement is a legally binding contract between
@@ -35,6 +35,7 @@ function applyMixins(derivedConstructor: any, baseConstructors: any[]) {
       Object.defineProperty(
         derivedConstructor.prototype,
         name,
+        // @ts-ignore
         Object.getOwnPropertyDescriptor(baseConstructor.prototype, name)
       );
     });

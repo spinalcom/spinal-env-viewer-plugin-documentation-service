@@ -1,9 +1,10 @@
 {
-  "version": "1.6.2",
+  "version": "2.0.0",
   "types": "declarations",
   "author": "",
   "dependencies": {
     "@types/node": "^18.11.9",
+    "zod": "^4.3.6",
     "spinal-core-connectorjs": "git+https://github.com/spinalcom/spinal-core-connectorjs.git",
     "spinal-core-connectorjs_type": "git+https://github.com/spinalcom/spinal-core-connectorjs_type.git",
     "spinal-env-viewer-context-geographic-service": "git+https://github.com/spinalcom/spinal-env-viewer-context-geographic-service.git",
@@ -13,14 +14,14 @@
   },
   "description": "",
   "devDependencies": {
-    "typescript": "^4.9.5"
+    "typescript": "^6.0.3"
   },
   "keywords": [],
   "license": "ISC",
   "main": "dist/index.js",
   "name": "spinal-env-viewer-plugin-documentation-service",
   "scripts": {
-    "build": "rm -rf dist && tsc",
+    "build": "rm -rf dist declarations && tsc",
     "dev": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   }

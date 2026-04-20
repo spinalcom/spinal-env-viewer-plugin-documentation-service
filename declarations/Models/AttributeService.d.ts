@@ -1,82 +1,103 @@
-import { SpinalNode } from 'spinal-env-viewer-graph-service';
-import { SpinalAttribute } from 'spinal-models-documentation';
 import type { ICategory } from '../interfaces';
+import { Lst } from 'spinal-core-connectorjs';
+import { SpinalNode } from 'spinal-model-graph';
+import { SpinalAttribute } from 'spinal-models-documentation';
 /**
  * @class AttributeService
  */
 declare class AttributeService {
     constructor();
     /**
-     * This method creates a category and link it to the node passed in parameter. It returs an object of category
-     * @param  {SpinalNode<any>} node - node on which the category must be linked
+     * This method creates a category and link it to the node passed in parameter. It returns an object of category.
+     * - if the category already exist it returns the existing category.
+     * @param  {SpinalNode} node - node on which the category must be linked
      * @param  {string} categoryName - The category name
      * @return {*}  {Promise<ICategory>}
+     * @throws {Error} When the node is not a SpinalNode
+     * @throws {Error} When the category name is not a string or is empty
      * @memberof AttributeService
      */
-    addCategoryAttribute(node: SpinalNode<any>, categoryName: string): Promise<ICategory>;
+    addCategoryAttribute(node: SpinalNode, categoryName: string): Promise<ICategory>;
     /**
-     * This method deletes a category from the given node.
-     * @param  {SpinalNode<any>} node - node on which the category to be deleted is
+     * This method deletes a category from the given node using the category server ID.
+     * @param  {SpinalNode} node - node on which the category to be deleted is linked
      * @param  {number} serverId - The server ID for the category to delete
+     * @throws {Error} When the node is not a SpinalNode
+     * @throws {Error} When the server ID is invalid
      * @return {*}  {Promise<void>}
      * @memberof AttributeService
      */
-    delCategoryAttribute(node: SpinalNode<any>, serverId: number): Promise<void>;
+    delCategoryAttribute(node: SpinalNode, serverId: number): Promise<void>;
     /**
-     * @param {SpinalNode<any>} node
-     * @param {(SpinalNode<any> | ICategory | string)} category
+     * This method deletes a category from the given node using the category name or the category object.
+     * @param {SpinalNode} node
+     * @param {(SpinalNode | ICategory | string)} category
      * @return {*}  {Promise<void>}
+     * @throws {Error} When the category is not found or the input is invalid
      * @memberof AttributeService
      */
-    deleteAttributeCategory(node: SpinalNode<any>, category: SpinalNode<any> | ICategory | string): Promise<void>;
-    /**
-     * This method changes the name of a category from the given node.
-     * @param  {SpinalNode<any>} node - node on which the category to be edited is
-     * @param  {number} serverId - The server ID for the category to edit
-     * @param  {string} categoryName - The new category name
-     * @return {*}  {Promise<void>}
-     * @memberof AttributeService
-     */
-    editCategoryAttribute(node: SpinalNode<any>, serverId: number, categoryName: string): Promise<void>;
+    deleteAttributeCategory(node: SpinalNode, category: SpinalNode | ICategory | string): Promise<void>;
     /**
      * This method takes as parameter a node and return an array of All categories of attributes linked to this node
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @return {*}  {Promise<ICategory[]>}
+     * @throws {Error} When the node is not a SpinalNode
      * @memberof AttributeService
      */
-    getCategory(node: SpinalNode<any>): Promise<ICategory[]>;
+    getCategory(node: SpinalNode): Promise<ICategory[]>;
     /**
-     * This method takes a node and string(category name) as parameters and check if the node has a categorie of attribute which matches the category name
-     * @param  {SpinalNode<any>} node
+     * This method takes a node and string(category name) as parameters and check if the node has a category of attribute which matches the category name
+     * @param  {SpinalNode} node
      * @param  {string} categoryName
-     * @return {*}  {Promise<ICategory>}
+     * @return {*}  {Promise<ICategory | undefined>} return the category if found or undefined if not found
+     * @throws {Error} When the node is not a SpinalNode
+     * @throws {Error} When the category name is invalid
      * @memberof AttributeService
      */
-    getCategoryByName(node: SpinalNode<any>, categoryName: string): Promise<ICategory>;
+    getCategoryByName(node: SpinalNode, categoryName: string): Promise<ICategory | undefined>;
+    /**
+     * This method changes the name of a category from the given node.
+     * @param  {SpinalNode} node - node on which the category to be edited is linked
+     * @param  {number} serverId - The server ID for the category to edit
+     * @param  {string} categoryName - The new category name
+     * @return {*}  {void}
+     * @throws {Error} When the node is not a SpinalNode
+     * @throws {Error} When the server ID is invalid
+     * @memberof AttributeService
+     */
+    editCategoryAttribute(node: SpinalNode, serverId: number, categoryName: string): void;
     /**
      * Updates the category name
-     * @param {SpinalNode<any>} node
-     * @param {(SpinalNode<any> | ICategory | string)} category
+     * @param {SpinalNode} node
+     * @param {(SpinalNode | ICategory | string)} category
      * @param {string} newName
      * @return {*}  {Promise<ICategory>}
+     * @throws {Error} When the category is not found
+     * @throws {Error} When the new name is invalid
      * @memberof AttributeService
      */
-    updateCategoryName(node: SpinalNode<any>, category: SpinalNode<any> | ICategory | string, newName: string): Promise<ICategory>;
+    updateCategoryName(node: SpinalNode, category: SpinalNode | ICategory | string, newName: string): Promise<ICategory>;
     /**
      * This method adds(if not exists) an attribute in a category (creates the category if not exist)
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {string} [categoryName='']
      * @param {string} [label='']
      * @param {string} [value='']
      * @param {string} [type]
      * @param {string} [unit]
      * @return {*}  {Promise<SpinalAttribute>}
+     * @throws {Error} When the node is not a SpinalNode
+     * @throws {Error} When the category name is invalid
+     * @throws {Error} When the attribute label is invalid
+     * @throws {Error} When the attribute value is invalid
+     * @throws {Error} When the attribute type is invalid when provided
+     * @throws {Error} When the attribute unit is invalid when provided
      * @memberof AttributeService
      */
-    addAttributeByCategoryName(node: SpinalNode<any>, categoryName: string, label: string, value?: string, type?: string, unit?: string): Promise<SpinalAttribute>;
+    addAttributeByCategoryName(node: SpinalNode, categoryName: string, label: string, value?: string, type?: string, unit?: string): Promise<SpinalAttribute>;
     /**
      * This method adds(if not exists) or update(if exists) an attribute in a category
-     * @param {SpinalNode<any>} node
+     * @param {any} unused
      * @param {ICategory} category
      * @param {string} [label='']
      * @param {string} [value='']
@@ -85,33 +106,33 @@ declare class AttributeService {
      * @return {*}  {SpinalAttribute}
      * @memberof AttributeService
      */
-    addAttributeByCategory(node: SpinalNode<any>, category: ICategory, label: string, value: string, type?: string, unit?: string): SpinalAttribute;
+    addAttributeByCategory(unused: any, category: ICategory, label: string, value: string, type?: string, unit?: string): SpinalAttribute | undefined;
     /**
-     * Returns an array of all SpinalAttirbute with all categories
-     * @param {SpinalNode<any>} node
+     * Returns an array of all SpinalAttribute with all categories
+     * @param {SpinalNode} node
      * @return {*}  {Promise<SpinalAttribute[]>}
      * @memberof AttributeService
      */
-    getAllAttributes(node: SpinalNode<any>): Promise<SpinalAttribute[]>;
+    getAllAttributes(node: SpinalNode): Promise<SpinalAttribute[]>;
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {(string | ICategory)} category
-     * @param {string} [label='']
+     * @param {string} label
      * @return {*}  {(Promise<SpinalAttribute | -1>)} : -1 when not found
      * @memberof AttributeService
      */
-    findOneAttributeInCategory(node: SpinalNode<any>, category: string | ICategory, label?: string): Promise<SpinalAttribute | -1>;
+    findOneAttributeInCategory(node: SpinalNode, category: string | ICategory, label: string): Promise<SpinalAttribute | -1>;
     /**
      * Takes as parmaters a node and a string(category name) and return all attributes of the category.
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {(string | ICategory)} category
      * @param {string} [label]
      * @return {*}  {Promise<SpinalAttribute[]>}
      * @memberof AttributeService
      */
-    getAttributesByCategory(node: SpinalNode<any>, category: string | ICategory, label?: string): Promise<SpinalAttribute[]>;
+    getAttributesByCategory(node: SpinalNode, category: string | ICategory, label?: string): Promise<SpinalAttribute[]>;
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {(string | ICategory)} category
      * @param {string} label
      * @param {{ label?: string; value?: string; type?: string; unit?: string }} newValues
@@ -119,7 +140,7 @@ declare class AttributeService {
      * @return {*}  {Promise<SpinalAttribute>}
      * @memberof AttributeService
      */
-    updateAttribute(node: SpinalNode<any>, category: string | ICategory, label: string, newValues: {
+    updateAttribute(node: SpinalNode, category: string | ICategory, label: string, newValues: {
         label?: string;
         value?: string;
         type?: string;
@@ -127,7 +148,7 @@ declare class AttributeService {
     }, createIt?: boolean): Promise<SpinalAttribute>;
     /**
      * This methods updates all attributes which have the old_label as label
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {string} old_label
      * @param {string} old_value
      * @param {string} new_label
@@ -135,10 +156,10 @@ declare class AttributeService {
      * @return {*}  {Promise<void>}
      * @memberof AttributeService
      */
-    setAttribute(node: SpinalNode<any>, old_label: string, old_value: string, new_label: string, new_value: string): Promise<void>;
+    setAttribute(node: SpinalNode, old_label: string, old_value: string, new_label: string, new_value: string): Promise<void>;
     /**
      * This methods updates the attribute with the given id from the given node
-     * @param  {SpinalNode<any>} node
+     * @param  {SpinalNode} node
      * @param  {number} serverId
      * @param  {string} new_label
      * @param  {string} new_value
@@ -147,16 +168,16 @@ declare class AttributeService {
      * @return {*}  {Promise<void>}
      * @memberof AttributeService
      */
-    setAttributeById(node: SpinalNode<any>, serverId: number, new_label: string, new_value: string, new_type?: string, new_unit?: string): Promise<void>;
+    setAttributeById(node: SpinalNode, serverId: number, new_label?: string, new_value?: string, new_type?: string, new_unit?: string): Promise<void>;
     /**
      * Get all attribute shared with other nodes.
-     * @param  {SpinalNode<any>} node
+     * @param  {SpinalNode} node
      * @param  {string} categoryName?
-     * @return {*}  {Promise<{ parentNode: SpinalNode<any>; categories: ICategory[] }[]>}
+     * @return {*}  {Promise<{ parentNode: SpinalNode; categories: ICategory[] }[]>}
      * @memberof AttributeService
      */
-    getAttributesShared(node: SpinalNode<any>, categoryName?: string): Promise<{
-        parentNode: SpinalNode<any>;
+    getAttributesShared(node: SpinalNode, categoryName?: string): Promise<{
+        parentNode: SpinalNode;
         categories: ICategory[];
     }[]>;
     /**
@@ -177,29 +198,29 @@ declare class AttributeService {
     removeAttributesById(category: ICategory, serverId: number): Promise<boolean>;
     /**
      * Takes a node of Building and return all attributes
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @return {*}  {Promise<SpinalAttribute[]>}
      * @memberof AttributeService
      */
-    getBuildingInformationAttributes(node: SpinalNode<any>): Promise<SpinalAttribute[]>;
+    getBuildingInformationAttributes(node: SpinalNode): Promise<SpinalAttribute[]>;
     /**
      * Takes a node of Building and creates all attributes
-     * @param {SpinalNode<any> | string} node node or nodeId
+     * @param {SpinalNode | string} node node or nodeId
      * @return {*}  {Promise<SpinalAttribute[]>}
      * @memberof AttributeService
      */
-    setBuildingInformationAttributes(node: SpinalNode<any> | string): Promise<SpinalAttribute[]>;
+    setBuildingInformationAttributes(node: SpinalNode | string): Promise<SpinalAttribute[]>;
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {string} label
      * @param {ICategory} [category]
      * @return {*}  {Promise<SpinalAttribute>}
      * @memberof AttributeService
      */
-    findAttributesByLabel(node: SpinalNode<any>, label: string, category?: ICategory): Promise<SpinalAttribute>;
+    findAttributesByLabel(node: SpinalNode, label: string, category?: ICategory): Promise<SpinalAttribute | undefined>;
     /**
      * Retrieves attributes based on a given node and document schema.
-     * e.g. `getAttrBySchema(node, { 'Cat1': ['Attr1', 'Attr2'] as const, 'Cat2': ['Attr3'] as const })`
+     * e.g. getAttrBySchema(node, { 'Cat1': ['Attr1', 'Attr2'] as const, 'Cat2': ['Attr3'] as const })`
      * => `{ 'Cat1': { 'Attr1': 'Value1', 'Attr2': 'Value2' }, 'Cat2': { 'Attr3': 'Value3' } }`
      *
      * @template T - The type of the document schema.
@@ -220,43 +241,22 @@ declare class AttributeService {
      * @param attrsToUp - The attributes to create or update, represented as a record where the keys are the attribute labels and the values are the attribute values.
      * @returns A Promise that resolves when the attributes and categories have been created or updated.
      */
-    createOrUpdateAttrsAndCategories(node: SpinalNode<any>, categoryName: string, attrsToUp: Record<string, string>): Promise<void>;
-    /**
-     * This methods link directily the attribute to the node without use category.
-     * @param {SpinalNode<any>} node
-     * @param {string} label
-     * @param {string} value
-     * @param {string} [type='']
-     * @param {string} [unit='']
-     * @return {*}  {Promise<SpinalNode<any>>}
-     * @memberof AttributeService
-     */
-    addAttribute(node: SpinalNode<any>, label: string, value: string, type?: string, unit?: string): Promise<SpinalNode<any>>;
-    /**
-     * get and returns all attribute linked directely to the node
-     * @param {SpinalNode<any>} node
-     * @return {*}  {Promise<{ node: SpinalNode<any>; element: SpinalAttribute }[]>}
-     * @memberof AttributeService
-     */
-    getAttributes(node: SpinalNode<any>): Promise<{
-        node: SpinalNode<any>;
-        element: SpinalAttribute;
-    }[]>;
+    createOrUpdateAttrsAndCategories(node: SpinalNode, categoryName: string, attrsToUp: Record<string, string>): Promise<void>;
     /**
      * Check if category is linked to node and return it.
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {string} categoryName
-     * @return {*}  {Promise<SpinalNode<any>>}
+     * @return {*}  {Promise<SpinalNode>}
      * @memberof AttributeService
      */
-    _categoryExist(node: SpinalNode<any>, categoryName: string): Promise<SpinalNode<any>>;
+    _categoryExist(node: SpinalNode, categoryName: string): Promise<SpinalNode | undefined>;
     /**
      * Takes a category node and format it like an ICategory type;
-     * @param {SpinalNode<any>} categoryNode
+     * @param {SpinalNode<Lst<SpinalAttribute>>} categoryNode
      * @return {*}  {Promise<ICategory>}
      * @memberof AttributeService
      */
-    _getCategoryElement(categoryNode: SpinalNode<any>): Promise<ICategory>;
+    _getCategoryElement(categoryNode: SpinalNode<Lst<SpinalAttribute>>): Promise<ICategory>;
     /**
      * Check if an attribute exists in a category
      * @param {ICategory} category
@@ -267,26 +267,27 @@ declare class AttributeService {
     _labelExistInCategory(category: ICategory, argAttributeName: string): boolean;
     /**
      * Check if an attribute is directely link to the node
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {string} argAttributeName
-     * @return {*}  {Promise<SpinalNode<any>>}
+     * @return {*}  {Promise<SpinalNode>}
      * @memberof AttributeService
      */
-    _attributeExist(node: SpinalNode<any>, argAttributeName: string): Promise<SpinalNode<any>>;
+    _attributeExist(node: SpinalNode, argAttributeName: string): Promise<SpinalNode | undefined>;
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @return {*}  {Promise<void>}
      * @memberof AttributeService
      */
-    removeNode(node: SpinalNode<any>): Promise<void>;
+    removeNode(node: SpinalNode): Promise<void>;
     /**
      * @private
      * @param {spinal.Lst<SpinalAttribute>} Lst
-     * @param {string} value
+     * @param {string} label
      * @return {*}  {SpinalAttribute}
      * @memberof AttributeService
      */
     private _findInLst;
+    private validateICategoryOrString;
 }
 declare const attributeService: AttributeService;
 export { AttributeService, attributeService };

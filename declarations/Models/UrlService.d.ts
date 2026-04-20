@@ -1,58 +1,67 @@
+import type { IUrl } from '../interfaces';
 import { SpinalNode } from 'spinal-model-graph';
 import { SpinalURL } from 'spinal-models-documentation';
-import type { IUrl } from '../interfaces';
 declare class UrlService {
     constructor();
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {string} urlName
      * @param {string} urlLink
      * @return {*}  {Promise<IUrl>}
      * @memberof UrlService
      */
-    addURL(node: SpinalNode<any>, urlName: string, urlLink: string): Promise<IUrl>;
+    addURL(node: SpinalNode, urlName: string, urlLink: string): Promise<IUrl>;
     /**
-     * @param {SpinalNode<any>} node
-     * @param {string} [urlName]
-     * @return {*}  {(Promise<IUrl | IUrl[]>)}
+     * @param {SpinalNode} node
+     * @param {string} urlName
+     * @return {*}  {(Promise<IUrl | undefined>)}
      * @memberof UrlService
      */
-    getURL(node: SpinalNode<any>, urlName?: string): Promise<IUrl | IUrl[]>;
+    getURL(node: SpinalNode, urlName: string): Promise<IUrl | undefined>;
     /**
-     * @param {SpinalNode<any>} argNode
+     * @param {SpinalNode} node
+     * @param {string} urlName
+     * @return {*}  {Promise<IUrl | undefined | IUrl[]>}
+     * @memberof UrlService
+     */
+    getURL(node: SpinalNode): Promise<IUrl[]>;
+    /**
+     * @param {SpinalNode} argNode
      * @param {string} label
      * @param {string} newValue
      * @return {*}  {Promise<IUrl>}
      * @memberof UrlService
      */
-    updateUrl(argNode: SpinalNode<any>, label: string, newValue: string): Promise<IUrl>;
+    updateUrl(argNode: SpinalNode, label: string, newValue: string): Promise<IUrl | undefined>;
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {Array<string>} url_relationNames
-     * @return {*}  {Promise<SpinalNode<any>[]>}
+     * @return {*}  {Promise<SpinalNode[]>}
      * @memberof UrlService
+     * @deprecated
      */
-    getParents(node: SpinalNode<any>, url_relationNames: Array<string>): Promise<SpinalNode<any>[]>;
+    getParents(node: SpinalNode, url_relationNames: Array<string>): Promise<SpinalNode[]>;
     /**
-     * @param {SpinalNode<any>} node
-     * @return {*}  {Promise<SpinalNode<any>[]>}
+     * @param {SpinalNode} node
+     * @return {*}  {Promise<SpinalNode[]>}
      * @memberof UrlService
+     * @deprecated
      */
-    getParentGroup(node: SpinalNode<any>): Promise<SpinalNode<any>[]>;
+    getParentGroup(node: SpinalNode): Promise<SpinalNode[]>;
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {string} label
      * @return {*}  {Promise<void>}
      * @memberof UrlService
      */
-    deleteURL(node: SpinalNode<any>, label: string): Promise<void>;
+    deleteURL(node: SpinalNode, label: string): Promise<void>;
     /**
-     * @param {SpinalNode<any>} node
-     * @return {*}  {Promise<{ node: SpinalNode<any>; urls: SpinalURL[] }[]>}
+     * @param {SpinalNode} node
+     * @return {*}  {Promise<{ node: SpinalNode; urls: SpinalURL[] }[]>}
      * @memberof UrlService
      */
-    getSharedUrls(node: SpinalNode<any>): Promise<{
-        node: SpinalNode<any>;
+    getSharedUrls(node: SpinalNode): Promise<{
+        node: SpinalNode;
         urls: SpinalURL[];
     }[]>;
     /**
@@ -61,7 +70,7 @@ declare class UrlService {
      * @return {*}  {Promise<IUrl>}
      * @memberof UrlService
      */
-    _getUrlData(urlNode: any, urlName?: string): Promise<IUrl>;
+    _getUrlData(urlNode: any): Promise<IUrl>;
 }
 declare const urlService: UrlService;
 export { UrlService, urlService };

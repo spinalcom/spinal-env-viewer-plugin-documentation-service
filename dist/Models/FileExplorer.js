@@ -27,46 +27,51 @@ exports.FileExplorer = void 0;
 const spinal_core_connectorjs_1 = require("spinal-core-connectorjs");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const spinal_models_documentation_1 = require("spinal-models-documentation");
+const zodUtils_1 = require("../utils/zodUtils");
 class FileExplorer {
     /**
      * @static
-     * @param {SpinalNode<any>} selectedNode
-     * @return {*}  {Promise<spinal.Directory<spinal.File<spinal.Path>>>}
+     * @param {SpinalNode} selectedNode
+     * @return {*}  {Promise<Directory<SpinalFile<Path>>>}
      * @memberof FileExplorer
      */
     static async getDirectory(selectedNode) {
+        selectedNode = zodUtils_1.validateSpinalNode.parse(selectedNode);
         if (selectedNode != undefined) {
             const fileNode = await selectedNode.getChildren('hasFiles');
             if (fileNode.length == 0) {
                 return undefined;
             }
             else {
-                let directory = await fileNode[0].getElement();
+                const directory = await fileNode[0].getElement();
                 return directory;
             }
         }
     }
     /**
      * @static
-     * @param {SpinalNode<any>} selectedNode
+     * @param {SpinalNode} selectedNode
      * @return {*}  {Promise<number>}
      * @memberof FileExplorer
      */
     static async getNbChildren(selectedNode) {
+        selectedNode = zodUtils_1.validateSpinalNode.parse(selectedNode);
         const fileNode = await selectedNode.getChildren('hasFiles');
         return fileNode.length;
     }
     static async createDirectory(selectedNode) {
-        let nbNode = await this.getNbChildren(selectedNode);
+        selectedNode = zodUtils_1.validateSpinalNode.parse(selectedNode);
+        const nbNode = await this.getNbChildren(selectedNode);
         if (nbNode == 0) {
-            let myDirectory = new spinal_core_connectorjs_1.Directory();
-            let node = await selectedNode.addChild(myDirectory, 'hasFiles', spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+            const myDirectory = new spinal_core_connectorjs_1.Directory();
+            const node = await selectedNode.addChild(myDirectory, 'hasFiles', spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
             node.info.name.set('[Files]');
             node.info.type.set('SpinalFiles');
             return myDirectory;
         }
         else {
-            return this.getDirectory(selectedNode);
+            const dir = await this.getDirectory(selectedNode);
+            return dir;
         }
     }
     /**
@@ -90,13 +95,15 @@ class FileExplorer {
             'JPEG 2000',
             'SVG',
         ];
-        const extension = /[^.]+$/.exec(file.name)[0];
-        return imagesExtension.indexOf(extension.toUpperCase()) !== -1
+        const extension = /[^.]+$/.exec(file.name || '')?.[0];
+        return imagesExtension.indexOf(extension?.toUpperCase() || '') !== -1
             ? spinal_models_documentation_1.MESSAGE_TYPES.image
             : spinal_models_documentation_1.MESSAGE_TYPES.file;
     }
     static getMimeType(fileName) {
-        const extension = /[^.]+$/.exec(fileName)[0];
+        const extension = /[^.]+$/.exec(fileName || '')?.[0];
+        if (!extension)
+            return 'application/octet-stream';
         const mimeTypes = {
             jpg: 'image/jpeg',
             jpeg: 'image/jpeg',
@@ -105,27 +112,27 @@ class FileExplorer {
             pdf: 'application/pdf',
             json: 'application/json',
         };
-        return mimeTypes[extension.toLowerCase()] || 'application/octet-stream';
+        return (mimeTypes[extension.toLowerCase()] ||
+            'application/octet-stream');
     }
     /**
      * @static
-     * @param {spinal.Directory<any>} directory
+     * @param {Directory} directory
      * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files - HTML Files
-     * @return {*}  {spinal.File<any>[]}
+     * @return {*}  {SpinalFile<any>[]}
      * @memberof FileExplorer
      */
     static addFileUpload(directory, files) {
         const isFileList = typeof FileList !== 'undefined' && files instanceof FileList;
         if (!isFileList && !Array.isArray(files))
             files = [files];
-        console.log('files', files);
         const res = [];
         for (let i = 0; i < files.length; i++) {
             const element = files[i];
-            let filePath = element.buffer
+            const filePath = element.buffer
                 ? new spinal_core_connectorjs_1.Path(element.buffer, FileExplorer.getMimeType(element.name))
                 : new spinal_core_connectorjs_1.Path(element, FileExplorer.getMimeType(element.name));
-            let myFile = new spinal_core_connectorjs_1.File(element.name, filePath, undefined);
+            const myFile = new spinal_core_connectorjs_1.File(element.name, filePath, undefined);
             directory.push(myFile);
             res.push(myFile);
         }
@@ -133,9 +140,9 @@ class FileExplorer {
     }
     /**
      * @static
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files - HTML Files
-     * @return {*}  {Promise<spinal.File<any>[]>}
+     * @return {*}  {Promise<SpinalFile<any>[]>}
      * @memberof FileExplorer
      */
     static async uploadFiles(node, files) {

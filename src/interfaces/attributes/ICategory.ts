@@ -1,10 +1,10 @@
 /*
- * Copyright 2022 SpinalCom - www.spinalcom.com
+ * Copyright 2026 SpinalCom - www.spinalcom.com
  *
  * This file is part of SpinalCore.
  *
  * Please read all of the following terms and conditions
- * of the Free Software license Agreement ("Agreement")
+ * of the Software license Agreement ("Agreement")
  * carefully.
  *
  * This Agreement is a legally binding contract between
@@ -23,9 +23,11 @@
  */
 
 import type { SpinalNode } from 'spinal-env-viewer-graph-service';
+import type { Lst } from 'spinal-core-connectorjs';
+import type { SpinalAttribute } from 'spinal-models-documentation';
 
 export interface ICategory {
   nameCat: string;
-  node: SpinalNode<any>;
-  element: spinal.Lst<any>;
+  node: SpinalNode;
+  element: Lst<SpinalAttribute>;
 }

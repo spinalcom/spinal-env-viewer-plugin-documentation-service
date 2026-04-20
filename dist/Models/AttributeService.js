@@ -1,11 +1,11 @@
 "use strict";
 /*
- * Copyright 2020 SpinalCom - www.spinalcom.com
+ * Copyright 2026 SpinalCom - www.spinalcom.com
  *
  * This file is part of SpinalCore.
  *
  * Please read all of the following terms and conditions
- * of the Free Software license Agreement ("Agreement")
+ * of the Software license Agreement ("Agreement")
  * carefully.
  *
  * This Agreement is a legally binding contract between
@@ -25,185 +25,175 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.attributeService = exports.AttributeService = void 0;
 const spinal_core_connectorjs_1 = require("spinal-core-connectorjs");
-const spinal_env_viewer_context_geographic_service_1 = require("spinal-env-viewer-context-geographic-service");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
+const spinal_model_graph_1 = require("spinal-model-graph");
 const spinal_models_documentation_1 = require("spinal-models-documentation");
+const spinal_env_viewer_context_geographic_service_1 = require("spinal-env-viewer-context-geographic-service");
 const constants_1 = require("./constants");
+const zodUtils_1 = require("../utils/zodUtils");
+const zod_1 = require("zod");
 /**
  * @class AttributeService
  */
 class AttributeService {
     constructor() { }
+    // #region CATEGORY
     /**
-     * This method creates a category and link it to the node passed in parameter. It returs an object of category
-     * @param  {SpinalNode<any>} node - node on which the category must be linked
+     * This method creates a category and link it to the node passed in parameter. It returns an object of category.
+     * - if the category already exist it returns the existing category.
+     * @param  {SpinalNode} node - node on which the category must be linked
      * @param  {string} categoryName - The category name
      * @return {*}  {Promise<ICategory>}
+     * @throws {Error} When the node is not a SpinalNode
+     * @throws {Error} When the category name is not a string or is empty
      * @memberof AttributeService
      */
     async addCategoryAttribute(node, categoryName) {
-        categoryName = categoryName.toString().trim();
-        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-            throw new Error('Node must be a SpinalNode.');
-        if (categoryName.toString().trim().length === 0)
-            throw new Error('Category name must be a string and have at leat one character.');
+        categoryName = zodUtils_1.validateString.parse(categoryName);
+        node = zodUtils_1.validateSpinalNode.parse(node);
         const categoryExist = await this.getCategoryByName(node, categoryName);
         if (categoryExist)
             return categoryExist;
-        const categoryModel = new spinal_env_viewer_graph_service_1.SpinalNode(categoryName, constants_1.CATEGORY_TYPE, new spinal_core_connectorjs_1.Lst());
-        const categoryFound = await node.addChild(categoryModel, constants_1.NODE_TO_CATEGORY_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+        const categoryModel = new spinal_model_graph_1.SpinalNode(categoryName, constants_1.CATEGORY_TYPE, new spinal_core_connectorjs_1.Lst());
+        const categoryFound = await node.addChild(categoryModel, constants_1.NODE_TO_CATEGORY_RELATION, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE);
         return this._getCategoryElement(categoryFound);
     }
     /**
-     * This method deletes a category from the given node.
-     * @param  {SpinalNode<any>} node - node on which the category to be deleted is
+     * This method deletes a category from the given node using the category server ID.
+     * @param  {SpinalNode} node - node on which the category to be deleted is linked
      * @param  {number} serverId - The server ID for the category to delete
+     * @throws {Error} When the node is not a SpinalNode
+     * @throws {Error} When the server ID is invalid
      * @return {*}  {Promise<void>}
      * @memberof AttributeService
      */
     async delCategoryAttribute(node, serverId) {
-        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-            throw new Error('Node must be a SpinalNode.');
-        if (serverId === 0)
-            throw new Error('Invalid server ID.');
+        node = zodUtils_1.validateSpinalNode.parse(node);
+        serverId = zod_1.z.number().positive().parse(serverId);
         const child = spinal_core_connectorjs_1.FileSystem._objects[serverId];
-        if (child instanceof spinal_env_viewer_graph_service_1.SpinalNode) {
-            await node.removeChild(child, constants_1.NODE_TO_CATEGORY_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+        if (child instanceof spinal_model_graph_1.SpinalNode) {
+            await node.removeChild(child, constants_1.NODE_TO_CATEGORY_RELATION, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE);
+        }
+        else {
+            throw new Error('category not found');
         }
     }
     /**
-     * @param {SpinalNode<any>} node
-     * @param {(SpinalNode<any> | ICategory | string)} category
+     * This method deletes a category from the given node using the category name or the category object.
+     * @param {SpinalNode} node
+     * @param {(SpinalNode | ICategory | string)} category
      * @return {*}  {Promise<void>}
+     * @throws {Error} When the category is not found or the input is invalid
      * @memberof AttributeService
      */
     async deleteAttributeCategory(node, category) {
-        let _category;
-        if (category instanceof spinal_env_viewer_graph_service_1.SpinalNode) {
-            _category = category;
-        }
-        else if (typeof category === 'string') {
-            let temp = await this.getCategoryByName(node, category);
-            _category = temp.node;
-        }
-        else if (category.node instanceof spinal_env_viewer_graph_service_1.SpinalNode) {
-            _category = category.node;
-        }
-        if (_category instanceof spinal_env_viewer_graph_service_1.SpinalNode)
-            return node.removeChild(_category, constants_1.NODE_TO_CATEGORY_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+        node = zodUtils_1.validateSpinalNode.parse(node);
+        const _category = await this.validateICategoryOrString(node, category);
+        if (_category.node instanceof spinal_model_graph_1.SpinalNode)
+            return node.removeChild(_category.node, constants_1.NODE_TO_CATEGORY_RELATION, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE);
         throw new Error('category not found');
     }
     /**
-     * This method changes the name of a category from the given node.
-     * @param  {SpinalNode<any>} node - node on which the category to be edited is
-     * @param  {number} serverId - The server ID for the category to edit
-     * @param  {string} categoryName - The new category name
-     * @return {*}  {Promise<void>}
-     * @memberof AttributeService
-     */
-    async editCategoryAttribute(node, serverId, categoryName) {
-        categoryName = categoryName.toString().trim();
-        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-            throw new Error('Node must be a SpinalNode.');
-        if (serverId === 0)
-            throw new Error('Invalid server ID.');
-        if (categoryName.length === 0)
-            throw new Error('Category name must be a string and have at leat one character.');
-        const child = spinal_core_connectorjs_1.FileSystem._objects[serverId];
-        if (child instanceof spinal_env_viewer_graph_service_1.SpinalNode) {
-            child.info.name.set(categoryName);
-        }
-    }
-    /**
      * This method takes as parameter a node and return an array of All categories of attributes linked to this node
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @return {*}  {Promise<ICategory[]>}
+     * @throws {Error} When the node is not a SpinalNode
      * @memberof AttributeService
      */
     async getCategory(node) {
-        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-            throw new Error('node must be a SpinalNode instance');
+        node = zodUtils_1.validateSpinalNode.parse(node);
         const categories = await node.getChildren(constants_1.NODE_TO_CATEGORY_RELATION);
         const promises = categories.map((el) => this._getCategoryElement(el));
         return Promise.all(promises);
     }
     /**
-     * This method takes a node and string(category name) as parameters and check if the node has a categorie of attribute which matches the category name
-     * @param  {SpinalNode<any>} node
+     * This method takes a node and string(category name) as parameters and check if the node has a category of attribute which matches the category name
+     * @param  {SpinalNode} node
      * @param  {string} categoryName
-     * @return {*}  {Promise<ICategory>}
+     * @return {*}  {Promise<ICategory | undefined>} return the category if found or undefined if not found
+     * @throws {Error} When the node is not a SpinalNode
+     * @throws {Error} When the category name is invalid
      * @memberof AttributeService
      */
     async getCategoryByName(node, categoryName) {
-        categoryName = categoryName.toString().trim();
-        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-            throw new Error('node must be a spinalNode instance');
-        if (!categoryName || categoryName.length === 0)
-            throw new Error('category name must be a string and have at leat one character');
+        node = zodUtils_1.validateSpinalNode.parse(node);
+        categoryName = zodUtils_1.validateString.parse(categoryName);
         const categories = await this.getCategory(node);
         return categories.find((el) => {
             return el.nameCat.toString().trim() === categoryName;
         });
     }
     /**
+     * This method changes the name of a category from the given node.
+     * @param  {SpinalNode} node - node on which the category to be edited is linked
+     * @param  {number} serverId - The server ID for the category to edit
+     * @param  {string} categoryName - The new category name
+     * @return {*}  {void}
+     * @throws {Error} When the node is not a SpinalNode
+     * @throws {Error} When the server ID is invalid
+     * @memberof AttributeService
+     */
+    editCategoryAttribute(node, serverId, categoryName) {
+        categoryName = zodUtils_1.validateString.parse(categoryName);
+        node = zodUtils_1.validateSpinalNode.parse(node);
+        serverId = zod_1.z.number().positive().parse(serverId);
+        const child = spinal_core_connectorjs_1.FileSystem._objects[serverId];
+        (0, zodUtils_1.validateSpinalNodeOfType)(constants_1.CATEGORY_TYPE).parse(child);
+        child.info.name.set(categoryName);
+    }
+    /**
      * Updates the category name
-     * @param {SpinalNode<any>} node
-     * @param {(SpinalNode<any> | ICategory | string)} category
+     * @param {SpinalNode} node
+     * @param {(SpinalNode | ICategory | string)} category
      * @param {string} newName
      * @return {*}  {Promise<ICategory>}
+     * @throws {Error} When the category is not found
+     * @throws {Error} When the new name is invalid
      * @memberof AttributeService
      */
     async updateCategoryName(node, category, newName) {
-        newName = newName.toString().trim();
-        if (!newName || newName.length === 0)
-            throw new Error('category name must be a string and have at leat one character');
-        if (category instanceof spinal_env_viewer_graph_service_1.SpinalNode) {
-            category.info.name.set(newName);
-            return this._getCategoryElement(category);
-        }
-        else if (typeof category === 'string') {
-            let _category = await this.getCategoryByName(node, category);
-            _category.node.info.name.set(newName);
-            return _category;
-        }
-        else if (category.node instanceof spinal_env_viewer_graph_service_1.SpinalNode) {
-            category.node.info.name.set(newName);
-            return category;
-        }
-        throw new Error('category not found');
+        newName = zodUtils_1.validateString.parse(newName);
+        node = zodUtils_1.validateSpinalNode.parse(node);
+        category = await this.validateICategoryOrString(node, category);
+        category.node.info.name.set(newName);
+        return category;
     }
+    // #endregion CATEGORY
+    // #region ATTRIBUTE
     /**
      * This method adds(if not exists) an attribute in a category (creates the category if not exist)
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {string} [categoryName='']
      * @param {string} [label='']
      * @param {string} [value='']
      * @param {string} [type]
      * @param {string} [unit]
      * @return {*}  {Promise<SpinalAttribute>}
+     * @throws {Error} When the node is not a SpinalNode
+     * @throws {Error} When the category name is invalid
+     * @throws {Error} When the attribute label is invalid
+     * @throws {Error} When the attribute value is invalid
+     * @throws {Error} When the attribute type is invalid when provided
+     * @throws {Error} When the attribute unit is invalid when provided
      * @memberof AttributeService
      */
     async addAttributeByCategoryName(node, categoryName, label, value = '', type, unit) {
-        categoryName = categoryName.toString().trim();
-        label = label?.toString().trim();
-        value = value?.toString().trim();
-        type = type?.toString().trim();
-        unit = unit?.toString().trim();
-        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-            throw new Error('node must be a spinalNode instance');
-        if (!label || label.length === 0)
-            throw new Error('attribute label must be a string and have at leat one character');
-        if (!categoryName || categoryName.length === 0)
-            throw new Error('category name must be a string and have at leat one character');
+        node = zodUtils_1.validateSpinalNode.parse(node);
+        categoryName = zodUtils_1.validateString.parse(categoryName);
+        label = zodUtils_1.validateString.parse(label);
+        value = zodUtils_1.validateStringCoerce.parse(value);
+        type = zodUtils_1.validateStringOptional.parse(type);
+        unit = zodUtils_1.validateStringOptional.parse(unit);
         let category = await this.getCategoryByName(node, categoryName);
         if (!category) {
             category = await this.addCategoryAttribute(node, categoryName);
         }
+        // we are sure that category exist at this point
         return this.addAttributeByCategory(node, category, label, value, type, unit);
     }
     /**
      * This method adds(if not exists) or update(if exists) an attribute in a category
-     * @param {SpinalNode<any>} node
+     * @param {any} unused
      * @param {ICategory} category
      * @param {string} [label='']
      * @param {string} [value='']
@@ -212,42 +202,40 @@ class AttributeService {
      * @return {*}  {SpinalAttribute}
      * @memberof AttributeService
      */
-    addAttributeByCategory(node, category, label, value, type, unit) {
-        label = label?.toString().trim();
-        value = value?.toString().trim();
-        type = type?.toString().trim();
-        unit = unit?.toString().trim();
-        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-            throw new Error('node must be a spinalNode instance');
-        if (!label || label.length === 0)
-            throw new Error('attribute label must be a string and have at leat one character');
-        if (typeof value === 'undefined')
-            throw new Error('The attribute value is required');
-        const found = this._labelExistInCategory(category, label);
-        if (!found) {
+    addAttributeByCategory(unused, category, label, value, type, unit) {
+        category = zodUtils_1.validateICategory.parse(category);
+        label = zodUtils_1.validateString.parse(label);
+        value = zodUtils_1.validateStringCoerce.parse(value);
+        type = zodUtils_1.validateStringOptional.parse(type);
+        unit = zodUtils_1.validateStringOptional.parse(unit);
+        if (!this._labelExistInCategory(category, label)) {
             const attributeModel = new spinal_models_documentation_1.SpinalAttribute(label, value, type, unit);
             category.element.push(attributeModel);
             return attributeModel;
         }
         else {
-            for (let index = 0; index < category.element.length; index++) {
-                const element = category.element[index];
+            for (const element of category.element) {
                 element.upgradeDate();
                 const elementLabel = element.label.get();
                 if (elementLabel.toString().trim() === label) {
                     element.setValue(value);
+                    if (type)
+                        element.setType(type);
+                    if (unit)
+                        element.setUnit(unit);
                     return element;
                 }
             }
         }
     }
     /**
-     * Returns an array of all SpinalAttirbute with all categories
-     * @param {SpinalNode<any>} node
+     * Returns an array of all SpinalAttribute with all categories
+     * @param {SpinalNode} node
      * @return {*}  {Promise<SpinalAttribute[]>}
      * @memberof AttributeService
      */
     async getAllAttributes(node) {
+        node = zodUtils_1.validateSpinalNode.parse(node);
         const categories = await this.getCategory(node);
         const promises = categories.map((el) => {
             return this.getAttributesByCategory(node, el.node.info.name.get());
@@ -261,60 +249,54 @@ class AttributeService {
         return result;
     }
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {(string | ICategory)} category
-     * @param {string} [label='']
+     * @param {string} label
      * @return {*}  {(Promise<SpinalAttribute | -1>)} : -1 when not found
      * @memberof AttributeService
      */
-    async findOneAttributeInCategory(node, category, label = '') {
-        label = label.toString().trim();
-        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-            throw new Error('node must be a spinalNode instance');
-        const _category = typeof category === 'string'
-            ? await this.getCategoryByName(node, category)
-            : category;
-        if (_category && _category.element) {
-            for (let index = 0; index < _category.element.length; index++) {
-                const element = _category.element[index];
-                element.upgradeDate();
-                if (!!label && element.label.get().toString().trim() === label) {
-                    return element;
-                }
+    async findOneAttributeInCategory(node, category, label) {
+        node = zodUtils_1.validateSpinalNode.parse(node);
+        label = zodUtils_1.validateString.parse(label);
+        category = await this.validateICategoryOrString(node, category);
+        for (const element of category.element) {
+            element.upgradeDate();
+            if (label && element.label.get().toString().trim() === label) {
+                return element;
             }
         }
         return -1;
     }
     /**
      * Takes as parmaters a node and a string(category name) and return all attributes of the category.
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {(string | ICategory)} category
      * @param {string} [label]
      * @return {*}  {Promise<SpinalAttribute[]>}
      * @memberof AttributeService
      */
     async getAttributesByCategory(node, category, label) {
-        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-            throw new Error('node must be a spinalNode instance');
-        const _category = typeof category === 'string'
-            ? await this.getCategoryByName(node, category)
-            : category;
-        if (!_category || !_category.element || _category.element.length === 0)
+        node = zodUtils_1.validateSpinalNode.parse(node);
+        label = zodUtils_1.validateStringOptional.parse(label);
+        try {
+            category = await this.validateICategoryOrString(node, category);
+        }
+        catch (error) {
             return [];
+        }
         if (label) {
-            const labelFound = this._findInLst(_category.element, label);
+            const labelFound = this._findInLst(category.element, label);
             return labelFound ? [labelFound] : [];
         }
         const res = [];
-        for (let index = 0; index < _category.element.length; index++) {
-            const element = _category.element[index];
+        for (const element of category.element) {
             element.upgradeDate();
             res.push(element);
         }
         return res;
     }
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {(string | ICategory)} category
      * @param {string} label
      * @param {{ label?: string; value?: string; type?: string; unit?: string }} newValues
@@ -323,28 +305,36 @@ class AttributeService {
      * @memberof AttributeService
      */
     async updateAttribute(node, category, label, newValues, createIt = false) {
+        node = zodUtils_1.validateSpinalNode.parse(node);
+        category = await this.validateICategoryOrString(node, category);
+        label = zodUtils_1.validateString.parse(label);
+        const newValue = zodUtils_1.validateStringCoerce.optional().parse(newValues.value);
+        const newLabel = zodUtils_1.validateStringOptional.parse(newValues.label);
+        const newType = zodUtils_1.validateStringOptional.parse(newValues.type);
+        const newUnit = zodUtils_1.validateStringOptional.parse(newValues.unit);
+        if (!newValue && !newLabel && !newType && !newUnit) {
+            throw new Error('at least one value to update must be provided');
+        }
         const [attribute] = await this.getAttributesByCategory(node, category, label);
         if (!attribute && !createIt)
             throw new Error('no attribute found');
-        else if (!attribute && createIt && newValues.value) {
-            const _category = typeof category === 'string'
-                ? await this.getCategoryByName(node, category)
-                : category;
-            return this.addAttributeByCategory(node, _category, label, newValues.value?.toString().trim());
+        else if (!attribute && createIt && newValue && newLabel) {
+            const res = this.addAttributeByCategory(node, category, label, newValue);
+            return res;
         }
-        if (newValues.label)
-            attribute.setLabel(newValues.label);
-        if (newValues.value)
-            attribute.setValue(newValues.value);
-        if (newValues.type)
-            attribute.setType(newValues.type);
-        if (newValues.unit)
-            attribute.setUnit(newValues.unit);
+        if (newLabel)
+            attribute.setLabel(newLabel);
+        if (newValue)
+            attribute.setValue(newValue);
+        if (newType)
+            attribute.setType(newType);
+        if (newUnit)
+            attribute.setUnit(newUnit);
         return attribute;
     }
     /**
      * This methods updates all attributes which have the old_label as label
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {string} old_label
      * @param {string} old_value
      * @param {string} new_label
@@ -353,30 +343,19 @@ class AttributeService {
      * @memberof AttributeService
      */
     async setAttribute(node, old_label, old_value, new_label, new_value) {
-        old_label = old_label.toString().trim();
-        old_value =
-            typeof old_value === 'string' ? old_value.toString().trim() : old_value;
-        new_label = new_label.toString().trim();
-        new_value =
-            typeof new_value === 'string' ? new_value.toString().trim() : new_value;
-        if (!old_label || old_label.length === 0)
-            throw new Error('old_label must be a string and have at leat one character');
-        if (!new_label || new_label.length === 0)
-            throw new Error('new_label must be a string and have at leat one character');
-        if (typeof old_value === 'undefined')
-            throw new Error('old_value is required');
-        if (typeof new_value === 'undefined')
-            throw new Error('new_value is required');
+        node = zodUtils_1.validateSpinalNode.parse(node);
+        old_label = zodUtils_1.validateString.parse(old_label);
+        old_value = zodUtils_1.validateStringCoerce.parse(old_value);
+        new_label = zodUtils_1.validateString.parse(new_label);
+        new_value = zodUtils_1.validateStringCoerce.parse(new_value);
         let allAttributes = await this.getAllAttributes(node);
         for (let i = 0; i < allAttributes.length; i++) {
             const element = allAttributes[i];
-            if (element.label.get() == old_label) {
+            if (element.label.get().toString().trim() == old_label) {
                 if (new_label != '') {
                     element.setLabel(new_label);
                 }
-                if (new_value != '') {
-                    element.setValue(new_value);
-                }
+                element.setValue(new_value);
             }
             else {
                 element.upgradeDate();
@@ -385,7 +364,7 @@ class AttributeService {
     }
     /**
      * This methods updates the attribute with the given id from the given node
-     * @param  {SpinalNode<any>} node
+     * @param  {SpinalNode} node
      * @param  {number} serverId
      * @param  {string} new_label
      * @param  {string} new_value
@@ -395,14 +374,15 @@ class AttributeService {
      * @memberof AttributeService
      */
     async setAttributeById(node, serverId, new_label, new_value, new_type, new_unit) {
-        new_label = new_label.toString().trim();
-        new_value = new_value.toString().trim();
-        new_type = new_type?.toString().trim();
-        new_unit = new_unit?.toString().trim();
-        const labelIsValid = new_label && new_label.toString().trim().length > 0;
-        const valueIsValid = typeof new_value !== 'undefined';
-        if (!(labelIsValid && valueIsValid))
-            return;
+        node = zodUtils_1.validateSpinalNode.parse(node);
+        serverId = zod_1.z.number().positive().parse(serverId);
+        new_label = zodUtils_1.validateStringOptional.parse(new_label);
+        new_value = zodUtils_1.validateStringCoerce.optional().parse(new_value);
+        new_type = zodUtils_1.validateStringOptional.parse(new_type);
+        new_unit = zodUtils_1.validateStringOptional.parse(new_unit);
+        if (!new_label && !new_value && !new_type && !new_unit) {
+            throw new Error('at least one value to update must be provided');
+        }
         let allAttributes = await this.getAllAttributes(node);
         for (let i = 0; i < allAttributes.length; i++) {
             const element = allAttributes[i];
@@ -420,17 +400,18 @@ class AttributeService {
     }
     /**
      * Get all attribute shared with other nodes.
-     * @param  {SpinalNode<any>} node
+     * @param  {SpinalNode} node
      * @param  {string} categoryName?
-     * @return {*}  {Promise<{ parentNode: SpinalNode<any>; categories: ICategory[] }[]>}
+     * @return {*}  {Promise<{ parentNode: SpinalNode; categories: ICategory[] }[]>}
      * @memberof AttributeService
      */
     async getAttributesShared(node, categoryName) {
-        categoryName = categoryName.toString().trim();
+        node = zodUtils_1.validateSpinalNode.parse(node);
+        categoryName = zodUtils_1.validateStringOptional.parse(categoryName);
         const parents = await node.getParents();
         const promises = parents.map(async (parent) => {
             const categories = await this.getCategory(parent);
-            const filterCategory = !categoryName || categoryName.length === 0
+            const filterCategory = !categoryName
                 ? categories
                 : categories.filter((el) => el.nameCat.toString().trim() === categoryName);
             return {
@@ -448,11 +429,13 @@ class AttributeService {
      * @memberof AttributeService
      */
     async removeAttributesByLabel(category, label) {
+        category = zodUtils_1.validateICategory.parse(category);
+        label = zodUtils_1.validateString.parse(label);
         const listAttributes = await category.element.load();
         for (let i = 0; i < listAttributes.length; i++) {
             const element = listAttributes[i];
             const elementLabel = element.label.get();
-            if (elementLabel.toString().trim() == label.toString().trim()) {
+            if (elementLabel.toString().trim() == label) {
                 listAttributes.splice(i, 1);
                 return true;
             }
@@ -469,6 +452,8 @@ class AttributeService {
      * @memberof AttributeService
      */
     async removeAttributesById(category, serverId) {
+        category = zodUtils_1.validateICategory.parse(category);
+        serverId = zod_1.z.number().positive().parse(serverId);
         const listAttributes = await category.element.load();
         for (let i = 0; i < listAttributes.length; i++) {
             const element = listAttributes[i];
@@ -482,16 +467,19 @@ class AttributeService {
     }
     /**
      * Takes a node of Building and return all attributes
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @return {*}  {Promise<SpinalAttribute[]>}
      * @memberof AttributeService
      */
     async getBuildingInformationAttributes(node) {
-        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
+        try {
+            node = zodUtils_1.validateSpinalNode.parse(node);
+        }
+        catch (error) {
             return [];
-        if (node.getType().get() === spinal_env_viewer_context_geographic_service_1.default.constants.BUILDING_TYPE) {
-            let lst = [];
-            lst = constants_1.BUILDINGINFORMATION.map((el) => {
+        }
+        if (node.getType().get() === spinal_env_viewer_context_geographic_service_1.BUILDING_TYPE) {
+            const lst = constants_1.BUILDINGINFORMATION.map((el) => {
                 return this.findAttributesByLabel(node, el);
             });
             return Promise.all(lst).then((element) => element.filter((el) => typeof el !== 'undefined'));
@@ -500,35 +488,39 @@ class AttributeService {
     }
     /**
      * Takes a node of Building and creates all attributes
-     * @param {SpinalNode<any> | string} node node or nodeId
+     * @param {SpinalNode | string} node node or nodeId
      * @return {*}  {Promise<SpinalAttribute[]>}
      * @memberof AttributeService
      */
     async setBuildingInformationAttributes(node) {
-        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
+        if (typeof node === 'string')
             node = spinal_env_viewer_graph_service_1.SpinalGraphService.getRealNode(node);
-        if (node &&
-            node.getType().get() === spinal_env_viewer_context_geographic_service_1.default.constants.BUILDING_TYPE) {
-            const category = await this.addCategoryAttribute(node, constants_1.BUILDINGINFORMATIONCATNAME);
-            const promises = constants_1.BUILDINGINFORMATION.map((el) => {
-                return this.addAttributeByCategory(node, category, el, 'To configure');
-            });
-            await Promise.all(promises);
-            return this.getBuildingInformationAttributes(node);
+        try {
+            node = (0, zodUtils_1.validateSpinalNodeOfType)(spinal_env_viewer_context_geographic_service_1.BUILDING_TYPE).parse(node);
         }
-        return [];
+        catch (error) {
+            return [];
+        }
+        const category = await this.addCategoryAttribute(node, constants_1.BUILDINGINFORMATIONCATNAME);
+        const promises = constants_1.BUILDINGINFORMATION.map((el) => {
+            return this.addAttributeByCategory(node, category, el, 'To configure');
+        });
+        await Promise.all(promises);
+        return this.getBuildingInformationAttributes(node);
     }
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {string} label
      * @param {ICategory} [category]
      * @return {*}  {Promise<SpinalAttribute>}
      * @memberof AttributeService
      */
     async findAttributesByLabel(node, label, category) {
-        let data = [];
+        let data;
+        node = zodUtils_1.validateSpinalNode.parse(node);
+        label = zodUtils_1.validateString.parse(label);
         if (typeof category !== 'undefined') {
-            // const categoryName = this._getCategoryName(category);
+            category = zodUtils_1.validateICategory.parse(category);
             data = await this.getAttributesByCategory(node, category.nameCat);
         }
         else {
@@ -538,7 +530,7 @@ class AttributeService {
     }
     /**
      * Retrieves attributes based on a given node and document schema.
-     * e.g. `getAttrBySchema(node, { 'Cat1': ['Attr1', 'Attr2'] as const, 'Cat2': ['Attr3'] as const })`
+     * e.g. getAttrBySchema(node, { 'Cat1': ['Attr1', 'Attr2'] as const, 'Cat2': ['Attr3'] as const })`
      * => `{ 'Cat1': { 'Attr1': 'Value1', 'Attr2': 'Value2' }, 'Cat2': { 'Attr3': 'Value3' } }`
      *
      * @template T - The type of the document schema.
@@ -547,6 +539,7 @@ class AttributeService {
      * @returns {Promise<{ [K in keyof T]: { [V in T[K][number]]: string; }; }>} - A promise that resolves to an object containing the matched attributes.
      */
     async getAttrBySchema(node, docSchema) {
+        node = zodUtils_1.validateSpinalNode.parse(node);
         const cats = await node.getChildren(constants_1.NODE_TO_CATEGORY_RELATION);
         const promises = [];
         for (const key in docSchema) {
@@ -586,6 +579,9 @@ class AttributeService {
      * @returns A Promise that resolves when the attributes and categories have been created or updated.
      */
     async createOrUpdateAttrsAndCategories(node, categoryName, attrsToUp) {
+        node = zodUtils_1.validateSpinalNode.parse(node);
+        categoryName = zodUtils_1.validateString.parse(categoryName);
+        attrsToUp = zod_1.z.record(zodUtils_1.validateString, zodUtils_1.validateString).parse(attrsToUp);
         async function getCatNode(node, name) {
             const children = await node.getChildren(constants_1.NODE_TO_CATEGORY_RELATION);
             for (const child of children) {
@@ -596,7 +592,7 @@ class AttributeService {
         const catNode = await getCatNode(node, categoryName);
         let cat;
         if (!catNode) {
-            cat = await attributeService.addCategoryAttribute(node, categoryName);
+            cat = await this.addCategoryAttribute(node, categoryName);
         }
         else {
             cat = {
@@ -605,7 +601,7 @@ class AttributeService {
                 node,
             };
         }
-        const attrs = await attributeService.getAttributesByCategory(node, cat);
+        const attrs = await this.getAttributesByCategory(node, cat);
         attrs.forEach((attr) => attr.upgradeDate());
         for (const label in attrsToUp) {
             if (Object.prototype.hasOwnProperty.call(attrsToUp, label)) {
@@ -615,71 +611,18 @@ class AttributeService {
                     attr.setValue(value);
                 }
                 else {
-                    attributeService.addAttributeByCategory(node, cat, label, value);
+                    this.addAttributeByCategory(node, cat, label, value);
                 }
             }
         }
     }
-    ///////////////////////////////////////////////////////////////////
-    //              ATTRIBUTES LINKED DIRECTLY TO NODE               //
-    ///////////////////////////////////////////////////////////////////
-    /**
-     * This methods link directily the attribute to the node without use category.
-     * @param {SpinalNode<any>} node
-     * @param {string} label
-     * @param {string} value
-     * @param {string} [type='']
-     * @param {string} [unit='']
-     * @return {*}  {Promise<SpinalNode<any>>}
-     * @memberof AttributeService
-     */
-    async addAttribute(node, label, value, type, unit) {
-        // const labelIsValid = label && label.toString().trim().length > 0;
-        // const valueIsValid = typeof value !== "undefined";
-        // if (!(labelIsValid && valueIsValid)) return;
-        label = label.toString().trim();
-        value = value.toString().trim();
-        type = type?.toString().trim();
-        unit = unit?.toString().trim();
-        if (!(node instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-            throw new Error('node must be a spinalNode instance');
-        if (!label || label.length === 0)
-            throw new Error('attribute label must be a string and have at leat one character');
-        if (typeof value === 'undefined')
-            throw new Error('The attribute value is required');
-        const attributeExist = await this._attributeExist(node, label);
-        if (attributeExist) {
-            return attributeExist;
-        }
-        const attributeModel = new spinal_models_documentation_1.SpinalAttribute(label, value, type, unit);
-        const attributeNode = new spinal_env_viewer_graph_service_1.SpinalNode(`[Attributes] ${label}`, constants_1.ATTRIBUTE_TYPE, attributeModel);
-        await node.addChild(attributeNode, constants_1.NODE_TO_ATTRIBUTE, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
-        return attributeNode;
-    }
-    /**
-     * get and returns all attribute linked directely to the node
-     * @param {SpinalNode<any>} node
-     * @return {*}  {Promise<{ node: SpinalNode<any>; element: SpinalAttribute }[]>}
-     * @memberof AttributeService
-     */
-    async getAttributes(node) {
-        const attributes = await node.getChildren(constants_1.NODE_TO_ATTRIBUTE);
-        const promises = attributes.map(async (el) => {
-            return {
-                node: el,
-                element: await el.getElement(),
-            };
-        });
-        return Promise.all(promises);
-    }
-    ///////////////////////////////////////////////////////////////////
-    //                          PRIVATES                             //
-    ///////////////////////////////////////////////////////////////////
+    // #endregion ATTRIBUTE
+    // #region PRIVATES
     /**
      * Check if category is linked to node and return it.
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {string} categoryName
-     * @return {*}  {Promise<SpinalNode<any>>}
+     * @return {*}  {Promise<SpinalNode>}
      * @memberof AttributeService
      */
     async _categoryExist(node, categoryName) {
@@ -694,7 +637,7 @@ class AttributeService {
     }
     /**
      * Takes a category node and format it like an ICategory type;
-     * @param {SpinalNode<any>} categoryNode
+     * @param {SpinalNode<Lst<SpinalAttribute>>} categoryNode
      * @return {*}  {Promise<ICategory>}
      * @memberof AttributeService
      */
@@ -732,9 +675,9 @@ class AttributeService {
     }
     /**
      * Check if an attribute is directely link to the node
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {string} argAttributeName
-     * @return {*}  {Promise<SpinalNode<any>>}
+     * @return {*}  {Promise<SpinalNode>}
      * @memberof AttributeService
      */
     async _attributeExist(node, argAttributeName) {
@@ -744,7 +687,7 @@ class AttributeService {
         });
     }
     /**
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @return {*}  {Promise<void>}
      * @memberof AttributeService
      */
@@ -754,16 +697,31 @@ class AttributeService {
     /**
      * @private
      * @param {spinal.Lst<SpinalAttribute>} Lst
-     * @param {string} value
+     * @param {string} label
      * @return {*}  {SpinalAttribute}
      * @memberof AttributeService
      */
-    _findInLst(Lst, value) {
+    _findInLst(Lst, label) {
         for (let index = 0; index < Lst.length; index++) {
             const element = Lst[index];
-            if (element.label.get() == value)
+            if (element.label.get().trim() == label)
                 return element;
         }
+        return undefined;
+    }
+    async validateICategoryOrString(node, category) {
+        if (typeof category === 'string') {
+            const temp = await this.getCategoryByName(node, category);
+            if (!temp)
+                throw new Error('category not found');
+            return temp;
+        }
+        else if (category instanceof spinal_model_graph_1.SpinalNode) {
+            (0, zodUtils_1.validateSpinalNodeOfType)(constants_1.CATEGORY_TYPE).parse(category);
+            return this._getCategoryElement(category);
+        }
+        zodUtils_1.validateICategory.parse(category);
+        return category;
     }
 }
 exports.AttributeService = AttributeService;

@@ -1,10 +1,10 @@
 /*
- * Copyright 2021 SpinalCom - www.spinalcom.com
+ * Copyright 2026 SpinalCom - www.spinalcom.com
  *
  * This file is part of SpinalCore.
  *
  * Please read all of the following terms and conditions
- * of the Free Software license Agreement ("Agreement")
+ * of the Software license Agreement ("Agreement")
  * carefully.
  *
  * This Agreement is a legally binding contract between
@@ -21,10 +21,11 @@
  * with this file. If not, see
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
+
 import type { SpinalNode } from 'spinal-model-graph';
 import type { SpinalURL } from 'spinal-models-documentation';
 
 export interface IUrl {
   element: SpinalURL;
-  node: SpinalNode<any>;
+  node: SpinalNode;
 }

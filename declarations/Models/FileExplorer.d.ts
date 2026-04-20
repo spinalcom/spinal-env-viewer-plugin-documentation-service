@@ -1,23 +1,21 @@
-/// <reference types="node" />
-/// <reference types="node" />
-import { File as spinalFile } from 'spinal-core-connectorjs';
+import { Directory, File as SpinalFile, Path } from 'spinal-core-connectorjs';
 import { SpinalNode } from 'spinal-env-viewer-graph-service';
 export declare class FileExplorer {
     /**
      * @static
-     * @param {SpinalNode<any>} selectedNode
-     * @return {*}  {Promise<spinal.Directory<spinal.File<spinal.Path>>>}
+     * @param {SpinalNode} selectedNode
+     * @return {*}  {Promise<Directory<SpinalFile<Path>>>}
      * @memberof FileExplorer
      */
-    static getDirectory(selectedNode: SpinalNode<any>): Promise<spinal.Directory<spinal.File<spinal.Path>>>;
+    static getDirectory(selectedNode: SpinalNode): Promise<Directory<SpinalFile<Path>> | undefined>;
     /**
      * @static
-     * @param {SpinalNode<any>} selectedNode
+     * @param {SpinalNode} selectedNode
      * @return {*}  {Promise<number>}
      * @memberof FileExplorer
      */
-    static getNbChildren(selectedNode: SpinalNode<any>): Promise<number>;
-    static createDirectory(selectedNode: SpinalNode<any>): Promise<spinal.Directory<any>>;
+    static getNbChildren(selectedNode: SpinalNode): Promise<number>;
+    static createDirectory(selectedNode: SpinalNode): Promise<Directory<SpinalFile<Path>>>;
     /**
      * @static
      * @param {File} file - HTML File
@@ -28,25 +26,25 @@ export declare class FileExplorer {
     static getMimeType(fileName: string): string;
     /**
      * @static
-     * @param {spinal.Directory<any>} directory
+     * @param {Directory} directory
      * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files - HTML Files
-     * @return {*}  {spinal.File<any>[]}
+     * @return {*}  {SpinalFile<any>[]}
      * @memberof FileExplorer
      */
-    static addFileUpload(directory: spinal.Directory<any>, files: (spinalFile | {
+    static addFileUpload(directory: Directory<SpinalFile<Path>>, files: (SpinalFile | {
         name: string;
         buffer: Buffer;
-    })[] | FileList | any): spinal.File<any>[];
+    })[] | FileList | any): SpinalFile<any>[];
     /**
      * @static
-     * @param {SpinalNode<any>} node
+     * @param {SpinalNode} node
      * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files - HTML Files
-     * @return {*}  {Promise<spinal.File<any>[]>}
+     * @return {*}  {Promise<SpinalFile<any>[]>}
      * @memberof FileExplorer
      */
-    static uploadFiles(node: SpinalNode<any>, files: (spinalFile | {
+    static uploadFiles(node: SpinalNode, files: (SpinalFile | {
         name: string;
         buffer: Buffer;
-    })[] | FileList | any): Promise<spinal.File<any>[]>;
-    static _getOrCreateFileDirectory(node: SpinalNode<any>): Promise<spinal.Directory<any>>;
+    })[] | FileList | any): Promise<SpinalFile[]>;
+    static _getOrCreateFileDirectory(node: SpinalNode): Promise<Directory<SpinalFile<Path>>>;
 }

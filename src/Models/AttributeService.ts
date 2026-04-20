@@ -1,10 +1,10 @@
 /*
- * Copyright 2020 SpinalCom - www.spinalcom.com
+ * Copyright 2026 SpinalCom - www.spinalcom.com
  *
  * This file is part of SpinalCore.
  *
  * Please read all of the following terms and conditions
- * of the Free Software license Agreement ("Agreement")
+ * of the Software license Agreement ("Agreement")
  * carefully.
  *
  * This Agreement is a legally binding contract between
@@ -22,48 +22,51 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-import { FileSystem, Lst, Model, Str } from 'spinal-core-connectorjs';
-import geographicService from 'spinal-env-viewer-context-geographic-service';
-import {
-  SpinalGraphService,
-  SPINAL_RELATION_PTR_LST_TYPE,
-  SpinalNode,
-} from 'spinal-env-viewer-graph-service';
-import { SpinalAttribute } from 'spinal-models-documentation';
 import type { ICategory } from '../interfaces';
+import { FileSystem, Lst, Model } from 'spinal-core-connectorjs';
+import { SpinalGraphService } from 'spinal-env-viewer-graph-service';
+import { SPINAL_RELATION_PTR_LST_TYPE, SpinalNode } from 'spinal-model-graph';
+import { SpinalAttribute } from 'spinal-models-documentation';
+import { BUILDING_TYPE } from 'spinal-env-viewer-context-geographic-service';
 import {
-  ATTRIBUTE_TYPE,
   BUILDINGINFORMATION,
   BUILDINGINFORMATIONCATNAME,
   CATEGORY_TYPE,
   NODE_TO_ATTRIBUTE,
   NODE_TO_CATEGORY_RELATION,
 } from './constants';
-
+import {
+  validateICategory,
+  validateSpinalNode,
+  validateSpinalNodeOfType,
+  validateString,
+  validateStringCoerce,
+  validateStringOptional,
+} from '../utils/zodUtils';
+import { z } from 'zod';
 /**
  * @class AttributeService
  */
 class AttributeService {
   constructor() {}
 
+  // #region CATEGORY
   /**
-   * This method creates a category and link it to the node passed in parameter. It returs an object of category
-   * @param  {SpinalNode<any>} node - node on which the category must be linked
+   * This method creates a category and link it to the node passed in parameter. It returns an object of category.
+   * - if the category already exist it returns the existing category.
+   * @param  {SpinalNode} node - node on which the category must be linked
    * @param  {string} categoryName - The category name
    * @return {*}  {Promise<ICategory>}
+   * @throws {Error} When the node is not a SpinalNode
+   * @throws {Error} When the category name is not a string or is empty
    * @memberof AttributeService
    */
   public async addCategoryAttribute(
-    node: SpinalNode<any>,
+    node: SpinalNode,
     categoryName: string
   ): Promise<ICategory> {
-    categoryName = categoryName.toString().trim();
-    if (!(node instanceof SpinalNode))
-      throw new Error('Node must be a SpinalNode.');
-    if (categoryName.toString().trim().length === 0)
-      throw new Error(
-        'Category name must be a string and have at leat one character.'
-      );
+    categoryName = validateString.parse(categoryName);
+    node = validateSpinalNode.parse(node);
 
     const categoryExist = await this.getCategoryByName(node, categoryName);
     if (categoryExist) return categoryExist;
@@ -82,19 +85,20 @@ class AttributeService {
   }
 
   /**
-   * This method deletes a category from the given node.
-   * @param  {SpinalNode<any>} node - node on which the category to be deleted is
+   * This method deletes a category from the given node using the category server ID.
+   * @param  {SpinalNode} node - node on which the category to be deleted is linked
    * @param  {number} serverId - The server ID for the category to delete
+   * @throws {Error} When the node is not a SpinalNode
+   * @throws {Error} When the server ID is invalid
    * @return {*}  {Promise<void>}
    * @memberof AttributeService
    */
   public async delCategoryAttribute(
-    node: SpinalNode<any>,
+    node: SpinalNode,
     serverId: number
   ): Promise<void> {
-    if (!(node instanceof SpinalNode))
-      throw new Error('Node must be a SpinalNode.');
-    if (serverId === 0) throw new Error('Invalid server ID.');
+    node = validateSpinalNode.parse(node);
+    serverId = z.number().positive().parse(serverId);
 
     const child = FileSystem._objects[serverId];
     if (child instanceof SpinalNode) {
@@ -103,32 +107,29 @@ class AttributeService {
         NODE_TO_CATEGORY_RELATION,
         SPINAL_RELATION_PTR_LST_TYPE
       );
+    } else {
+      throw new Error('category not found');
     }
   }
 
   /**
-   * @param {SpinalNode<any>} node
-   * @param {(SpinalNode<any> | ICategory | string)} category
+   * This method deletes a category from the given node using the category name or the category object.
+   * @param {SpinalNode} node
+   * @param {(SpinalNode | ICategory | string)} category
    * @return {*}  {Promise<void>}
+   * @throws {Error} When the category is not found or the input is invalid
    * @memberof AttributeService
    */
   public async deleteAttributeCategory(
-    node: SpinalNode<any>,
-    category: SpinalNode<any> | ICategory | string
+    node: SpinalNode,
+    category: SpinalNode | ICategory | string
   ): Promise<void> {
-    let _category;
-    if (category instanceof SpinalNode) {
-      _category = category;
-    } else if (typeof category === 'string') {
-      let temp = await this.getCategoryByName(node, category);
-      _category = temp.node;
-    } else if (category.node instanceof SpinalNode) {
-      _category = category.node;
-    }
+    node = validateSpinalNode.parse(node);
+    const _category = await this.validateICategoryOrString(node, category);
 
-    if (_category instanceof SpinalNode)
+    if (_category.node instanceof SpinalNode)
       return node.removeChild(
-        _category,
+        _category.node,
         NODE_TO_CATEGORY_RELATION,
         SPINAL_RELATION_PTR_LST_TYPE
       );
@@ -137,154 +138,124 @@ class AttributeService {
   }
 
   /**
-   * This method changes the name of a category from the given node.
-   * @param  {SpinalNode<any>} node - node on which the category to be edited is
-   * @param  {number} serverId - The server ID for the category to edit
-   * @param  {string} categoryName - The new category name
-   * @return {*}  {Promise<void>}
-   * @memberof AttributeService
-   */
-  public async editCategoryAttribute(
-    node: SpinalNode<any>,
-    serverId: number,
-    categoryName: string
-  ): Promise<void> {
-    categoryName = categoryName.toString().trim();
-
-    if (!(node instanceof SpinalNode))
-      throw new Error('Node must be a SpinalNode.');
-    if (serverId === 0) throw new Error('Invalid server ID.');
-    if (categoryName.length === 0)
-      throw new Error(
-        'Category name must be a string and have at leat one character.'
-      );
-
-    const child = FileSystem._objects[serverId];
-    if (child instanceof SpinalNode) {
-      child.info.name.set(categoryName);
-    }
-  }
-
-  /**
    * This method takes as parameter a node and return an array of All categories of attributes linked to this node
-   * @param {SpinalNode<any>} node
+   * @param {SpinalNode} node
    * @return {*}  {Promise<ICategory[]>}
+   * @throws {Error} When the node is not a SpinalNode
    * @memberof AttributeService
    */
-  public async getCategory(node: SpinalNode<any>): Promise<ICategory[]> {
-    if (!(node instanceof SpinalNode))
-      throw new Error('node must be a SpinalNode instance');
-
+  public async getCategory(node: SpinalNode): Promise<ICategory[]> {
+    node = validateSpinalNode.parse(node);
     const categories = await node.getChildren(NODE_TO_CATEGORY_RELATION);
-
     const promises = categories.map((el) => this._getCategoryElement(el));
-
     return Promise.all(promises);
   }
 
   /**
-   * This method takes a node and string(category name) as parameters and check if the node has a categorie of attribute which matches the category name
-   * @param  {SpinalNode<any>} node
+   * This method takes a node and string(category name) as parameters and check if the node has a category of attribute which matches the category name
+   * @param  {SpinalNode} node
    * @param  {string} categoryName
-   * @return {*}  {Promise<ICategory>}
+   * @return {*}  {Promise<ICategory | undefined>} return the category if found or undefined if not found
+   * @throws {Error} When the node is not a SpinalNode
+   * @throws {Error} When the category name is invalid
    * @memberof AttributeService
    */
   public async getCategoryByName(
-    node: SpinalNode<any>,
+    node: SpinalNode,
     categoryName: string
-  ): Promise<ICategory> {
-    categoryName = categoryName.toString().trim();
-    if (!(node instanceof SpinalNode))
-      throw new Error('node must be a spinalNode instance');
-    if (!categoryName || categoryName.length === 0)
-      throw new Error(
-        'category name must be a string and have at leat one character'
-      );
-
+  ): Promise<ICategory | undefined> {
+    node = validateSpinalNode.parse(node);
+    categoryName = validateString.parse(categoryName);
     const categories = await this.getCategory(node);
-
     return categories.find((el) => {
       return el.nameCat.toString().trim() === categoryName;
     });
   }
 
   /**
-   * Updates the category name
-   * @param {SpinalNode<any>} node
-   * @param {(SpinalNode<any> | ICategory | string)} category
-   * @param {string} newName
-   * @return {*}  {Promise<ICategory>}
+   * This method changes the name of a category from the given node.
+   * @param  {SpinalNode} node - node on which the category to be edited is linked
+   * @param  {number} serverId - The server ID for the category to edit
+   * @param  {string} categoryName - The new category name
+   * @return {*}  {void}
+   * @throws {Error} When the node is not a SpinalNode
+   * @throws {Error} When the server ID is invalid
    * @memberof AttributeService
    */
-  public async updateCategoryName(
-    node: SpinalNode<any>,
-    category: SpinalNode<any> | ICategory | string,
-    newName: string
-  ): Promise<ICategory> {
-    newName = newName.toString().trim();
-
-    if (!newName || newName.length === 0)
-      throw new Error(
-        'category name must be a string and have at leat one character'
-      );
-
-    if (category instanceof SpinalNode) {
-      category.info.name.set(newName);
-      return this._getCategoryElement(category);
-    } else if (typeof category === 'string') {
-      let _category = await this.getCategoryByName(node, category);
-      _category.node.info.name.set(newName);
-      return _category;
-    } else if (category.node instanceof SpinalNode) {
-      category.node.info.name.set(newName);
-      return category;
-    }
-
-    throw new Error('category not found');
+  public editCategoryAttribute(
+    node: SpinalNode,
+    serverId: number,
+    categoryName: string
+  ): void {
+    categoryName = validateString.parse(categoryName);
+    node = validateSpinalNode.parse(node);
+    serverId = z.number().positive().parse(serverId);
+    const child = FileSystem._objects[serverId];
+    validateSpinalNodeOfType(CATEGORY_TYPE).parse(child);
+    child.info.name.set(categoryName);
   }
 
   /**
+   * Updates the category name
+   * @param {SpinalNode} node
+   * @param {(SpinalNode | ICategory | string)} category
+   * @param {string} newName
+   * @return {*}  {Promise<ICategory>}
+   * @throws {Error} When the category is not found
+   * @throws {Error} When the new name is invalid
+   * @memberof AttributeService
+   */
+  public async updateCategoryName(
+    node: SpinalNode,
+    category: SpinalNode | ICategory | string,
+    newName: string
+  ): Promise<ICategory> {
+    newName = validateString.parse(newName);
+    node = validateSpinalNode.parse(node);
+    category = await this.validateICategoryOrString(node, category);
+    category.node.info.name.set(newName);
+    return category;
+  }
+  // #endregion CATEGORY
+
+  // #region ATTRIBUTE
+  /**
    * This method adds(if not exists) an attribute in a category (creates the category if not exist)
-   * @param {SpinalNode<any>} node
+   * @param {SpinalNode} node
    * @param {string} [categoryName='']
    * @param {string} [label='']
    * @param {string} [value='']
    * @param {string} [type]
    * @param {string} [unit]
    * @return {*}  {Promise<SpinalAttribute>}
+   * @throws {Error} When the node is not a SpinalNode
+   * @throws {Error} When the category name is invalid
+   * @throws {Error} When the attribute label is invalid
+   * @throws {Error} When the attribute value is invalid
+   * @throws {Error} When the attribute type is invalid when provided
+   * @throws {Error} When the attribute unit is invalid when provided
    * @memberof AttributeService
    */
   public async addAttributeByCategoryName(
-    node: SpinalNode<any>,
+    node: SpinalNode,
     categoryName: string,
     label: string,
     value: string = '',
     type?: string,
     unit?: string
   ): Promise<SpinalAttribute> {
-    categoryName = categoryName.toString().trim();
-    label = label?.toString().trim();
-    value = value?.toString().trim();
-    type = type?.toString().trim();
-    unit = unit?.toString().trim();
-
-    if (!(node instanceof SpinalNode))
-      throw new Error('node must be a spinalNode instance');
-    if (!label || label.length === 0)
-      throw new Error(
-        'attribute label must be a string and have at leat one character'
-      );
-    if (!categoryName || categoryName.length === 0)
-      throw new Error(
-        'category name must be a string and have at leat one character'
-      );
+    node = validateSpinalNode.parse(node);
+    categoryName = validateString.parse(categoryName);
+    label = validateString.parse(label);
+    value = validateStringCoerce.parse(value);
+    type = validateStringOptional.parse(type);
+    unit = validateStringOptional.parse(unit);
 
     let category = await this.getCategoryByName(node, categoryName);
-
     if (!category) {
       category = await this.addCategoryAttribute(node, categoryName);
     }
-
+    // we are sure that category exist at this point
     return this.addAttributeByCategory(
       node,
       category,
@@ -292,12 +263,12 @@ class AttributeService {
       value,
       type,
       unit
-    );
+    )!;
   }
 
   /**
    * This method adds(if not exists) or update(if exists) an attribute in a category
-   * @param {SpinalNode<any>} node
+   * @param {any} unused
    * @param {ICategory} category
    * @param {string} [label='']
    * @param {string} [value='']
@@ -307,39 +278,31 @@ class AttributeService {
    * @memberof AttributeService
    */
   public addAttributeByCategory(
-    node: SpinalNode<any>,
+    unused: any,
     category: ICategory,
     label: string,
     value: string,
     type?: string,
     unit?: string
-  ): SpinalAttribute {
-    label = label?.toString().trim();
-    value = value?.toString().trim();
-    type = type?.toString().trim();
-    unit = unit?.toString().trim();
+  ): SpinalAttribute | undefined {
+    category = validateICategory.parse(category);
+    label = validateString.parse(label);
+    value = validateStringCoerce.parse(value);
+    type = validateStringOptional.parse(type);
+    unit = validateStringOptional.parse(unit);
 
-    if (!(node instanceof SpinalNode))
-      throw new Error('node must be a spinalNode instance');
-    if (!label || label.length === 0)
-      throw new Error(
-        'attribute label must be a string and have at leat one character'
-      );
-    if (typeof value === 'undefined')
-      throw new Error('The attribute value is required');
-
-    const found = this._labelExistInCategory(category, label);
-    if (!found) {
+    if (!this._labelExistInCategory(category, label)) {
       const attributeModel = new SpinalAttribute(label, value, type, unit);
       category.element.push(attributeModel);
       return attributeModel;
     } else {
-      for (let index = 0; index < category.element.length; index++) {
-        const element: SpinalAttribute = category.element[index];
+      for (const element of category.element) {
         element.upgradeDate();
         const elementLabel = element.label.get();
         if (elementLabel.toString().trim() === label) {
           element.setValue(value);
+          if (type) element.setType(type);
+          if (unit) element.setUnit(unit);
           return element;
         }
       }
@@ -347,14 +310,13 @@ class AttributeService {
   }
 
   /**
-   * Returns an array of all SpinalAttirbute with all categories
-   * @param {SpinalNode<any>} node
+   * Returns an array of all SpinalAttribute with all categories
+   * @param {SpinalNode} node
    * @return {*}  {Promise<SpinalAttribute[]>}
    * @memberof AttributeService
    */
-  public async getAllAttributes(
-    node: SpinalNode<any>
-  ): Promise<SpinalAttribute[]> {
+  public async getAllAttributes(node: SpinalNode): Promise<SpinalAttribute[]> {
+    node = validateSpinalNode.parse(node);
     const categories = await this.getCategory(node);
     const promises = categories.map((el) => {
       return this.getAttributesByCategory(node, el.node.info.name.get());
@@ -369,77 +331,64 @@ class AttributeService {
   }
 
   /**
-   * @param {SpinalNode<any>} node
+   * @param {SpinalNode} node
    * @param {(string | ICategory)} category
-   * @param {string} [label='']
+   * @param {string} label
    * @return {*}  {(Promise<SpinalAttribute | -1>)} : -1 when not found
    * @memberof AttributeService
    */
   public async findOneAttributeInCategory(
-    node: SpinalNode<any>,
+    node: SpinalNode,
     category: string | ICategory,
-    label: string = ''
+    label: string
   ): Promise<SpinalAttribute | -1> {
-    label = label.toString().trim();
-    if (!(node instanceof SpinalNode))
-      throw new Error('node must be a spinalNode instance');
-    const _category =
-      typeof category === 'string'
-        ? await this.getCategoryByName(node, category)
-        : category;
-    if (_category && _category.element) {
-      for (let index = 0; index < _category.element.length; index++) {
-        const element = _category.element[index];
-        element.upgradeDate();
-        if (!!label && element.label.get().toString().trim() === label) {
-          return element;
-        }
+    node = validateSpinalNode.parse(node);
+    label = validateString.parse(label);
+    category = await this.validateICategoryOrString(node, category);
+    for (const element of category.element) {
+      element.upgradeDate();
+      if (label && element.label.get().toString().trim() === label) {
+        return element;
       }
     }
-
     return -1;
   }
 
   /**
    * Takes as parmaters a node and a string(category name) and return all attributes of the category.
-   * @param {SpinalNode<any>} node
+   * @param {SpinalNode} node
    * @param {(string | ICategory)} category
    * @param {string} [label]
    * @return {*}  {Promise<SpinalAttribute[]>}
    * @memberof AttributeService
    */
   public async getAttributesByCategory(
-    node: SpinalNode<any>,
+    node: SpinalNode,
     category: string | ICategory,
     label?: string
   ): Promise<SpinalAttribute[]> {
-    if (!(node instanceof SpinalNode))
-      throw new Error('node must be a spinalNode instance');
-    const _category =
-      typeof category === 'string'
-        ? await this.getCategoryByName(node, category)
-        : category;
-    if (!_category || !_category.element || _category.element.length === 0)
+    node = validateSpinalNode.parse(node);
+    label = validateStringOptional.parse(label);
+    try {
+      category = await this.validateICategoryOrString(node, category);
+    } catch (error) {
       return [];
-
+    }
     if (label) {
-      const labelFound = this._findInLst(_category.element, label);
+      const labelFound = this._findInLst(category.element, label);
       return labelFound ? [labelFound] : [];
     }
 
-    const res = [];
-
-    for (let index = 0; index < _category.element.length; index++) {
-      const element = _category.element[index];
+    const res: SpinalAttribute[] = [];
+    for (const element of category.element) {
       element.upgradeDate();
       res.push(element);
     }
-
     return res;
   }
 
   /**
-   * @param {SpinalNode<any>} node
+   * @param {SpinalNode} node
    * @param {(string | ICategory)} category
    * @param {string} label
    * @param {{ label?: string; value?: string; type?: string; unit?: string }} newValues
@@ -448,40 +397,42 @@ class AttributeService {
    * @memberof AttributeService
    */
   public async updateAttribute(
-    node: SpinalNode<any>,
+    node: SpinalNode,
     category: string | ICategory,
     label: string,
     newValues: { label?: string; value?: string; type?: string; unit?: string },
     createIt: boolean = false
   ): Promise<SpinalAttribute> {
+    node = validateSpinalNode.parse(node);
+    category = await this.validateICategoryOrString(node, category);
+    label = validateString.parse(label);
+    const newValue = validateStringCoerce.optional().parse(newValues.value);
+    const newLabel = validateStringOptional.parse(newValues.label);
+    const newType = validateStringOptional.parse(newValues.type);
+    const newUnit = validateStringOptional.parse(newValues.unit);
+    if (!newValue && !newLabel && !newType && !newUnit) {
+      throw new Error('at least one value to update must be provided');
+    }
     const [attribute] = await this.getAttributesByCategory(
       node,
       category,
       label
     );
     if (!attribute && !createIt) throw new Error('no attribute found');
-    else if (!attribute && createIt && newValues.value) {
-      const _category =
-        typeof category === 'string'
-          ? await this.getCategoryByName(node, category)
-          : category;
-      return this.addAttributeByCategory(
-        node,
-        _category,
-        label,
-        newValues.value?.toString().trim()
-      );
+    else if (!attribute && createIt && newValue && newLabel) {
+      const res = this.addAttributeByCategory(node, category, label, newValue);
+      return res!;
     }
-    if (newValues.label) attribute.setLabel(newValues.label);
-    if (newValues.value) attribute.setValue(newValues.value);
-    if (newValues.type) attribute.setType(newValues.type);
-    if (newValues.unit) attribute.setUnit(newValues.unit);
+    if (newLabel) attribute.setLabel(newLabel);
+    if (newValue) attribute.setValue(newValue);
+    if (newType) attribute.setType(newType);
+    if (newUnit) attribute.setUnit(newUnit);
     return attribute;
   }
 
   /**
    * This methods updates all attributes which have the old_label as label
-   * @param {SpinalNode<any>} node
+   * @param {SpinalNode} node
    * @param {string} old_label
    * @param {string} old_value
    * @param {string} new_label
@@ -490,42 +441,25 @@ class AttributeService {
    * @memberof AttributeService
    */
   public async setAttribute(
-    node: SpinalNode<any>,
+    node: SpinalNode,
     old_label: string,
     old_value: string,
     new_label: string,
     new_value: string
   ): Promise<void> {
-    old_label = old_label.toString().trim();
-    old_value =
-      typeof old_value === 'string' ? old_value.toString().trim() : old_value;
-    new_label = new_label.toString().trim();
-    new_value =
-      typeof new_value === 'string' ? new_value.toString().trim() : new_value;
-
-    if (!old_label || old_label.length === 0)
-      throw new Error(
-        'old_label must be a string and have at leat one character'
-      );
-    if (!new_label || new_label.length === 0)
-      throw new Error(
-        'new_label must be a string and have at leat one character'
-      );
-    if (typeof old_value === 'undefined')
-      throw new Error('old_value is required');
-    if (typeof new_value === 'undefined')
-      throw new Error('new_value is required');
-
+    node = validateSpinalNode.parse(node);
+    old_label = validateString.parse(old_label);
+    old_value = validateStringCoerce.parse(old_value);
+    new_label = validateString.parse(new_label);
+    new_value = validateStringCoerce.parse(new_value);
     let allAttributes = await this.getAllAttributes(node);
     for (let i = 0; i < allAttributes.length; i++) {
       const element = allAttributes[i];
-      if (element.label.get() == old_label) {
+      if (element.label.get().toString().trim() == old_label) {
         if (new_label != '') {
           element.setLabel(new_label);
         }
-        if (new_value != '') {
-          element.setValue(new_value);
-        }
+        element.setValue(new_value);
       } else {
         element.upgradeDate();
       }
@@ -534,7 +468,7 @@ class AttributeService {
 
   /**
    * This methods updates the attribute with the given id from the given node
-   * @param  {SpinalNode<any>} node
+   * @param  {SpinalNode} node
    * @param  {number} serverId
    * @param  {string} new_label
    * @param  {string} new_value
@@ -544,21 +478,22 @@ class AttributeService {
    * @memberof AttributeService
    */
   public async setAttributeById(
-    node: SpinalNode<any>,
+    node: SpinalNode,
     serverId: number,
-    new_label: string,
-    new_value: string,
+    new_label?: string,
+    new_value?: string,
     new_type?: string,
     new_unit?: string
   ): Promise<void> {
-    new_label = new_label.toString().trim();
-    new_value = new_value.toString().trim();
-    new_type = new_type?.toString().trim();
-    new_unit = new_unit?.toString().trim();
-
-    const labelIsValid = new_label && new_label.toString().trim().length > 0;
-    const valueIsValid = typeof new_value !== 'undefined';
-    if (!(labelIsValid && valueIsValid)) return;
+    node = validateSpinalNode.parse(node);
+    serverId = z.number().positive().parse(serverId);
+    new_label = validateStringOptional.parse(new_label);
+    new_value = validateStringCoerce.optional().parse(new_value);
+    new_type = validateStringOptional.parse(new_type);
+    new_unit = validateStringOptional.parse(new_unit);
+    if (!new_label && !new_value && !new_type && !new_unit) {
+      throw new Error('at least one value to update must be provided');
+    }
 
     let allAttributes = await this.getAllAttributes(node);
     for (let i = 0; i < allAttributes.length; i++) {
@@ -574,25 +509,25 @@ class AttributeService {
 
   /**
    * Get all attribute shared with other nodes.
-   * @param  {SpinalNode<any>} node
+   * @param  {SpinalNode} node
    * @param  {string} categoryName?
-   * @return {*}  {Promise<{ parentNode: SpinalNode<any>; categories: ICategory[] }[]>}
+   * @return {*}  {Promise<{ parentNode: SpinalNode; categories: ICategory[] }[]>}
    * @memberof AttributeService
    */
   public async getAttributesShared(
-    node: SpinalNode<any>,
+    node: SpinalNode,
     categoryName?: string
-  ): Promise<{ parentNode: SpinalNode<any>; categories: ICategory[] }[]> {
-    categoryName = categoryName.toString().trim();
+  ): Promise<{ parentNode: SpinalNode; categories: ICategory[] }[]> {
+    node = validateSpinalNode.parse(node);
+    categoryName = validateStringOptional.parse(categoryName);
     const parents = await node.getParents();
     const promises = parents.map(async (parent) => {
       const categories = await this.getCategory(parent);
-      const filterCategory =
-        !categoryName || categoryName.length === 0
-          ? categories
-          : categories.filter(
-              (el) => el.nameCat.toString().trim() === categoryName
-            );
+      const filterCategory = !categoryName
+        ? categories
+        : categories.filter(
+            (el) => el.nameCat.toString().trim() === categoryName
+          );
       return {
         parentNode: parent,
         categories: filterCategory,
@@ -613,12 +548,13 @@ class AttributeService {
     category: ICategory,
     label: string
   ): Promise<boolean> {
+    category = validateICategory.parse(category);
+    label = validateString.parse(label);
     const listAttributes = await category.element.load();
     for (let i = 0; i < listAttributes.length; i++) {
       const element = listAttributes[i];
       const elementLabel = element.label.get();
-
-      if (elementLabel.toString().trim() == label.toString().trim()) {
+      if (elementLabel.toString().trim() == label) {
         listAttributes.splice(i, 1);
         return true;
       } else element.upgradeDate();
@@ -638,6 +574,8 @@ class AttributeService {
     category: ICategory,
     serverId: number
   ): Promise<boolean> {
+    category = validateICategory.parse(category);
+    serverId = z.number().positive().parse(serverId);
     const listAttributes = await category.element.load();
     for (let i = 0; i < listAttributes.length; i++) {
       const element = listAttributes[i];
@@ -653,23 +591,29 @@ class AttributeService {
 
   /**
    * Takes a node of Building and return all attributes
-   * @param {SpinalNode<any>} node
+   * @param {SpinalNode} node
    * @return {*}  {Promise<SpinalAttribute[]>}
    * @memberof AttributeService
    */
   public async getBuildingInformationAttributes(
-    node: SpinalNode<any>
+    node: SpinalNode
   ): Promise<SpinalAttribute[]> {
-    if (!(node instanceof SpinalNode)) return [];
+    try {
+      node = validateSpinalNode.parse(node);
+    } catch (error) {
+      return [];
+    }
 
-    if (node.getType().get() === geographicService.constants.BUILDING_TYPE) {
-      let lst: Promise<SpinalAttribute>[] = [];
-      lst = BUILDINGINFORMATION.map((el: string): Promise<SpinalAttribute> => {
-        return this.findAttributesByLabel(node, el);
-      });
+    if (node.getType().get() === BUILDING_TYPE) {
+      const lst: Promise<SpinalAttribute | undefined>[] =
+        BUILDINGINFORMATION.map(
+          (el: string): Promise<SpinalAttribute | undefined> => {
+            return this.findAttributesByLabel(node, el);
+          }
+        );
 
       return Promise.all(lst).then((element) =>
-        element.filter((el) => typeof el !== 'undefined')
+        element.filter((el): el is SpinalAttribute => typeof el !== 'undefined')
       );
     }
     return [];
@@ -677,56 +621,53 @@ class AttributeService {
 
   /**
    * Takes a node of Building and creates all attributes
-   * @param {SpinalNode<any> | string} node node or nodeId
+   * @param {SpinalNode | string} node node or nodeId
    * @return {*}  {Promise<SpinalAttribute[]>}
    * @memberof AttributeService
    */
   public async setBuildingInformationAttributes(
-    node: SpinalNode<any> | string
+    node: SpinalNode | string
   ): Promise<SpinalAttribute[]> {
-    if (!(node instanceof SpinalNode))
-      node = SpinalGraphService.getRealNode(node);
-
-    if (
-      node &&
-      node.getType().get() === geographicService.constants.BUILDING_TYPE
-    ) {
-      const category = await this.addCategoryAttribute(
-        node,
-        BUILDINGINFORMATIONCATNAME
-      );
-      const promises = BUILDINGINFORMATION.map((el) => {
-        return this.addAttributeByCategory(
-          node as SpinalNode<any>,
-          category,
-          el,
-          'To configure'
-        );
-      });
-
-      await Promise.all(promises);
-      return this.getBuildingInformationAttributes(node);
+    if (typeof node === 'string') node = SpinalGraphService.getRealNode(node);
+    try {
+      node = validateSpinalNodeOfType(BUILDING_TYPE).parse(node);
+    } catch (error) {
+      return [];
     }
+    const category = await this.addCategoryAttribute(
+      node,
+      BUILDINGINFORMATIONCATNAME
+    );
+    const promises = BUILDINGINFORMATION.map((el) => {
+      return this.addAttributeByCategory(
+        node as SpinalNode,
+        category,
+        el,
+        'To configure'
+      );
+    });
 
-    return [];
+    await Promise.all(promises);
+    return this.getBuildingInformationAttributes(node);
   }
 
   /**
-   * @param {SpinalNode<any>} node
+   * @param {SpinalNode} node
    * @param {string} label
    * @param {ICategory} [category]
    * @return {*}  {Promise<SpinalAttribute>}
    * @memberof AttributeService
    */
   public async findAttributesByLabel(
-    node: SpinalNode<any>,
+    node: SpinalNode,
     label: string,
     category?: ICategory
-  ): Promise<SpinalAttribute> {
-    let data: SpinalAttribute[] = [];
-
+  ): Promise<SpinalAttribute | undefined> {
+    let data: SpinalAttribute[];
+    node = validateSpinalNode.parse(node);
+    label = validateString.parse(label);
     if (typeof category !== 'undefined') {
-      // const categoryName = this._getCategoryName(category);
+      category = validateICategory.parse(category);
       data = await this.getAttributesByCategory(node, category.nameCat);
     } else {
       data = await this.getAllAttributes(node);
@@ -737,7 +678,7 @@ class AttributeService {
 
   /**
    * Retrieves attributes based on a given node and document schema.
-   * e.g. `getAttrBySchema(node, { 'Cat1': ['Attr1', 'Attr2'] as const, 'Cat2': ['Attr3'] as const })`
+   * e.g. getAttrBySchema(node, { 'Cat1': ['Attr1', 'Attr2'] as const, 'Cat2': ['Attr3'] as const })`
    * => `{ 'Cat1': { 'Attr1': 'Value1', 'Attr2': 'Value2' }, 'Cat2': { 'Attr3': 'Value3' } }`
    *
    * @template T - The type of the document schema.
@@ -753,6 +694,7 @@ class AttributeService {
       [V in T[K][number]]: string;
     };
   }> {
+    node = validateSpinalNode.parse(node);
     const cats = await node.getChildren(NODE_TO_CATEGORY_RELATION);
     const promises: Promise<{
       key: string;
@@ -798,11 +740,18 @@ class AttributeService {
    * @returns A Promise that resolves when the attributes and categories have been created or updated.
    */
   public async createOrUpdateAttrsAndCategories(
-    node: SpinalNode<any>,
+    node: SpinalNode,
     categoryName: string,
     attrsToUp: Record<string, string>
   ): Promise<void> {
-    async function getCatNode(node: SpinalNode, name: string) {
+    node = validateSpinalNode.parse(node);
+    categoryName = validateString.parse(categoryName);
+    attrsToUp = z.record(validateString, validateString).parse(attrsToUp);
+
+    async function getCatNode(
+      node: SpinalNode<Lst<SpinalAttribute>>,
+      name: string
+    ): Promise<SpinalNode<Lst<SpinalAttribute>> | undefined> {
       const children = await node.getChildren(NODE_TO_CATEGORY_RELATION);
       for (const child of children) {
         if (child.info.name.get() === name) return child;
@@ -811,15 +760,15 @@ class AttributeService {
     const catNode = await getCatNode(node, categoryName);
     let cat: ICategory;
     if (!catNode) {
-      cat = await attributeService.addCategoryAttribute(node, categoryName);
+      cat = await this.addCategoryAttribute(node, categoryName);
     } else {
       cat = {
-        element: <Lst>await catNode.getElement(true),
+        element: await catNode.getElement(true),
         nameCat: categoryName,
         node,
       };
     }
-    const attrs = await attributeService.getAttributesByCategory(node, cat);
+    const attrs = await this.getAttributesByCategory(node, cat);
     attrs.forEach((attr) => attr.upgradeDate());
     for (const label in attrsToUp) {
       if (Object.prototype.hasOwnProperty.call(attrsToUp, label)) {
@@ -828,106 +777,25 @@ class AttributeService {
         if (attr) {
           attr.setValue(value);
         } else {
-          attributeService.addAttributeByCategory(node, cat, label, value);
+          this.addAttributeByCategory(node, cat, label, value);
         }
       }
     }
   }
+  // #endregion ATTRIBUTE
 
-  ///////////////////////////////////////////////////////////////////
-  //              ATTRIBUTES LINKED DIRECTLY TO NODE               //
-  ///////////////////////////////////////////////////////////////////
-
-  /**
-   * This methods link directily the attribute to the node without use category.
-   * @param {SpinalNode<any>} node
-   * @param {string} label
-   * @param {string} value
-   * @param {string} [type='']
-   * @param {string} [unit='']
-   * @return {*}  {Promise<SpinalNode<any>>}
-   * @memberof AttributeService
-   */
-  public async addAttribute(
-    node: SpinalNode<any>,
-    label: string,
-    value: string,
-    type?: string,
-    unit?: string
-  ): Promise<SpinalNode<any>> {
-    // const labelIsValid = label && label.toString().trim().length > 0;
-    // const valueIsValid = typeof value !== "undefined";
-
-    // if (!(labelIsValid && valueIsValid)) return;
-    label = label.toString().trim();
-    value = value.toString().trim();
-    type = type?.toString().trim();
-    unit = unit?.toString().trim();
-
-    if (!(node instanceof SpinalNode))
-      throw new Error('node must be a spinalNode instance');
-    if (!label || label.length === 0)
-      throw new Error(
-        'attribute label must be a string and have at leat one character'
-      );
-    if (typeof value === 'undefined')
-      throw new Error('The attribute value is required');
-
-    const attributeExist = await this._attributeExist(node, label);
-
-    if (attributeExist) {
-      return attributeExist;
-    }
-
-    const attributeModel = new SpinalAttribute(label, value, type, unit);
-    const attributeNode = new SpinalNode(
-      `[Attributes] ${label}`,
-      ATTRIBUTE_TYPE,
-      attributeModel
-    );
-    await node.addChild(
-      attributeNode,
-      NODE_TO_ATTRIBUTE,
-      SPINAL_RELATION_PTR_LST_TYPE
-    );
-    return attributeNode;
-  }
-
-  /**
-   * get and returns all attribute linked directely to the node
-   * @param {SpinalNode<any>} node
-   * @return {*}  {Promise<{ node: SpinalNode<any>; element: SpinalAttribute }[]>}
-   * @memberof AttributeService
-   */
-  public async getAttributes(
-    node: SpinalNode<any>
-  ): Promise<{ node: SpinalNode<any>; element: SpinalAttribute }[]> {
-    const attributes = await node.getChildren(NODE_TO_ATTRIBUTE);
-    const promises = attributes.map(async (el) => {
-      return {
-        node: el,
-        element: await el.getElement(),
-      };
-    });
-
-    return Promise.all(promises);
-  }
-
-  ///////////////////////////////////////////////////////////////////
-  //                          PRIVATES                             //
-  ///////////////////////////////////////////////////////////////////
-
+  // #region PRIVATES
   /**
    * Check if category is linked to node and return it.
-   * @param {SpinalNode<any>} node
+   * @param {SpinalNode} node
    * @param {string} categoryName
-   * @return {*}  {Promise<SpinalNode<any>>}
+   * @return {*}  {Promise<SpinalNode>}
    * @memberof AttributeService
    */
   public async _categoryExist(
-    node: SpinalNode<any>,
+    node: SpinalNode,
     categoryName: string
-  ): Promise<SpinalNode<any>> {
+  ): Promise<SpinalNode | undefined> {
     // const categories = await node.getChildren(NODE_TO_CATEGORY_RELATION);
     const categories = await this.getCategory(node);
 
@@ -942,12 +810,12 @@ class AttributeService {
 
   /**
    * Takes a category node and format it like an ICategory type;
-   * @param {SpinalNode<any>} categoryNode
+   * @param {SpinalNode<Lst<SpinalAttribute>>} categoryNode
    * @return {*}  {Promise<ICategory>}
    * @memberof AttributeService
    */
   public async _getCategoryElement(
-    categoryNode: SpinalNode<any>
+    categoryNode: SpinalNode<Lst<SpinalAttribute>>
   ): Promise<ICategory> {
     const element = await categoryNode.getElement();
     return {
@@ -989,15 +857,15 @@ class AttributeService {
 
   /**
    * Check if an attribute is directely link to the node
-   * @param {SpinalNode<any>} node
+   * @param {SpinalNode} node
    * @param {string} argAttributeName
-   * @return {*}  {Promise<SpinalNode<any>>}
+   * @return {*}  {Promise<SpinalNode>}
    * @memberof AttributeService
    */
   public async _attributeExist(
-    node: SpinalNode<any>,
+    node: SpinalNode,
     argAttributeName: string
-  ): Promise<SpinalNode<any>> {
+  ): Promise<SpinalNode | undefined> {
     const attributes = await node.getChildren([NODE_TO_ATTRIBUTE]);
 
     return attributes.find((el) => {
@@ -1006,30 +874,48 @@ class AttributeService {
   }
 
   /**
-   * @param {SpinalNode<any>} node
+   * @param {SpinalNode} node
    * @return {*}  {Promise<void>}
    * @memberof AttributeService
    */
-  public removeNode(node: SpinalNode<any>): Promise<void> {
+  public removeNode(node: SpinalNode): Promise<void> {
     return node.removeFromGraph();
   }
 
   /**
    * @private
    * @param {spinal.Lst<SpinalAttribute>} Lst
-   * @param {string} value
+   * @param {string} label
    * @return {*}  {SpinalAttribute}
    * @memberof AttributeService
    */
   private _findInLst(
     Lst: spinal.Lst<SpinalAttribute>,
-    value: string
-  ): SpinalAttribute {
+    label: string
+  ): SpinalAttribute | undefined {
     for (let index = 0; index < Lst.length; index++) {
       const element = Lst[index];
-      if (element.label.get() == value) return element;
+      if (element.label.get().trim() == label) return element;
     }
+    return undefined;
   }
+
+  private async validateICategoryOrString(
+    node: SpinalNode,
+    category: ICategory | string | SpinalNode
+  ) {
+    if (typeof category === 'string') {
+      const temp = await this.getCategoryByName(node, category);
+      if (!temp) throw new Error('category not found');
+      return temp;
+    } else if (category instanceof SpinalNode) {
+      validateSpinalNodeOfType(CATEGORY_TYPE).parse(category);
+      return this._getCategoryElement(category);
+    }
+    validateICategory.parse(category);
+    return category;
+  }
+  // #endregion PRIVATES
 }
 
 const attributeService = new AttributeService();

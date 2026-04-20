@@ -1,3 +1,4 @@
+import type { Directory } from 'spinal-core-connectorjs';
 export interface IViewState {
     viewState: string;
     objectState: string;
@@ -5,5 +6,5 @@ export interface IViewState {
 export interface IFileNote {
     viewPoint?: IViewState;
     file: File;
-    directory: spinal.Directory<any>;
+    directory: Directory;
 }
