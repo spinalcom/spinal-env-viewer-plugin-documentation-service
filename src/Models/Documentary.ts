@@ -1,6 +1,6 @@
 import { File as SpinalFile, Directory as SpinalDirectory } from 'spinal-core-connectorjs_type';
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from 'spinal-model-graph';
-import { addChildrenToNode, convertFileToSpinalFile } from 'src/utils/files';
+import { addChildrenToNode, convertFileToSpinalFile } from '../utils/files';
 import { DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from './constants';
 
 class SpinalDocumentary {

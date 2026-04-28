@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpinalDocumentary = void 0;
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_model_graph_1 = require("spinal-model-graph");
-const files_1 = require("src/utils/files");
+const files_1 = require("../utils/files");
 const constants_1 = require("./constants");
 class SpinalDocumentary {
     constructor() { }
