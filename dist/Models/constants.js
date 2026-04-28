@@ -23,7 +23,7 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BUILDINGINFORMATIONCATNAME = exports.BUILDINGINFORMATION = exports.ATTRIBUTE_TYPE = exports.CATEGORY_TYPE = exports.NODE_TO_ATTRIBUTE = exports.NODE_TO_CATEGORY_RELATION = exports.NOTE_GROUP_NAME = exports.NOTE_CATEGORY_NAME = exports.NOTE_CONTEXT_NAME = exports.NOTE_TYPE = exports.NOTE_RELATION = exports.URL_TYPE = exports.URL_RELATION = void 0;
+exports.TO_FOLDER_RELATION = exports.TO_FILE_RELATION = exports.FILE_NODE_TYPE = exports.DIRECTORY_NODE_TYPE = exports.BUILDINGINFORMATIONCATNAME = exports.BUILDINGINFORMATION = exports.ATTRIBUTE_TYPE = exports.CATEGORY_TYPE = exports.NODE_TO_ATTRIBUTE = exports.NODE_TO_CATEGORY_RELATION = exports.NOTE_GROUP_NAME = exports.NOTE_CATEGORY_NAME = exports.NOTE_CONTEXT_NAME = exports.NOTE_TYPE = exports.NOTE_RELATION = exports.URL_TYPE = exports.URL_RELATION = void 0;
 const URL_RELATION = 'hasURL';
 exports.URL_RELATION = URL_RELATION;
 const URL_TYPE = 'SpinalURL';
@@ -56,4 +56,12 @@ const BUILDINGINFORMATION = [
 exports.BUILDINGINFORMATION = BUILDINGINFORMATION;
 const BUILDINGINFORMATIONCATNAME = 'Spinal Building Information';
 exports.BUILDINGINFORMATIONCATNAME = BUILDINGINFORMATIONCATNAME;
+const DIRECTORY_NODE_TYPE = 'SpinalDirectory';
+exports.DIRECTORY_NODE_TYPE = DIRECTORY_NODE_TYPE;
+const FILE_NODE_TYPE = 'SpinalFile';
+exports.FILE_NODE_TYPE = FILE_NODE_TYPE;
+const TO_FILE_RELATION = 'DirectoryhasFiles';
+exports.TO_FILE_RELATION = TO_FILE_RELATION;
+const TO_FOLDER_RELATION = 'DirectoryhasDirectory';
+exports.TO_FOLDER_RELATION = TO_FOLDER_RELATION;
 //# sourceMappingURL=constants.js.map

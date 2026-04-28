@@ -27,6 +27,7 @@ exports.FileExplorer = void 0;
 const spinal_core_connectorjs_1 = require("spinal-core-connectorjs");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const spinal_models_documentation_1 = require("spinal-models-documentation");
+const files_1 = require("src/utils/files");
 class FileExplorer {
     /**
      * @static
@@ -115,21 +116,26 @@ class FileExplorer {
      * @memberof FileExplorer
      */
     static addFileUpload(directory, files) {
-        const isFileList = typeof FileList !== 'undefined' && files instanceof FileList;
-        if (!isFileList && !Array.isArray(files))
-            files = [files];
-        console.log('files', files);
-        const res = [];
-        for (let i = 0; i < files.length; i++) {
-            const element = files[i];
-            let filePath = element.buffer
-                ? new spinal_core_connectorjs_1.Path(element.buffer, FileExplorer.getMimeType(element.name))
-                : new spinal_core_connectorjs_1.Path(element, FileExplorer.getMimeType(element.name));
-            let myFile = new spinal_core_connectorjs_1.File(element.name, filePath, undefined);
-            directory.push(myFile);
-            res.push(myFile);
+        const filesConverted = (0, files_1.convertFileToSpinalFile)(files);
+        for (const file of filesConverted) {
+            directory.push(file);
         }
-        return res;
+        return filesConverted;
+        // const isFileList =
+        //   typeof FileList !== 'undefined' && files instanceof FileList;
+        // if (!isFileList && !Array.isArray(files)) files = [files];
+        // console.log('files', files);
+        // const res = [];
+        // for (let i = 0; i < files.length; i++) {
+        //   const element = files[i];
+        //   let filePath: spinal.Path = element.buffer
+        //     ? new Path(element.buffer, FileExplorer.getMimeType(element.name))
+        //     : new Path(element, FileExplorer.getMimeType(element.name));
+        //   let myFile = new spinalFile(element.name, filePath, undefined);
+        //   directory.push(myFile);
+        //   res.push(myFile);
+        // }
+        // return res;
     }
     /**
      * @static

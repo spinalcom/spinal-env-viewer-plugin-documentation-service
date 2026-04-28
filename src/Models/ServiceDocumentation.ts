@@ -25,6 +25,7 @@
 import { AttributeService } from './AttributeService';
 import { NoteService } from './NoteService';
 import { UrlService } from './UrlService';
+import { SpinalDocumentary } from "./Documentary";
 
 // @ts-ignore
 const globalType: any = typeof window === 'undefined' ? global : window;
@@ -41,14 +42,11 @@ function applyMixins(derivedConstructor: any, baseConstructors: any[]) {
   });
 }
 
-class ServiceDocumentation {}
+class ServiceDocumentation { }
 
-interface ServiceDocumentation
-  extends AttributeService,
-    NoteService,
-    UrlService {}
+interface ServiceDocumentation extends AttributeService, NoteService, UrlService, SpinalDocumentary { }
 
-applyMixins(ServiceDocumentation, [AttributeService, NoteService, UrlService]);
+applyMixins(ServiceDocumentation, [AttributeService, NoteService, UrlService, SpinalDocumentary]);
 
 const serviceDocumentation = new ServiceDocumentation();
 

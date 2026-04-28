@@ -44,6 +44,12 @@ const BUILDINGINFORMATION: string[] = [
 ];
 const BUILDINGINFORMATIONCATNAME: string = 'Spinal Building Information';
 
+
+const DIRECTORY_NODE_TYPE: string = 'SpinalDirectory';
+const FILE_NODE_TYPE: string = 'SpinalFile';
+const TO_FILE_RELATION: string = 'DirectoryhasFiles';
+const TO_FOLDER_RELATION: string = 'DirectoryhasDirectory';
+
 export {
   URL_RELATION,
   URL_TYPE,
@@ -58,4 +64,8 @@ export {
   ATTRIBUTE_TYPE,
   BUILDINGINFORMATION,
   BUILDINGINFORMATIONCATNAME,
+  DIRECTORY_NODE_TYPE,
+  FILE_NODE_TYPE,
+  TO_FILE_RELATION,
+  TO_FOLDER_RELATION
 };

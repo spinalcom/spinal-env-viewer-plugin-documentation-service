@@ -27,6 +27,7 @@ exports.serviceDocumentation = exports.ServiceDocumentation = void 0;
 const AttributeService_1 = require("./AttributeService");
 const NoteService_1 = require("./NoteService");
 const UrlService_1 = require("./UrlService");
+const Documentary_1 = require("./Documentary");
 // @ts-ignore
 const globalType = typeof window === 'undefined' ? global : window;
 function applyMixins(derivedConstructor, baseConstructors) {
@@ -39,7 +40,7 @@ function applyMixins(derivedConstructor, baseConstructors) {
 class ServiceDocumentation {
 }
 exports.ServiceDocumentation = ServiceDocumentation;
-applyMixins(ServiceDocumentation, [AttributeService_1.AttributeService, NoteService_1.NoteService, UrlService_1.UrlService]);
+applyMixins(ServiceDocumentation, [AttributeService_1.AttributeService, NoteService_1.NoteService, UrlService_1.UrlService, Documentary_1.SpinalDocumentary]);
 const serviceDocumentation = new ServiceDocumentation();
 exports.serviceDocumentation = serviceDocumentation;
 globalType.spinal['serviceDocumentation'] = serviceDocumentation;

@@ -28,6 +28,7 @@ import {
   SPINAL_RELATION_PTR_LST_TYPE,
 } from 'spinal-env-viewer-graph-service';
 import { MESSAGE_TYPES } from 'spinal-models-documentation';
+import { convertFileToSpinalFile } from 'src/utils/files';
 
 export class FileExplorer {
   /**
@@ -69,11 +70,7 @@ export class FileExplorer {
     let nbNode = await this.getNbChildren(selectedNode);
     if (nbNode == 0) {
       let myDirectory = new Directory();
-      let node = await selectedNode.addChild(
-        myDirectory,
-        'hasFiles',
-        SPINAL_RELATION_PTR_LST_TYPE
-      );
+      let node = await selectedNode.addChild(myDirectory, 'hasFiles', SPINAL_RELATION_PTR_LST_TYPE);
       node.info.name.set('[Files]');
       node.info.type.set('SpinalFiles');
       return myDirectory;
@@ -134,27 +131,37 @@ export class FileExplorer {
     directory: spinal.Directory<any>,
     files: (spinalFile | { name: string; buffer: Buffer })[] | FileList | any
   ): spinal.File<any>[] {
-    const isFileList =
-      typeof FileList !== 'undefined' && files instanceof FileList;
 
-    if (!isFileList && !Array.isArray(files)) files = [files];
 
-    console.log('files', files);
-    const res = [];
+    const filesConverted = convertFileToSpinalFile(files);
 
-    for (let i = 0; i < files.length; i++) {
-      const element = files[i];
-
-      let filePath: spinal.Path = element.buffer
-        ? new Path(element.buffer, FileExplorer.getMimeType(element.name))
-        : new Path(element, FileExplorer.getMimeType(element.name));
-      let myFile = new spinalFile(element.name, filePath, undefined);
-
-      directory.push(myFile);
-      res.push(myFile);
+    for (const file of filesConverted) {
+      directory.push(file);
     }
 
-    return res;
+    return filesConverted;
+
+    // const isFileList =
+    //   typeof FileList !== 'undefined' && files instanceof FileList;
+
+    // if (!isFileList && !Array.isArray(files)) files = [files];
+
+    // console.log('files', files);
+    // const res = [];
+
+    // for (let i = 0; i < files.length; i++) {
+    //   const element = files[i];
+
+    //   let filePath: spinal.Path = element.buffer
+    //     ? new Path(element.buffer, FileExplorer.getMimeType(element.name))
+    //     : new Path(element, FileExplorer.getMimeType(element.name));
+    //   let myFile = new spinalFile(element.name, filePath, undefined);
+
+    //   directory.push(myFile);
+    //   res.push(myFile);
+    // }
+
+    // return res;
   }
 
   /**
