@@ -2,12 +2,13 @@ import { File as SpinalFile, Directory as SpinalDirectory } from 'spinal-core-co
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from 'spinal-model-graph';
 import { addChildrenToNode, convertFileToSpinalFile } from '../utils/files';
 import { DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from './constants';
+import { FilesArgType } from '../interfaces';
 
 class SpinalDocumentary {
     constructor() { }
 
 
-    public createFile(contextNode: SpinalContext, parentNode: SpinalNode, file: SpinalFile): Promise<SpinalNode[]> {
+    public createFile(contextNode: SpinalContext, parentNode: SpinalNode, file: FilesArgType): Promise<SpinalNode[]> {
         const filesConverted = convertFileToSpinalFile(file);
         const promises: Promise<SpinalNode>[] = [];
 
@@ -19,10 +20,11 @@ class SpinalDocumentary {
         return Promise.all(promises);
     }
 
-    public createDirectory(contextNode: SpinalContext, parentNode: SpinalNode, name: string): Promise<SpinalNode> {
-        const directory = new SpinalDirectory();
 
-        const node = new SpinalNode(name, DIRECTORY_NODE_TYPE, directory);
+    public createDirectory(contextNode: SpinalContext, parentNode: SpinalNode, name: string, icon: string = "folder"): Promise<SpinalNode> {
+        const file = new SpinalFile(name, new SpinalDirectory(), { type: "Directory", icon });
+
+        const node = new SpinalNode(name, DIRECTORY_NODE_TYPE, file);
         return addChildrenToNode(parentNode, node, TO_FOLDER_RELATION, contextNode);
     }
 

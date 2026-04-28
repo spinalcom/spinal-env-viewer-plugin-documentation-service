@@ -17,7 +17,7 @@ function convertFileToSpinalFile(files) {
             filePath = new spinal_core_connectorjs_type_1.Path(element.buffer, FileExplorer_1.FileExplorer.getMimeType(element.name));
         else
             filePath = new spinal_core_connectorjs_type_1.Path(element, FileExplorer_1.FileExplorer.getMimeType(element.name));
-        let file = new spinal_core_connectorjs_type_1.File(element.name, filePath, undefined);
+        let file = new spinal_core_connectorjs_type_1.File(element.name, filePath, { model_type: "File" });
         res.push(file);
     }
     return res;
@@ -37,7 +37,12 @@ function addChildrenToNode(parentNode, childNode, relationName, contextNode) {
 }
 exports.addChildrenToNode = addChildrenToNode;
 async function _addFileNodeToDirectory(directoryNode, file) {
-    const directory = await directoryNode.getElement(true);
+    let directory = await directoryNode.getElement(true);
+    if (directory instanceof spinal_core_connectorjs_type_1.File && directory._info?.model_type?.get() === "Directory") {
+        const directoryElement = await new Promise(resolve => directory.load((e) => resolve(e)));
+        if (directoryElement instanceof spinal_core_connectorjs_type_1.Directory)
+            directory = directoryElement;
+    }
     if (!directory)
         return;
     directory.push(file);

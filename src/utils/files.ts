@@ -2,8 +2,8 @@ import { File as SpinalFile, Path as SpinalPath, Directory as SpinalDirectory } 
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from 'spinal-env-viewer-graph-service';
 import { FileExplorer } from '../Models/FileExplorer';
 import { DIRECTORY_NODE_TYPE } from "../Models/constants"
+import { FilesArgType } from '../interfaces';
 
-export type FilesArgType = (SpinalFile | { name: string; buffer: Buffer })[] | FileList | any
 
 
 export function convertFileToSpinalFile(files: FilesArgType): SpinalFile[] {
@@ -20,7 +20,7 @@ export function convertFileToSpinalFile(files: FilesArgType): SpinalFile[] {
         if (element.buffer) filePath = new SpinalPath(element.buffer, FileExplorer.getMimeType(element.name));
         else filePath = new SpinalPath(element, FileExplorer.getMimeType(element.name));
 
-        let file = new SpinalFile(element.name, filePath, undefined);
+        let file = new SpinalFile(element.name, filePath, { model_type: "File" });
 
         res.push(file);
     }
@@ -44,8 +44,16 @@ export function addChildrenToNode(parentNode: SpinalNode, childNode: SpinalNode,
 
 
 async function _addFileNodeToDirectory(directoryNode: SpinalNode, file: SpinalFile | SpinalDirectory): Promise<SpinalDirectory | undefined> {
-    const directory = await directoryNode.getElement(true) as SpinalDirectory;
+    let directory = await directoryNode.getElement(true);
+
+    if (directory instanceof SpinalFile && directory._info?.model_type?.get() === "Directory") {
+        const directoryElement = await new Promise(resolve => directory.load((e: SpinalDirectory) => resolve(e)));
+
+        if (directoryElement instanceof SpinalDirectory) directory = directoryElement;
+    }
+
     if (!directory) return;
+
 
     directory.push(file);
     return directory;

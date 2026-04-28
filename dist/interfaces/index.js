@@ -40,4 +40,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./attributes/ICategory"), exports);
 __exportStar(require("./attributes/IUrl"), exports);
 __exportStar(require("./notes/IFileNote"), exports);
+__exportStar(require("./types"), exports);
 //# sourceMappingURL=index.js.map
