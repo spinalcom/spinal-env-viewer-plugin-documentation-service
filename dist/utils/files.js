@@ -40,7 +40,7 @@ async function _addFileNodeToDirectory(directoryNode, file) {
     const directory = await directoryNode.getElement(true);
     if (!directory)
         return;
-    directory.addFile(file);
+    directory.push(file);
     return directory;
 }
 //# sourceMappingURL=files.js.map

@@ -47,6 +47,6 @@ async function _addFileNodeToDirectory(directoryNode: SpinalNode, file: SpinalFi
     const directory = await directoryNode.getElement(true) as SpinalDirectory;
     if (!directory) return;
 
-    directory.addFile(file);
+    directory.push(file);
     return directory;
 }
