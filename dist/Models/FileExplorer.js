@@ -27,7 +27,7 @@ exports.FileExplorer = void 0;
 const spinal_core_connectorjs_1 = require("spinal-core-connectorjs");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const spinal_models_documentation_1 = require("spinal-models-documentation");
-const files_1 = require("src/utils/files");
+const files_1 = require("../utils/files");
 class FileExplorer {
     /**
      * @static

@@ -1,6 +1,7 @@
 import { File as SpinalFile, Path as SpinalPath, Directory as SpinalDirectory } from 'spinal-core-connectorjs_type';
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from 'spinal-env-viewer-graph-service';
-import { DIRECTORY_NODE_TYPE, FileExplorer } from 'src';
+import { FileExplorer } from '../Models/FileExplorer';
+import { DIRECTORY_NODE_TYPE } from "../Models/constants"
 
 export type FilesArgType = (SpinalFile | { name: string; buffer: Buffer })[] | FileList | any
 

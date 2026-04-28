@@ -28,7 +28,7 @@ import {
   SPINAL_RELATION_PTR_LST_TYPE,
 } from 'spinal-env-viewer-graph-service';
 import { MESSAGE_TYPES } from 'spinal-models-documentation';
-import { convertFileToSpinalFile } from 'src/utils/files';
+import { convertFileToSpinalFile } from '../utils/files';
 
 export class FileExplorer {
   /**
