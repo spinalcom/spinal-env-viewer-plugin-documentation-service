@@ -8,8 +8,8 @@ class SpinalDocumentary {
     constructor() { }
 
 
-    public createFileNode(contextNode: SpinalContext, parentNode: SpinalNode, file: FilesArgType): Promise<SpinalNode[]> {
-        const filesConverted = convertFileToSpinalFile(file);
+    public createFileNode(contextNode: SpinalContext, parentNode: SpinalNode, files: FilesArgType): Promise<SpinalNode[]> {
+        const filesConverted = convertFileToSpinalFile(files);
         const promises: Promise<SpinalNode>[] = [];
 
         for (const file of filesConverted) {

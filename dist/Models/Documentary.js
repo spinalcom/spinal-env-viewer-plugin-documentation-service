@@ -7,8 +7,8 @@ const files_1 = require("../utils/files");
 const constants_1 = require("./constants");
 class SpinalDocumentary {
     constructor() { }
-    createFileNode(contextNode, parentNode, file) {
-        const filesConverted = (0, files_1.convertFileToSpinalFile)(file);
+    createFileNode(contextNode, parentNode, files) {
+        const filesConverted = (0, files_1.convertFileToSpinalFile)(files);
         const promises = [];
         for (const file of filesConverted) {
             const node = new spinal_model_graph_1.SpinalNode(file.name.get(), constants_1.FILE_NODE_TYPE, file);
