@@ -7,7 +7,7 @@ const files_1 = require("../utils/files");
 const constants_1 = require("./constants");
 class SpinalDocumentary {
     constructor() { }
-    createFile(contextNode, parentNode, file) {
+    createFileNode(contextNode, parentNode, file) {
         const filesConverted = (0, files_1.convertFileToSpinalFile)(file);
         const promises = [];
         for (const file of filesConverted) {
@@ -16,7 +16,7 @@ class SpinalDocumentary {
         }
         return Promise.all(promises);
     }
-    createDirectory(contextNode, parentNode, name, icon = "folder") {
+    createDirectoryNode(contextNode, parentNode, name, icon = "folder") {
         const file = new spinal_core_connectorjs_type_1.File(name, new spinal_core_connectorjs_type_1.Directory(), { model_type: "Directory", icon });
         const node = new spinal_model_graph_1.SpinalNode(name, constants_1.DIRECTORY_NODE_TYPE, file);
         return (0, files_1.addChildrenToNode)(parentNode, node, constants_1.TO_FOLDER_RELATION, contextNode);

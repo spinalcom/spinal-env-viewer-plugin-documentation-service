@@ -8,7 +8,7 @@ class SpinalDocumentary {
     constructor() { }
 
 
-    public createFile(contextNode: SpinalContext, parentNode: SpinalNode, file: FilesArgType): Promise<SpinalNode[]> {
+    public createFileNode(contextNode: SpinalContext, parentNode: SpinalNode, file: FilesArgType): Promise<SpinalNode[]> {
         const filesConverted = convertFileToSpinalFile(file);
         const promises: Promise<SpinalNode>[] = [];
 
@@ -21,7 +21,7 @@ class SpinalDocumentary {
     }
 
 
-    public createDirectory(contextNode: SpinalContext, parentNode: SpinalNode, name: string, icon: string = "folder"): Promise<SpinalNode> {
+    public createDirectoryNode(contextNode: SpinalContext, parentNode: SpinalNode, name: string, icon: string = "folder"): Promise<SpinalNode> {
         const file = new SpinalFile(name, new SpinalDirectory(), { model_type: "Directory", icon });
 
         const node = new SpinalNode(name, DIRECTORY_NODE_TYPE, file);
