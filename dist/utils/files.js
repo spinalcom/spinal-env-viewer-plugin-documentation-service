@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addChildrenToNode = exports.convertFileToSpinalFile = void 0;
+exports.getFilesFromDirectory = exports.addChildrenToNode = exports.convertFileToSpinalFile = void 0;
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const FileExplorer_1 = require("../Models/FileExplorer");
@@ -48,4 +48,16 @@ async function _addFileNodeToDirectory(directoryNode, file) {
     directory.push(file);
     return directory;
 }
+async function getFilesFromDirectory(directoryNode) {
+    const directory = await new Promise(resolve => directoryNode.load((e) => resolve(e)));
+    const res = [];
+    if (directory instanceof spinal_core_connectorjs_type_1.Directory) {
+        for (let i = 0; i < directory.length; i++) {
+            const element = directory[i];
+            res.push(element);
+        }
+    }
+    return res;
+}
+exports.getFilesFromDirectory = getFilesFromDirectory;
 //# sourceMappingURL=files.js.map

@@ -58,3 +58,18 @@ async function _addFileNodeToDirectory(directoryNode: SpinalNode, file: SpinalFi
     directory.push(file);
     return directory;
 }
+
+
+export async function getFilesFromDirectory(directoryNode: SpinalFile): Promise<(SpinalFile | SpinalDirectory)[]> {
+    const directory = await new Promise(resolve => directoryNode.load((e: SpinalDirectory) => resolve(e)));
+    const res: (SpinalFile | SpinalDirectory)[] = [];
+
+    if (directory instanceof SpinalDirectory) {
+        for (let i = 0; i < directory.length; i++) {
+            const element = directory[i];
+            res.push(element);
+        }
+    }
+
+    return res;
+}
