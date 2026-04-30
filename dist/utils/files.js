@@ -104,7 +104,7 @@ function getPathData(dynamicId, hubUrl = "") {
     });
 }
 async function convertTreeToFileBuffers(startNode) {
-    const queue = [{ path: startNode.name.get(), file: await startNode.getElement(true) }];
+    const queue = await getStarterQueue(startNode);
     const filesBuffers = [];
     while (queue.length > 0) {
         const itemToProcess = queue.shift();
@@ -124,4 +124,23 @@ async function convertTreeToFileBuffers(startNode) {
     return filesBuffers;
 }
 exports.convertTreeToFileBuffers = convertTreeToFileBuffers;
+async function getStarterQueue(startNode) {
+    const queue = [{ node: startNode, path: startNode.getName().get() }];
+    const res = [];
+    while (queue.length > 0) {
+        const data = queue.shift();
+        if (!data)
+            continue;
+        const { node, path } = data;
+        const type = node.getType().get();
+        if (type === constants_1.FILE_NODE_TYPE || type === constants_1.DIRECTORY_NODE_TYPE) {
+            res.push({ path, file: await node.getElement(true) });
+        }
+        const children = await node.getChildren();
+        for (const child of children) {
+            queue.push({ node: child, path: `${path}/${child.getName().get()}` });
+        }
+    }
+    return res;
+}
 //# sourceMappingURL=files.js.map

@@ -125,7 +125,7 @@ function getPathData(dynamicId: number, hubUrl: string = ""): Promise<Buffer> {
 }
 
 export async function convertTreeToFileBuffers(startNode: SpinalNode<any>): Promise<{ name: string; path: string; buffer: Buffer; }[]> {
-    const queue: any = [{ path: startNode.name.get(), file: await startNode.getElement(true) as SpinalFile }];
+    const queue = await getStarterQueue(startNode);
     const filesBuffers: { name: string; path: string; buffer: Buffer; }[] = [];
 
     while (queue.length > 0) {
@@ -142,10 +142,34 @@ export async function convertTreeToFileBuffers(startNode: SpinalNode<any>): Prom
             const children = await getFilesFromDirectory(file);
 
             for (const child of children) {
-                queue.push({ path: `${path}/${child.name.get()}`, file: child });
+                queue.push({ path: `${path}/${child.name.get()}`, file: child as SpinalFile });
             }
         }
     }
 
     return filesBuffers;
+}
+
+async function getStarterQueue(startNode: SpinalNode): Promise<{ path: string, file: SpinalFile }[]> {
+    const queue: { node: SpinalNode, path: string }[] = [{ node: startNode, path: startNode.getName().get() }];
+    const res: { path: string, file: SpinalFile }[] = [];
+
+    while (queue.length > 0) {
+        const data = queue.shift();
+        if (!data) continue;
+
+        const { node, path } = data;
+        const type = node.getType().get();
+        if (type === FILE_NODE_TYPE || type === DIRECTORY_NODE_TYPE) {
+            res.push({ path, file: await node.getElement(true) as SpinalFile });
+        }
+
+        const children = await node.getChildren();
+
+        for (const child of children) {
+            queue.push({ node: child, path: `${path}/${child.getName().get()}` });
+        }
+    }
+
+    return res;
 }
