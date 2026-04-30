@@ -37,7 +37,7 @@ class FileExplorer {
      */
     static async getDirectory(selectedNode) {
         if (selectedNode != undefined) {
-            const fileNode = await selectedNode.getChildren('hasFiles');
+            const fileNode = await selectedNode.getChildren("hasFiles");
             if (fileNode.length == 0) {
                 return undefined;
             }
@@ -54,16 +54,16 @@ class FileExplorer {
      * @memberof FileExplorer
      */
     static async getNbChildren(selectedNode) {
-        const fileNode = await selectedNode.getChildren('hasFiles');
+        const fileNode = await selectedNode.getChildren("hasFiles");
         return fileNode.length;
     }
     static async createDirectory(selectedNode) {
         let nbNode = await this.getNbChildren(selectedNode);
         if (nbNode == 0) {
             let myDirectory = new spinal_core_connectorjs_1.Directory();
-            let node = await selectedNode.addChild(myDirectory, 'hasFiles', spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
-            node.info.name.set('[Files]');
-            node.info.type.set('SpinalFiles');
+            let node = await selectedNode.addChild(myDirectory, "hasFiles", spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+            node.info.name.set("[Files]");
+            node.info.type.set("SpinalFiles");
             return myDirectory;
         }
         else {
@@ -77,36 +77,21 @@ class FileExplorer {
      * @memberof FileExplorer
      */
     static _getFileType(file) {
-        const imagesExtension = [
-            'JPG',
-            'PNG',
-            'GIF',
-            'WEBP',
-            'TIFF',
-            'PSD',
-            'RAW',
-            'BMP',
-            'HEIF',
-            'INDD',
-            'JPEG 2000',
-            'SVG',
-        ];
+        const imagesExtension = ["JPG", "PNG", "GIF", "WEBP", "TIFF", "PSD", "RAW", "BMP", "HEIF", "INDD", "JPEG 2000", "SVG"];
         const extension = /[^.]+$/.exec(file.name)[0];
-        return imagesExtension.indexOf(extension.toUpperCase()) !== -1
-            ? spinal_models_documentation_1.MESSAGE_TYPES.image
-            : spinal_models_documentation_1.MESSAGE_TYPES.file;
+        return imagesExtension.indexOf(extension.toUpperCase()) !== -1 ? spinal_models_documentation_1.MESSAGE_TYPES.image : spinal_models_documentation_1.MESSAGE_TYPES.file;
     }
     static getMimeType(fileName) {
         const extension = /[^.]+$/.exec(fileName)[0];
         const mimeTypes = {
-            jpg: 'image/jpeg',
-            jpeg: 'image/jpeg',
-            png: 'image/png',
-            bmp: 'image/bmp',
-            pdf: 'application/pdf',
-            json: 'application/json',
+            jpg: "image/jpeg",
+            jpeg: "image/jpeg",
+            png: "image/png",
+            bmp: "image/bmp",
+            pdf: "application/pdf",
+            json: "application/json",
         };
-        return mimeTypes[extension.toLowerCase()] || 'application/octet-stream';
+        return mimeTypes[extension.toLowerCase()] || "application/octet-stream";
     }
     /**
      * @static
@@ -121,21 +106,6 @@ class FileExplorer {
             directory.push(file);
         }
         return filesConverted;
-        // const isFileList =
-        //   typeof FileList !== 'undefined' && files instanceof FileList;
-        // if (!isFileList && !Array.isArray(files)) files = [files];
-        // console.log('files', files);
-        // const res = [];
-        // for (let i = 0; i < files.length; i++) {
-        //   const element = files[i];
-        //   let filePath: spinal.Path = element.buffer
-        //     ? new Path(element.buffer, FileExplorer.getMimeType(element.name))
-        //     : new Path(element, FileExplorer.getMimeType(element.name));
-        //   let myFile = new spinalFile(element.name, filePath, undefined);
-        //   directory.push(myFile);
-        //   res.push(myFile);
-        // }
-        // return res;
     }
     /**
      * @static
@@ -145,7 +115,7 @@ class FileExplorer {
      * @memberof FileExplorer
      */
     static async uploadFiles(node, files) {
-        const isFileList = typeof FileList !== 'undefined' && files instanceof FileList;
+        const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
         if (!isFileList && !Array.isArray(files))
             files = [files];
         const directory = await this._getOrCreateFileDirectory(node);

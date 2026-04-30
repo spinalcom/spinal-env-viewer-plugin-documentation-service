@@ -3,7 +3,8 @@
   "types": "declarations",
   "author": "",
   "dependencies": {
-    "@types/node": "^18.11.9"
+    "@types/node": "^18.11.9",
+    "jszip": "^3.10.1"
   },
   "description": "",
   "devDependencies": {

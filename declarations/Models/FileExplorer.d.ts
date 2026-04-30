@@ -1,7 +1,7 @@
 /// <reference types="node" />
 /// <reference types="node" />
-import { File as spinalFile } from 'spinal-core-connectorjs';
-import { SpinalNode } from 'spinal-env-viewer-graph-service';
+import { File as spinalFile } from "spinal-core-connectorjs";
+import { SpinalNode } from "spinal-env-viewer-graph-service";
 export declare class FileExplorer {
     /**
      * @static

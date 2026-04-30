@@ -11,15 +11,18 @@ class SpinalDocumentary {
         const filesConverted = (0, files_1.convertFileToSpinalFile)(files);
         const promises = [];
         for (const file of filesConverted) {
-            const node = new spinal_model_graph_1.SpinalNode(file.name.get(), constants_1.FILE_NODE_TYPE, file);
+            const node = (0, files_1.createFileNode)(file);
             promises.push((0, files_1.addChildrenToNode)(parentNode, node, constants_1.TO_FILE_RELATION, contextNode));
         }
         return Promise.all(promises);
     }
     createDirectoryNode(contextNode, parentNode, name, icon = "folder") {
         const file = new spinal_core_connectorjs_type_1.File(name, new spinal_core_connectorjs_type_1.Directory(), { model_type: "Directory", icon });
-        const node = new spinal_model_graph_1.SpinalNode(name, constants_1.DIRECTORY_NODE_TYPE, file);
-        return (0, files_1.addChildrenToNode)(parentNode, node, constants_1.TO_FOLDER_RELATION, contextNode);
+        const node = (0, files_1.createFileNode)(file);
+        return (0, files_1.addChildrenToNode)(parentNode, node, constants_1.TO_FOLDER_RELATION, contextNode).then((nodeCreated) => {
+            file._info.add_attr({ node: new spinal_core_connectorjs_type_1.Ptr(nodeCreated) });
+            return nodeCreated;
+        });
     }
     async importFilesFromDirectory(contextNode, parentNode, startFile) {
         const queue = [{ file: startFile, parent: parentNode }];
@@ -29,36 +32,35 @@ class SpinalDocumentary {
             if (!itemToProcess)
                 continue;
             const { file, parent } = itemToProcess;
-            const { name, nodeType, relationName } = this._getFileAttributes(file);
+            const { name, nodeType, relationName } = await (0, files_1._getFileAttributes)(file);
             const node = await this._createNodeInContext(name, nodeType, file, parent, relationName, contextNode);
             // Only push to createdNodes if it's a file, directories will be processed for their children
             if (nodeType === constants_1.DIRECTORY_NODE_TYPE) {
-                const children = await this._getFileChildren(file, node);
+                const children = await (0, files_1._getFileChildren)(file, node);
                 queue.push(...children);
             }
             createdNodes.push(node);
         }
         return createdNodes;
     }
-    async _getFileChildren(file, parentNode) {
-        const children = await (0, files_1.getFilesFromDirectory)(file);
-        const res = [];
-        for (const child of children) {
-            res.push({ file: child, parent: parentNode });
-        }
-        return res;
+    async getFilesAsBuffer(startNode) {
+        return (0, files_1.convertTreeToFileBuffers)(startNode);
     }
+    async convertFileToBuffer(file, hubUrl = "") {
+        if (file instanceof spinal_model_graph_1.SpinalNode)
+            file = await file.getElement(true);
+        const buffer = await (0, files_1._getFileAsBuffer)(file, hubUrl);
+        const name = file.name.get();
+        return { name, buffer };
+    }
+    // public linkDocumentToNode(documentNode: SpinalNode, targetNode: SpinalNode): Promise<SpinalNode> {
+    //     const relationName = documentNode.getType().get() === FILE_NODE_TYPE ? TO_FILE_RELATION : TO_FOLDER_RELATION;
+    //     return 
+    // }
     async _createNodeInContext(name, nodeType, file, parent, relationName, contextNode) {
-        const node = new spinal_model_graph_1.SpinalNode(name, nodeType, file);
+        const node = (0, files_1.createFileNode)(file);
         await parent.addChildInContext(node, relationName, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE, contextNode);
         return node;
-    }
-    _getFileAttributes(file) {
-        const name = file.name.get();
-        const fileType = file._info?.model_type?.get();
-        const nodeType = fileType === "Directory" ? constants_1.DIRECTORY_NODE_TYPE : constants_1.FILE_NODE_TYPE;
-        const relationName = nodeType === constants_1.DIRECTORY_NODE_TYPE ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
-        return { name, nodeType, relationName };
     }
 }
 exports.SpinalDocumentary = SpinalDocumentary;
