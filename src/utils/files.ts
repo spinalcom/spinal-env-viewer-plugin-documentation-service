@@ -127,13 +127,17 @@ function getPathData(dynamicId: number, hubUrl: string = ""): Promise<Buffer> {
 export async function convertTreeToFileBuffers(startNode: SpinalNode<any>): Promise<{ name: string; path: string; buffer: Buffer; }[]> {
     const queue = await getStarterQueue(startNode);
     const filesBuffers: { name: string; path: string; buffer: Buffer; }[] = [];
+    const alreadyProcessedNodes = new Set<number>();
 
     while (queue.length > 0) {
         const itemToProcess = queue.shift();
         if (!itemToProcess) continue;
 
         const { path, file } = itemToProcess;
+        if (alreadyProcessedNodes.has(file._ptr.data.value)) continue;
 
+
+        alreadyProcessedNodes.add(file._ptr.data.value);
         if (file._info?.model_type?.get() !== "Directory") {
             filesBuffers.push({ name: file.name.get(), path, buffer: await _getFileAsBuffer(file) });
         }

@@ -106,11 +106,15 @@ function getPathData(dynamicId, hubUrl = "") {
 async function convertTreeToFileBuffers(startNode) {
     const queue = await getStarterQueue(startNode);
     const filesBuffers = [];
+    const alreadyProcessedNodes = new Set();
     while (queue.length > 0) {
         const itemToProcess = queue.shift();
         if (!itemToProcess)
             continue;
         const { path, file } = itemToProcess;
+        if (alreadyProcessedNodes.has(file._ptr.data.value))
+            continue;
+        alreadyProcessedNodes.add(file._ptr.data.value);
         if (file._info?.model_type?.get() !== "Directory") {
             filesBuffers.push({ name: file.name.get(), path, buffer: await _getFileAsBuffer(file) });
         }
