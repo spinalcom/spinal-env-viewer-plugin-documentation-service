@@ -114,7 +114,6 @@ async function convertTreeToFileBuffers(startNode) {
         const { path, file } = itemToProcess;
         if (alreadyProcessedNodes.has(file._ptr.data.value))
             continue;
-        alreadyProcessedNodes.add(file._ptr.data.value);
         if (file._info?.model_type?.get() !== "Directory") {
             filesBuffers.push({ name: file.name.get(), path, buffer: await _getFileAsBuffer(file) });
         }
@@ -124,6 +123,7 @@ async function convertTreeToFileBuffers(startNode) {
                 queue.push({ path: `${path}/${child.name.get()}`, file: child });
             }
         }
+        alreadyProcessedNodes.add(file._ptr.data.value);
     }
     return filesBuffers;
 }

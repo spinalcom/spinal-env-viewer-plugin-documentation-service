@@ -137,7 +137,7 @@ export async function convertTreeToFileBuffers(startNode: SpinalNode<any>): Prom
         if (alreadyProcessedNodes.has(file._ptr.data.value)) continue;
 
 
-        alreadyProcessedNodes.add(file._ptr.data.value);
+
         if (file._info?.model_type?.get() !== "Directory") {
             filesBuffers.push({ name: file.name.get(), path, buffer: await _getFileAsBuffer(file) });
         }
@@ -149,6 +149,9 @@ export async function convertTreeToFileBuffers(startNode: SpinalNode<any>): Prom
                 queue.push({ path: `${path}/${child.name.get()}`, file: child as SpinalFile });
             }
         }
+
+        alreadyProcessedNodes.add(file._ptr.data.value);
+
     }
 
     return filesBuffers;
