@@ -1,6 +1,6 @@
 import { File as SpinalFile, Directory as SpinalDirectory, Ptr } from 'spinal-core-connectorjs_type';
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from 'spinal-model-graph';
-import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, addChildrenToNode, convertFileToSpinalFile, convertTreeToFileBuffers, createFileNode } from '../utils/files';
+import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addChildrenToNode, convertFileToSpinalFile, convertTreeToFileBuffers, createFileNode, removeFileNode } from '../utils/files';
 import { DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from './constants';
 import { FilesArgType } from '../interfaces';
 
@@ -17,6 +17,22 @@ class SpinalDocumentary {
         }
 
         return Promise.all(promises);
+    }
+
+    public async removeFile(fileNode: SpinalNode): Promise<boolean> {
+
+        if (fileNode.getType().get() !== DIRECTORY_NODE_TYPE) return removeFileNode(fileNode);
+
+        const files = await fileNode.getChildren([TO_FOLDER_RELATION, TO_FILE_RELATION]);
+        const promises: Promise<boolean | boolean[]>[] = [];
+
+        for (const file of files) {
+            promises.push(this.removeFile(file));
+        }
+
+        return Promise.all(promises).then((result) => {
+            return true;
+        })
     }
 
     public createDirectoryNode(contextNode: SpinalContext, parentNode: SpinalNode, name: string, icon: string = "folder"): Promise<SpinalNode> {
@@ -40,7 +56,7 @@ class SpinalDocumentary {
             const { file, parent } = itemToProcess;
             const { name, nodeType, relationName } = await _getFileAttributes(file);
 
-            const node = await this._createNodeInContext(name, nodeType, file, parent, relationName, contextNode);
+            const node = await this._createNodeInContext(file, parent, relationName, contextNode);
 
             // Only push to createdNodes if it's a file, directories will be processed for their children
             if (nodeType === DIRECTORY_NODE_TYPE) {
@@ -54,8 +70,8 @@ class SpinalDocumentary {
         return createdNodes;
     }
 
-    public async getFilesInTreeAsBuffer(startNode: SpinalNode): Promise<{ name: string, path: string; buffer: Buffer }[]> {
-        return convertTreeToFileBuffers(startNode);
+    public async getFilesInTreeAsBuffer(startNode: SpinalNode, hubUrl: string = ""): Promise<{ name: string, path: string; buffer: Buffer }[]> {
+        return convertTreeToFileBuffers(startNode, hubUrl);
     }
 
     public async convertFileToBuffer(file: SpinalNode | SpinalFile, hubUrl: string = ""): Promise<{ name: string, buffer: Buffer }> {
@@ -66,8 +82,40 @@ class SpinalDocumentary {
         return { name, buffer };
     }
 
+    public async linkFileToNode(node: SpinalNode, fileNode: SpinalNode) {
+        const rootDirNode = await _getOrCreateRootNode(node);
+        if (!rootDirNode) throw new Error("Unable to create or get root directory node");
 
-    private async _createNodeInContext(name: string, nodeType: string, file: SpinalFile<any>, parent: SpinalNode<any>, relationName: string, contextNode: SpinalContext<any>) {
+        const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
+        return addChildrenToNode(rootDirNode, fileNode, relationName, undefined);
+    }
+
+    public async getFileLinkedToNode(node: SpinalNode): Promise<SpinalNode[]> {
+        const rootDirNode = await _getOrCreateRootNode(node, false);
+        if (!rootDirNode) return [];
+
+        const children = await rootDirNode.getChildren([TO_FILE_RELATION, TO_FOLDER_RELATION]);
+        return children;
+    }
+
+    public async getFileLinkedToNodeAsBuffers(node: SpinalNode, hubUrl: string = ""): Promise<{ name: string, path: string; buffer: Buffer }[]> {
+        const rootDirNode = await _getOrCreateRootNode(node, false);
+        if (!rootDirNode) return [];
+
+        return convertTreeToFileBuffers(rootDirNode, hubUrl);
+    }
+
+    public async unlinkFileFromNode(node: SpinalNode, fileNode: SpinalNode) {
+        const rootDirNode = await _getOrCreateRootNode(node, false);
+        if (!rootDirNode) return;
+
+        const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
+        await rootDirNode.removeChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE);
+    }
+
+
+
+    private async _createNodeInContext(file: SpinalFile<any>, parent: SpinalNode<any>, relationName: string, contextNode: SpinalContext<any>) {
         const node = createFileNode(file);
         await parent.addChildInContext(node, relationName, SPINAL_RELATION_PTR_LST_TYPE, contextNode);
         return node;

@@ -1,7 +1,5 @@
-/// <reference types="node" />
-/// <reference types="node" />
-import { File as spinalFile } from "spinal-core-connectorjs";
 import { SpinalNode } from "spinal-env-viewer-graph-service";
+import { FilesArgType } from "../interfaces";
 export declare class FileExplorer {
     /**
      * @static
@@ -9,7 +7,7 @@ export declare class FileExplorer {
      * @return {*}  {Promise<spinal.Directory<spinal.File<spinal.Path>>>}
      * @memberof FileExplorer
      */
-    static getDirectory(selectedNode: SpinalNode<any>): Promise<spinal.Directory<spinal.File<spinal.Path>>>;
+    static getDirectory(selectedNode: SpinalNode<any>): Promise<spinal.Directory | null>;
     /**
      * @static
      * @param {SpinalNode<any>} selectedNode
@@ -17,7 +15,7 @@ export declare class FileExplorer {
      * @memberof FileExplorer
      */
     static getNbChildren(selectedNode: SpinalNode<any>): Promise<number>;
-    static createDirectory(selectedNode: SpinalNode<any>): Promise<spinal.Directory<any>>;
+    static createDirectory(selectedNode: SpinalNode<any>): Promise<spinal.Directory>;
     /**
      * @static
      * @param {File} file - HTML File
@@ -32,21 +30,17 @@ export declare class FileExplorer {
      * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files - HTML Files
      * @return {*}  {spinal.File<any>[]}
      * @memberof FileExplorer
-     */
-    static addFileUpload(directory: spinal.Directory<any>, files: (spinalFile | {
-        name: string;
-        buffer: Buffer;
-    })[] | FileList | any): spinal.File<any>[];
+    
+    
+    */
     /**
      * @static
      * @param {SpinalNode<any>} node
-     * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files - HTML Files
+     * @param {FilesArgType} files - HTML Files
      * @return {*}  {Promise<spinal.File<any>[]>}
      * @memberof FileExplorer
      */
-    static uploadFiles(node: SpinalNode<any>, files: (spinalFile | {
-        name: string;
-        buffer: Buffer;
-    })[] | FileList | any): Promise<spinal.File<any>[]>;
+    static uploadFiles(node: SpinalNode<any>, files: FilesArgType): Promise<SpinalNode[]>;
+    static addFileUpload(node: SpinalNode<any>, files: FilesArgType): Promise<SpinalNode[]>;
     static _getOrCreateFileDirectory(node: SpinalNode<any>): Promise<spinal.Directory<any>>;
 }

@@ -49,7 +49,7 @@ const DIRECTORY_NODE_TYPE: string = 'SpinalDirectory';
 const FILE_NODE_TYPE: string = 'SpinalFile';
 const TO_FILE_RELATION: string = 'DirectoryhasFiles';
 const TO_FOLDER_RELATION: string = 'DirectoryhasDirectory';
-const TO_DOCUMENTARY_RELATION: string = 'hasDocumentary';
+const TO_ROOT_DIRECTORY_RELATION: string = 'hasFiles';
 
 export {
   URL_RELATION,
@@ -69,5 +69,5 @@ export {
   FILE_NODE_TYPE,
   TO_FILE_RELATION,
   TO_FOLDER_RELATION,
-  TO_DOCUMENTARY_RELATION
+  TO_ROOT_DIRECTORY_RELATION
 };

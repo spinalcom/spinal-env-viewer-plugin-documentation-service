@@ -24,10 +24,9 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileExplorer = void 0;
-const spinal_core_connectorjs_1 = require("spinal-core-connectorjs");
-const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const spinal_models_documentation_1 = require("spinal-models-documentation");
 const files_1 = require("../utils/files");
+const constants_1 = require("./constants");
 class FileExplorer {
     /**
      * @static
@@ -36,16 +35,20 @@ class FileExplorer {
      * @memberof FileExplorer
      */
     static async getDirectory(selectedNode) {
-        if (selectedNode != undefined) {
-            const fileNode = await selectedNode.getChildren("hasFiles");
-            if (fileNode.length == 0) {
-                return undefined;
-            }
-            else {
-                let directory = await fileNode[0].getElement();
-                return directory;
-            }
-        }
+        const createIfNotExist = false;
+        const node = await (0, files_1._getOrCreateRootNode)(selectedNode, createIfNotExist);
+        if (node)
+            return node.getElement(true);
+        return null;
+        // if (selectedNode != undefined) {
+        //   const fileNode = await selectedNode.getChildren("hasFiles");
+        //   if (fileNode.length == 0) {
+        //     return undefined;
+        //   } else {
+        //     let directory = await fileNode[0].getElement();
+        //     return directory;
+        //   }
+        // }
     }
     /**
      * @static
@@ -54,21 +57,29 @@ class FileExplorer {
      * @memberof FileExplorer
      */
     static async getNbChildren(selectedNode) {
-        const fileNode = await selectedNode.getChildren("hasFiles");
-        return fileNode.length;
+        const directory = await this.getDirectory(selectedNode);
+        if (directory)
+            return directory.length;
+        return 0;
+        // const fileNode = await selectedNode.getChildren("hasFiles");
+        // return fileNode.length;
     }
     static async createDirectory(selectedNode) {
-        let nbNode = await this.getNbChildren(selectedNode);
-        if (nbNode == 0) {
-            let myDirectory = new spinal_core_connectorjs_1.Directory();
-            let node = await selectedNode.addChild(myDirectory, "hasFiles", spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
-            node.info.name.set("[Files]");
-            node.info.type.set("SpinalFiles");
-            return myDirectory;
-        }
-        else {
-            return this.getDirectory(selectedNode);
-        }
+        const createIfNotExist = true;
+        const node = await (0, files_1._getOrCreateRootNode)(selectedNode, createIfNotExist);
+        if (!node)
+            throw new Error("Failed to create or retrieve the directory node.");
+        return node.getElement(true);
+        // let nbNode = await this.getNbChildren(selectedNode);
+        // if (nbNode == 0) {
+        //   let myDirectory = new Directory();
+        //   let node = await selectedNode.addChild(myDirectory, "hasFiles", SPINAL_RELATION_PTR_LST_TYPE);
+        //   node.info.name.set("[Files]");
+        //   node.info.type.set("SpinalFiles");
+        //   return myDirectory;
+        // } else {
+        //   return this.getDirectory(selectedNode);
+        // }
     }
     /**
      * @static
@@ -78,11 +89,11 @@ class FileExplorer {
      */
     static _getFileType(file) {
         const imagesExtension = ["JPG", "PNG", "GIF", "WEBP", "TIFF", "PSD", "RAW", "BMP", "HEIF", "INDD", "JPEG 2000", "SVG"];
-        const extension = /[^.]+$/.exec(file.name)[0];
+        const extension = /[^.]+$/.exec(file.name)?.[0] ?? "";
         return imagesExtension.indexOf(extension.toUpperCase()) !== -1 ? spinal_models_documentation_1.MESSAGE_TYPES.image : spinal_models_documentation_1.MESSAGE_TYPES.file;
     }
     static getMimeType(fileName) {
-        const extension = /[^.]+$/.exec(fileName)[0];
+        const extension = /[^.]+$/.exec(fileName)?.[0] ?? "";
         const mimeTypes = {
             jpg: "image/jpeg",
             jpeg: "image/jpeg",
@@ -99,18 +110,13 @@ class FileExplorer {
      * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files - HTML Files
      * @return {*}  {spinal.File<any>[]}
      * @memberof FileExplorer
-     */
-    static addFileUpload(directory, files) {
-        const filesConverted = (0, files_1.convertFileToSpinalFile)(files);
-        for (const file of filesConverted) {
-            directory.push(file);
-        }
-        return filesConverted;
-    }
+    
+    
+    */
     /**
      * @static
      * @param {SpinalNode<any>} node
-     * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files - HTML Files
+     * @param {FilesArgType} files - HTML Files
      * @return {*}  {Promise<spinal.File<any>[]>}
      * @memberof FileExplorer
      */
@@ -118,8 +124,21 @@ class FileExplorer {
         const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
         if (!isFileList && !Array.isArray(files))
             files = [files];
-        const directory = await this._getOrCreateFileDirectory(node);
-        return this.addFileUpload(directory, files);
+        return this.addFileUpload(node, files);
+    }
+    static addFileUpload(node, files) {
+        const filesConverted = (0, files_1.convertFileToSpinalFile)(files);
+        const promises = [];
+        for (const file of filesConverted) {
+            const documentNode = (0, files_1.createFileNode)(file);
+            const relationName = documentNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
+            promises.push((0, files_1.addChildrenToNode)(node, documentNode, relationName));
+        }
+        return Promise.all(promises);
+        // for (const file of filesConverted) {
+        //   directory.push(file);
+        // }
+        // return filesConverted;
     }
     static async _getOrCreateFileDirectory(node) {
         let directory = await FileExplorer.getDirectory(node);

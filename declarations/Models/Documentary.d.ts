@@ -6,9 +6,10 @@ import { FilesArgType } from '../interfaces';
 declare class SpinalDocumentary {
     constructor();
     createFileNode(contextNode: SpinalContext, parentNode: SpinalNode, files: FilesArgType): Promise<SpinalNode[]>;
+    removeFile(fileNode: SpinalNode): Promise<boolean>;
     createDirectoryNode(contextNode: SpinalContext, parentNode: SpinalNode, name: string, icon?: string): Promise<SpinalNode>;
     importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalFile): Promise<SpinalNode[]>;
-    getFilesInTreeAsBuffer(startNode: SpinalNode): Promise<{
+    getFilesInTreeAsBuffer(startNode: SpinalNode, hubUrl?: string): Promise<{
         name: string;
         path: string;
         buffer: Buffer;
@@ -17,6 +18,14 @@ declare class SpinalDocumentary {
         name: string;
         buffer: Buffer;
     }>;
+    linkFileToNode(node: SpinalNode, fileNode: SpinalNode): Promise<SpinalNode<any>>;
+    getFileLinkedToNode(node: SpinalNode): Promise<SpinalNode[]>;
+    getFileLinkedToNodeAsBuffers(node: SpinalNode, hubUrl?: string): Promise<{
+        name: string;
+        path: string;
+        buffer: Buffer;
+    }[]>;
+    unlinkFileFromNode(node: SpinalNode, fileNode: SpinalNode): Promise<void>;
     private _createNodeInContext;
 }
 export { SpinalDocumentary };

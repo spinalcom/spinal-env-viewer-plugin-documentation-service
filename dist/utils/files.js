@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.convertTreeToFileBuffers = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createFileNode = exports.getFilesFromDirectory = exports.addChildrenToNode = exports.convertFileToSpinalFile = void 0;
+exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createFileNode = exports.getFilesFromDirectory = exports.addChildrenToNode = exports.convertFileToSpinalFile = void 0;
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const FileExplorer_1 = require("../Models/FileExplorer");
@@ -26,7 +26,12 @@ function convertFileToSpinalFile(files) {
 }
 exports.convertFileToSpinalFile = convertFileToSpinalFile;
 function addChildrenToNode(parentNode, childNode, relationName, contextNode) {
-    return parentNode.addChildInContext(childNode, relationName, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE, contextNode).then(async (result) => {
+    let prom;
+    if (contextNode)
+        prom = parentNode.addChildInContext(childNode, relationName, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE, contextNode);
+    else
+        prom = parentNode.addChild(childNode, relationName, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+    return prom.then(async (result) => {
         if (parentNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE) {
             const element = await childNode.getElement(true);
             if (!element)
@@ -103,7 +108,7 @@ function getPathData(dynamicId, hubUrl = "") {
         // return new Uint8Array(response.data);
     });
 }
-async function convertTreeToFileBuffers(startNode) {
+async function convertTreeToFileBuffers(startNode, hubUrl = "") {
     const queue = await getStarterQueue(startNode);
     const filesBuffers = [];
     const alreadyProcessedNodes = new Set();
@@ -112,10 +117,11 @@ async function convertTreeToFileBuffers(startNode) {
         if (!itemToProcess)
             continue;
         const { path, file } = itemToProcess;
-        if (alreadyProcessedNodes.has(file._ptr.data.value))
+        const serverId = file._ptr.data.value;
+        if (alreadyProcessedNodes.has(serverId))
             continue;
         if (file._info?.model_type?.get() !== "Directory") {
-            filesBuffers.push({ name: file.name.get(), path, buffer: await _getFileAsBuffer(file) });
+            filesBuffers.push({ name: file.name.get(), serverId, path, buffer: await _getFileAsBuffer(file, hubUrl) });
         }
         if (file._info?.model_type?.get() === "Directory") {
             const children = await getFilesFromDirectory(file);
@@ -123,7 +129,7 @@ async function convertTreeToFileBuffers(startNode) {
                 queue.push({ path: `${path}/${child.name.get()}`, file: child });
             }
         }
-        alreadyProcessedNodes.add(file._ptr.data.value);
+        alreadyProcessedNodes.add(serverId);
     }
     return filesBuffers;
 }
@@ -147,4 +153,34 @@ async function getStarterQueue(startNode) {
     }
     return res;
 }
+async function _getOrCreateRootNode(node, createIfNotExist = true) {
+    const children = await node.getChildren([constants_1.TO_ROOT_DIRECTORY_RELATION]);
+    if (children.length > 0)
+        return children[0];
+    if (!createIfNotExist)
+        return null;
+    const name = node.getName().get() + "_root_directory";
+    const file = new spinal_core_connectorjs_type_1.File(name, new spinal_core_connectorjs_type_1.Directory(), { model_type: "Directory", icon: "folder" });
+    const directoryNode = createFileNode(file);
+    await node.addChild(directoryNode, constants_1.TO_ROOT_DIRECTORY_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+    return directoryNode;
+}
+exports._getOrCreateRootNode = _getOrCreateRootNode;
+async function removeFileNode(fileNode) {
+    const parentNodes = await fileNode.getParents([constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
+    const fileElement = await fileNode.getElement(true);
+    const unlinkPromises = parentNodes.map(async (parent) => {
+        if (parent.getType().get() === constants_1.DIRECTORY_NODE_TYPE) {
+            const directory = await parent.getElement(true);
+            directory?.remove(fileElement);
+        }
+        return parent.removeChild(fileNode, constants_1.TO_FILE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+    });
+    return Promise.all(unlinkPromises).then((result) => {
+        return true;
+    }).catch((err) => {
+        return false;
+    });
+}
+exports.removeFileNode = removeFileNode;
 //# sourceMappingURL=files.js.map

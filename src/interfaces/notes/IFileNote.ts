@@ -22,6 +22,8 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
+import { FilesArgType } from "../types";
+
 
 
 export interface IViewState {
@@ -31,6 +33,7 @@ export interface IViewState {
 
 export interface IFileNote {
   viewPoint?: IViewState;
-  file: File;
-  directory: spinal.Directory<any>;
+  file: FilesArgType;
+  directory?: spinal.Directory<any>;
+  type?: string;
 }

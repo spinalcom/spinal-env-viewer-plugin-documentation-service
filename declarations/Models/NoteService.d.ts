@@ -1,7 +1,7 @@
-import type { SpinalContext } from 'spinal-env-viewer-graph-service';
-import { SpinalNode } from 'spinal-env-viewer-graph-service';
-import { SpinalNote } from 'spinal-models-documentation';
-import type { ViewStateInterface, SpinalAttribute } from 'spinal-models-documentation';
+import type { SpinalContext } from "spinal-model-graph";
+import { SpinalNode } from "spinal-env-viewer-graph-service";
+import { SpinalNote, ViewStateInterface, SpinalAttribute } from "spinal-models-documentation";
+import { File as SpinalFile } from "spinal-core-connectorjs_type";
 declare class NoteService {
     constructor();
     /**
@@ -19,7 +19,7 @@ declare class NoteService {
     addNote(node: SpinalNode<any>, userInfo: {
         username: string;
         userId: number;
-    }, note: string, type?: string, file?: spinal.File<spinal.Model>, noteContextId?: string, noteGroupId?: string, viewPoint?: ViewStateInterface): Promise<SpinalNode<any>>;
+    }, note: string, type?: string, file?: SpinalFile<spinal.Model>, noteContextId?: string, noteGroupId?: string, viewPoint?: ViewStateInterface): Promise<SpinalNode<any>>;
     /**
      * @param {SpinalNode<any>} node
      * @param {*} files
@@ -33,6 +33,7 @@ declare class NoteService {
         username: string;
         userId: number;
     }, noteContextId?: string, noteGroupId?: string): Promise<SpinalNode<any>[]>;
+    private _handleFileUploadAndNote;
     /**
      * Adding a note to a node
      *
@@ -50,7 +51,7 @@ declare class NoteService {
     twinAddNote(node: SpinalNode<any>, userInfo: {
         username: string;
         userId: number;
-    }, note: string, type?: string, file?: File, viewPoint?: ViewStateInterface, noteContextId?: string, noteGroupId?: string): Promise<SpinalNode<any>>;
+    }, note: string, type?: string, file?: File, viewPoint?: ViewStateInterface, noteContextId?: string, noteGroupId?: string): Promise<SpinalNode | null>;
     /**
      * @param {SpinalNode<any>} node
      * @return {*}  {Promise<{ element: SpinalNote; selectedNode: SpinalNode<any> }[]>}
@@ -125,7 +126,7 @@ declare class NoteService {
      * @return {*}  {Promise<SpinalNodeRef>}
      * @memberof NoteService
      */
-    createDefaultGroup(): Promise<SpinalNode>;
+    createDefaultGroup(): Promise<SpinalNode | undefined>;
     /**
      * @param {SpinalNode<any>} spinalNode
      * @param {SpinalNote} spinalNote
@@ -140,7 +141,7 @@ declare class NoteService {
      * @return {*}  {Promise<IFileNote[]>}
      * @memberof NoteService
      */
-    private addFilesInDirectory;
+    private _formatFiles;
 }
 declare const noteService: NoteService;
 export { NoteService, noteService };

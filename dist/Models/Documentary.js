@@ -16,6 +16,18 @@ class SpinalDocumentary {
         }
         return Promise.all(promises);
     }
+    async removeFile(fileNode) {
+        if (fileNode.getType().get() !== constants_1.DIRECTORY_NODE_TYPE)
+            return (0, files_1.removeFileNode)(fileNode);
+        const files = await fileNode.getChildren([constants_1.TO_FOLDER_RELATION, constants_1.TO_FILE_RELATION]);
+        const promises = [];
+        for (const file of files) {
+            promises.push(this.removeFile(file));
+        }
+        return Promise.all(promises).then((result) => {
+            return true;
+        });
+    }
     createDirectoryNode(contextNode, parentNode, name, icon = "folder") {
         const file = new spinal_core_connectorjs_type_1.File(name, new spinal_core_connectorjs_type_1.Directory(), { model_type: "Directory", icon });
         const node = (0, files_1.createFileNode)(file);
@@ -33,7 +45,7 @@ class SpinalDocumentary {
                 continue;
             const { file, parent } = itemToProcess;
             const { name, nodeType, relationName } = await (0, files_1._getFileAttributes)(file);
-            const node = await this._createNodeInContext(name, nodeType, file, parent, relationName, contextNode);
+            const node = await this._createNodeInContext(file, parent, relationName, contextNode);
             // Only push to createdNodes if it's a file, directories will be processed for their children
             if (nodeType === constants_1.DIRECTORY_NODE_TYPE) {
                 const children = await (0, files_1._getFileChildren)(file, node);
@@ -43,8 +55,8 @@ class SpinalDocumentary {
         }
         return createdNodes;
     }
-    async getFilesInTreeAsBuffer(startNode) {
-        return (0, files_1.convertTreeToFileBuffers)(startNode);
+    async getFilesInTreeAsBuffer(startNode, hubUrl = "") {
+        return (0, files_1.convertTreeToFileBuffers)(startNode, hubUrl);
     }
     async convertFileToBuffer(file, hubUrl = "") {
         if (file instanceof spinal_model_graph_1.SpinalNode)
@@ -53,7 +65,34 @@ class SpinalDocumentary {
         const name = file.name.get();
         return { name, buffer };
     }
-    async _createNodeInContext(name, nodeType, file, parent, relationName, contextNode) {
+    async linkFileToNode(node, fileNode) {
+        const rootDirNode = await (0, files_1._getOrCreateRootNode)(node);
+        if (!rootDirNode)
+            throw new Error("Unable to create or get root directory node");
+        const relationName = fileNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
+        return (0, files_1.addChildrenToNode)(rootDirNode, fileNode, relationName, undefined);
+    }
+    async getFileLinkedToNode(node) {
+        const rootDirNode = await (0, files_1._getOrCreateRootNode)(node, false);
+        if (!rootDirNode)
+            return [];
+        const children = await rootDirNode.getChildren([constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
+        return children;
+    }
+    async getFileLinkedToNodeAsBuffers(node, hubUrl = "") {
+        const rootDirNode = await (0, files_1._getOrCreateRootNode)(node, false);
+        if (!rootDirNode)
+            return [];
+        return (0, files_1.convertTreeToFileBuffers)(rootDirNode, hubUrl);
+    }
+    async unlinkFileFromNode(node, fileNode) {
+        const rootDirNode = await (0, files_1._getOrCreateRootNode)(node, false);
+        if (!rootDirNode)
+            return;
+        const relationName = fileNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
+        await rootDirNode.removeChild(fileNode, relationName, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE);
+    }
+    async _createNodeInContext(file, parent, relationName, contextNode) {
         const node = (0, files_1.createFileNode)(file);
         await parent.addChildInContext(node, relationName, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE, contextNode);
         return node;
