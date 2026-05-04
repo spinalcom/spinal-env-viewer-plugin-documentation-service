@@ -29,7 +29,7 @@ class SpinalDocumentary {
         })
     }
 
-    public async importFilesFromDirectory(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalFile): Promise<SpinalNode[]> {
+    public async importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalFile): Promise<SpinalNode[]> {
         const queue: { file: SpinalFile, parent: SpinalNode }[] = [{ file: startFile, parent: parentNode }];
         const createdNodes: SpinalNode[] = [];
 
@@ -54,7 +54,7 @@ class SpinalDocumentary {
         return createdNodes;
     }
 
-    public async getFilesAsBuffer(startNode: SpinalNode): Promise<{ name: string, path: string; buffer: Buffer }[]> {
+    public async getFilesInTreeAsBuffer(startNode: SpinalNode): Promise<{ name: string, path: string; buffer: Buffer }[]> {
         return convertTreeToFileBuffers(startNode);
     }
 
@@ -65,12 +65,6 @@ class SpinalDocumentary {
 
         return { name, buffer };
     }
-
-    // public linkDocumentToNode(documentNode: SpinalNode, targetNode: SpinalNode): Promise<SpinalNode> {
-    //     const relationName = documentNode.getType().get() === FILE_NODE_TYPE ? TO_FILE_RELATION : TO_FOLDER_RELATION;
-    //     return 
-    // }
-
 
 
     private async _createNodeInContext(name: string, nodeType: string, file: SpinalFile<any>, parent: SpinalNode<any>, relationName: string, contextNode: SpinalContext<any>) {

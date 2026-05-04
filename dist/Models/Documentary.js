@@ -24,7 +24,7 @@ class SpinalDocumentary {
             return nodeCreated;
         });
     }
-    async importFilesFromDirectory(contextNode, parentNode, startFile) {
+    async importFilesFromSpinalDrive(contextNode, parentNode, startFile) {
         const queue = [{ file: startFile, parent: parentNode }];
         const createdNodes = [];
         while (queue.length > 0) {
@@ -43,7 +43,7 @@ class SpinalDocumentary {
         }
         return createdNodes;
     }
-    async getFilesAsBuffer(startNode) {
+    async getFilesInTreeAsBuffer(startNode) {
         return (0, files_1.convertTreeToFileBuffers)(startNode);
     }
     async convertFileToBuffer(file, hubUrl = "") {
@@ -53,10 +53,6 @@ class SpinalDocumentary {
         const name = file.name.get();
         return { name, buffer };
     }
-    // public linkDocumentToNode(documentNode: SpinalNode, targetNode: SpinalNode): Promise<SpinalNode> {
-    //     const relationName = documentNode.getType().get() === FILE_NODE_TYPE ? TO_FILE_RELATION : TO_FOLDER_RELATION;
-    //     return 
-    // }
     async _createNodeInContext(name, nodeType, file, parent, relationName, contextNode) {
         const node = (0, files_1.createFileNode)(file);
         await parent.addChildInContext(node, relationName, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE, contextNode);

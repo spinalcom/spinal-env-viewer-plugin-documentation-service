@@ -7,8 +7,8 @@ declare class SpinalDocumentary {
     constructor();
     createFileNode(contextNode: SpinalContext, parentNode: SpinalNode, files: FilesArgType): Promise<SpinalNode[]>;
     createDirectoryNode(contextNode: SpinalContext, parentNode: SpinalNode, name: string, icon?: string): Promise<SpinalNode>;
-    importFilesFromDirectory(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalFile): Promise<SpinalNode[]>;
-    getFilesAsBuffer(startNode: SpinalNode): Promise<{
+    importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalFile): Promise<SpinalNode[]>;
+    getFilesInTreeAsBuffer(startNode: SpinalNode): Promise<{
         name: string;
         path: string;
         buffer: Buffer;
