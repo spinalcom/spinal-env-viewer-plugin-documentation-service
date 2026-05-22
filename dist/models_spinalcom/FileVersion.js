@@ -6,9 +6,11 @@ const crypto_1 = require("crypto");
 const files_1 = require("../utils/files");
 class FileVersion extends spinal_core_connectorjs_1.Model {
     constructor(versionInfo) {
-        if (!versionInfo || !versionInfo.version || versionInfo.hashes.length === 0)
-            return;
         super();
+        console.log("Creating FileVersion with info:", versionInfo);
+        if (!versionInfo || !versionInfo.version || !Array.isArray(versionInfo.hashes) || versionInfo.hashes.length === 0) {
+            return;
+        }
         const hashesModel = new spinal_core_connectorjs_1.Lst(versionInfo.hashes);
         this.add_attr({
             creationDate: Date.now(),

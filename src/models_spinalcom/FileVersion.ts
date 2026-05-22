@@ -5,9 +5,13 @@ import { getPathData } from "../utils/files";
 
 class FileVersion extends Model {
 	constructor(versionInfo: IFileVersionInfo) {
-		if (!versionInfo || !versionInfo.version || versionInfo.hashes.length === 0) return;
-
 		super();
+
+		console.log("Creating FileVersion with info:", versionInfo);
+
+		if (!versionInfo || !versionInfo.version || !Array.isArray(versionInfo.hashes) || versionInfo.hashes.length === 0) {
+			return;
+		}
 
 		const hashesModel = new Lst(versionInfo.hashes);
 
