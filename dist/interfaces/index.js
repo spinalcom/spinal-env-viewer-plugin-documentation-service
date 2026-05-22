@@ -41,4 +41,7 @@ __exportStar(require("./attributes/ICategory"), exports);
 __exportStar(require("./attributes/IUrl"), exports);
 __exportStar(require("./notes/IFileNote"), exports);
 __exportStar(require("./types"), exports);
+__exportStar(require("./IFileBufferInfo"), exports);
+__exportStar(require("./IHash"), exports);
+__exportStar(require("./IFileVersionInfo"), exports);
 //# sourceMappingURL=index.js.map

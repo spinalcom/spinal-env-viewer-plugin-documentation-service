@@ -26,7 +26,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileExplorer = void 0;
 const spinal_models_documentation_1 = require("spinal-models-documentation");
 const files_1 = require("../utils/files");
-const constants_1 = require("./constants");
 class FileExplorer {
     /**
      * @static
@@ -105,14 +104,14 @@ class FileExplorer {
         return mimeTypes[extension.toLowerCase()] || "application/octet-stream";
     }
     /**
-     * @static
-     * @param {spinal.Directory<any>} directory
-     * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files - HTML Files
-     * @return {*}  {spinal.File<any>[]}
-     * @memberof FileExplorer
-    
-    
-    */
+   * @static
+   * @param {spinal.Directory<any>} directory
+   * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files - HTML Files
+   * @return {*}  {spinal.File<any>[]}
+   * @memberof FileExplorer
+  
+  
+  */
     /**
      * @static
      * @param {SpinalNode<any>} node
@@ -126,13 +125,11 @@ class FileExplorer {
             files = [files];
         return this.addFileUpload(node, files);
     }
-    static addFileUpload(node, files) {
-        const filesConverted = (0, files_1.convertFileToSpinalFile)(files);
+    static async addFileUpload(node, files, chunkSize = -1) {
+        const filesConverted = (0, files_1.convertFileToSpinalFile)(files, chunkSize);
         const promises = [];
         for (const file of filesConverted) {
-            const documentNode = (0, files_1.createFileNode)(file);
-            const relationName = documentNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
-            promises.push((0, files_1.addChildrenToNode)(node, documentNode, relationName));
+            promises.push(file.linkToNode(node));
         }
         return Promise.all(promises);
         // for (const file of filesConverted) {

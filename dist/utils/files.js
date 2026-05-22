@@ -1,25 +1,27 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createFileNode = exports.getFilesFromDirectory = exports.addChildrenToNode = exports.convertFileToSpinalFile = void 0;
+exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createFileNode = exports.getFilesFromDirectory = exports.addChildrenToNode = exports.convertFileToSpinalFile = void 0;
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
-const FileExplorer_1 = require("../Models/FileExplorer");
 const constants_1 = require("../Models/constants");
 const axios_retry_1 = require("axios-retry");
 const axios_1 = require("axios");
-function convertFileToSpinalFile(files) {
-    const isFileList = typeof FileList !== 'undefined' && files instanceof FileList;
+const SpinalFileModel_1 = require("../models_spinalcom/SpinalFileModel");
+const versionUtils_1 = require("./versionUtils");
+const FileVersion_1 = require("../models_spinalcom/FileVersion");
+function convertFileToSpinalFile(files, chunkSize = -1) {
+    const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
     if (!isFileList && !Array.isArray(files))
         files = [files];
     const res = [];
     for (let i = 0; i < files.length; i++) {
         const element = files[i];
         let filePath;
-        if (element.buffer)
-            filePath = new spinal_core_connectorjs_type_1.Path(element.buffer, FileExplorer_1.FileExplorer.getMimeType(element.name));
-        else
-            filePath = new spinal_core_connectorjs_type_1.Path(element, FileExplorer_1.FileExplorer.getMimeType(element.name));
-        let file = new spinal_core_connectorjs_type_1.File(element.name, filePath, { model_type: "File" });
+        // if (element.buffer) filePath = new SpinalPath(element.buffer, FileExplorer.getMimeType(element.name));
+        // else filePath = new SpinalPath(element, FileExplorer.getMimeType(element.name));
+        const hashes = versionUtils_1.default.getInstance().convertFileToHashes(element.buffer || element, [], chunkSize);
+        const fileVersion = new FileVersion_1.FileVersion({ version: 1, hashes });
+        let file = new SpinalFileModel_1.SpinalFile(element.name, fileVersion, { model_type: constants_1.FILE_MODEL_TYPE });
         res.push(file);
     }
     return res;
@@ -38,15 +40,14 @@ function addChildrenToNode(parentNode, childNode, relationName, contextNode) {
                 return result;
             await _addFileNodeToDirectory(parentNode, element);
         }
-        ;
         return result;
     });
 }
 exports.addChildrenToNode = addChildrenToNode;
 async function _addFileNodeToDirectory(directoryNode, file) {
     let directory = await directoryNode.getElement(true);
-    if (directory instanceof spinal_core_connectorjs_type_1.File && directory._info?.model_type?.get() === "Directory") {
-        const directoryElement = await new Promise(resolve => directory.load((e) => resolve(e)));
+    if (directory instanceof SpinalFileModel_1.SpinalFile && directory.isDirectory()) {
+        const directoryElement = await new Promise((resolve) => directory.load((e) => resolve(e)));
         if (directoryElement instanceof spinal_core_connectorjs_type_1.Directory)
             directory = directoryElement;
     }
@@ -56,7 +57,7 @@ async function _addFileNodeToDirectory(directoryNode, file) {
     return directory;
 }
 async function getFilesFromDirectory(directoryNode) {
-    const directory = await new Promise(resolve => directoryNode.load((e) => resolve(e)));
+    const directory = await new Promise((resolve) => directoryNode.load((e) => resolve(e)));
     const res = [];
     if (directory instanceof spinal_core_connectorjs_type_1.Directory) {
         for (let i = 0; i < directory.length; i++) {
@@ -68,11 +69,7 @@ async function getFilesFromDirectory(directoryNode) {
 }
 exports.getFilesFromDirectory = getFilesFromDirectory;
 function createFileNode(file) {
-    const type = file._info?.model_type?.get() === "Directory" ? constants_1.DIRECTORY_NODE_TYPE : constants_1.FILE_NODE_TYPE;
-    const name = file.name.get();
-    const node = new spinal_env_viewer_graph_service_1.SpinalNode(name, type, file);
-    file._info.add_attr({ node: new spinal_core_connectorjs_type_1.Ptr(node) });
-    return node;
+    return file.createNode();
 }
 exports.createFileNode = createFileNode;
 async function _getFileChildren(file, parentNode) {
@@ -86,13 +83,16 @@ async function _getFileChildren(file, parentNode) {
 exports._getFileChildren = _getFileChildren;
 async function _getFileAttributes(file) {
     const name = file.name.get();
-    const fileType = file._info?.model_type?.get();
-    const nodeType = fileType === "Directory" ? constants_1.DIRECTORY_NODE_TYPE : constants_1.FILE_NODE_TYPE;
+    const nodeType = file.isDirectory() ? constants_1.DIRECTORY_NODE_TYPE : constants_1.FILE_NODE_TYPE;
     const relationName = nodeType === constants_1.DIRECTORY_NODE_TYPE ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
     return { name, nodeType, relationName };
 }
 exports._getFileAttributes = _getFileAttributes;
-function _getFileAsBuffer(file, hubUrl = "") {
+async function _getFileAsBuffer(file, hubUrl = "") {
+    if (file instanceof spinal_env_viewer_graph_service_1.SpinalNode)
+        file = (await SpinalFileModel_1.SpinalFile.getFileModelFromNode(file));
+    if (file instanceof SpinalFileModel_1.SpinalFile)
+        return file.getCurrentVersionAsBuffer();
     const pathServerId = file._ptr.data.value;
     return getPathData(pathServerId, hubUrl);
 }
@@ -103,11 +103,12 @@ function getPathData(dynamicId, hubUrl = "") {
     const path = `${hubUrl}/sceen/_?u=${dynamicId}`;
     const client = axios_1.default.create({ baseURL: hubUrl });
     (0, axios_retry_1.default)(client, { retries: 3, retryDelay: axios_retry_1.default.exponentialDelay });
-    return client.get(path, { responseType: 'arraybuffer' }).then((response) => {
+    return client.get(path, { responseType: "arraybuffer" }).then((response) => {
         return Buffer.from(response.data);
         // return new Uint8Array(response.data);
     });
 }
+exports.getPathData = getPathData;
 async function convertTreeToFileBuffers(startNode, hubUrl = "") {
     const queue = await getStarterQueue(startNode);
     const filesBuffers = [];
@@ -120,10 +121,10 @@ async function convertTreeToFileBuffers(startNode, hubUrl = "") {
         const serverId = file._ptr.data.value;
         if (alreadyProcessedNodes.has(serverId))
             continue;
-        if (file._info?.model_type?.get() !== "Directory") {
+        if (!file.isDirectory()) {
             filesBuffers.push({ name: file.name.get(), serverId, path, buffer: await _getFileAsBuffer(file, hubUrl) });
         }
-        if (file._info?.model_type?.get() === "Directory") {
+        if (file.isDirectory()) {
             const children = await getFilesFromDirectory(file);
             for (const child of children) {
                 queue.push({ path: `${path}/${child.name.get()}`, file: child });
@@ -144,7 +145,7 @@ async function getStarterQueue(startNode) {
         const { node, path } = data;
         const type = node.getType().get();
         if (type === constants_1.FILE_NODE_TYPE || type === constants_1.DIRECTORY_NODE_TYPE) {
-            res.push({ path, file: await node.getElement(true) });
+            res.push({ path, file: (await node.getElement(true)) });
         }
         const children = await node.getChildren();
         for (const child of children) {
@@ -160,8 +161,8 @@ async function _getOrCreateRootNode(node, createIfNotExist = true) {
     if (!createIfNotExist)
         return null;
     const name = node.getName().get() + "_root_directory";
-    const file = new spinal_core_connectorjs_type_1.File(name, new spinal_core_connectorjs_type_1.Directory(), { model_type: "Directory", icon: "folder" });
-    const directoryNode = createFileNode(file);
+    const file = new SpinalFileModel_1.SpinalFile(name, new spinal_core_connectorjs_type_1.Directory(), { model_type: constants_1.DIRECTORY_MODEL_TYPE, icon: "folder" });
+    const directoryNode = await createFileNode(file);
     await node.addChild(directoryNode, constants_1.TO_ROOT_DIRECTORY_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
     return directoryNode;
 }
@@ -176,11 +177,9 @@ async function removeFileNode(fileNode) {
         }
         return parent.removeChild(fileNode, constants_1.TO_FILE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
     });
-    return Promise.all(unlinkPromises).then((result) => {
-        return true;
-    }).catch((err) => {
-        return false;
-    });
+    return Promise.all(unlinkPromises)
+        .then(() => true)
+        .catch((err) => false);
 }
 exports.removeFileNode = removeFileNode;
 //# sourceMappingURL=files.js.map

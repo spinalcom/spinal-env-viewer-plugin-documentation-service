@@ -22,14 +22,16 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-import { serviceDocumentation } from './Models/ServiceDocumentation';
+console.warn("Warning: spinal-env-viewer-plugin-documentation is deprecated. Please use spinal-env-viewer-plugin-service-documentation instead.");
 
-export * from './Models/constants';
-export * from './interfaces/index';
-export * from './Models/AttributeService';
-export * from './Models/FileExplorer';
-export * from './Models/NoteService';
-export * from './Models/UrlService';
-export * from './Models/ServiceDocumentation';
+import { serviceDocumentation } from "./Models/ServiceDocumentation";
+
+export * from "./Models/constants";
+export * from "./interfaces/index";
+export * from "./Models/AttributeService";
+export * from "./Models/FileExplorer";
+export * from "./Models/NoteService";
+export * from "./Models/UrlService";
+export * from "./Models/ServiceDocumentation";
 
 export default serviceDocumentation;

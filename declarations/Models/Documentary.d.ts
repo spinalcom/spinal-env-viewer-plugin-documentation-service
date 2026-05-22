@@ -1,13 +1,13 @@
 /// <reference types="node" />
 /// <reference types="node" />
-import { File as SpinalFile } from 'spinal-core-connectorjs_type';
-import { SpinalContext, SpinalNode } from 'spinal-model-graph';
-import { FilesArgType } from '../interfaces';
+import { SpinalContext, SpinalNode } from "spinal-model-graph";
+import { FilesArgType } from "../interfaces";
+import { SpinalFile } from "../models_spinalcom";
 declare class SpinalDocumentary {
     constructor();
-    createFileNode(contextNode: SpinalContext, parentNode: SpinalNode, files: FilesArgType): Promise<SpinalNode[]>;
-    removeFile(fileNode: SpinalNode): Promise<boolean>;
-    createDirectoryNode(contextNode: SpinalContext, parentNode: SpinalNode, name: string, icon?: string): Promise<SpinalNode>;
+    addFileToNode(parentNode: SpinalNode, files: FilesArgType, contextNode?: SpinalContext, chunkSize?: number): Promise<SpinalNode[]>;
+    removeFile(fileNode: SpinalNode | SpinalFile): Promise<boolean>;
+    createDirectoryNode(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon?: string): Promise<SpinalNode>;
     importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalFile): Promise<SpinalNode[]>;
     getFilesInTreeAsBuffer(startNode: SpinalNode, hubUrl?: string): Promise<{
         name: string;

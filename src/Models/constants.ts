@@ -22,52 +22,27 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-const URL_RELATION: string = 'hasURL';
-const URL_TYPE: string = 'SpinalURL';
+export const URL_RELATION: string = "hasURL";
+export const URL_TYPE: string = "SpinalURL";
 
-const NOTE_RELATION: string = 'hasNotes';
-const NOTE_TYPE: string = 'SpinalNote';
-const NOTE_CONTEXT_NAME: string = 'Default Note Context';
-const NOTE_CATEGORY_NAME: string = 'Default Note Category';
-const NOTE_GROUP_NAME: string = 'Default Note Group';
+export const NOTE_RELATION: string = "hasNotes";
+export const NOTE_TYPE: string = "SpinalNote";
+export const NOTE_CONTEXT_NAME: string = "Default Note Context";
+export const NOTE_CATEGORY_NAME: string = "Default Note Category";
+export const NOTE_GROUP_NAME: string = "Default Note Group";
 
-const NODE_TO_CATEGORY_RELATION: string = 'hasCategoryAttributes';
-const NODE_TO_ATTRIBUTE: string = 'hasAttributes';
-const CATEGORY_TYPE: string = 'categoryAttributes';
-const ATTRIBUTE_TYPE: string = 'SpinalAttributes';
-const BUILDINGINFORMATION: string[] = [
-  'Titre',
-  'Bâtiment',
-  'Surface',
-  'Adresse',
-  'Ville',
-];
-const BUILDINGINFORMATIONCATNAME: string = 'Spinal Building Information';
+export const NODE_TO_CATEGORY_RELATION: string = "hasCategoryAttributes";
+export const NODE_TO_ATTRIBUTE: string = "hasAttributes";
+export const CATEGORY_TYPE: string = "categoryAttributes";
+export const ATTRIBUTE_TYPE: string = "SpinalAttributes";
+export const BUILDINGINFORMATION: string[] = ["Titre", "Bâtiment", "Surface", "Adresse", "Ville"];
+export const BUILDINGINFORMATIONCATNAME: string = "Spinal Building Information";
 
+export const DIRECTORY_NODE_TYPE: string = "SpinalDirectory";
+export const FILE_NODE_TYPE: string = "SpinalFile";
+export const TO_FILE_RELATION: string = "DirectoryhasFiles";
+export const TO_FOLDER_RELATION: string = "DirectoryhasDirectory";
+export const TO_ROOT_DIRECTORY_RELATION: string = "hasFiles";
 
-const DIRECTORY_NODE_TYPE: string = 'SpinalDirectory';
-const FILE_NODE_TYPE: string = 'SpinalFile';
-const TO_FILE_RELATION: string = 'DirectoryhasFiles';
-const TO_FOLDER_RELATION: string = 'DirectoryhasDirectory';
-const TO_ROOT_DIRECTORY_RELATION: string = 'hasFiles';
-
-export {
-  URL_RELATION,
-  URL_TYPE,
-  NOTE_RELATION,
-  NOTE_TYPE,
-  NOTE_CONTEXT_NAME,
-  NOTE_CATEGORY_NAME,
-  NOTE_GROUP_NAME,
-  NODE_TO_CATEGORY_RELATION,
-  NODE_TO_ATTRIBUTE,
-  CATEGORY_TYPE,
-  ATTRIBUTE_TYPE,
-  BUILDINGINFORMATION,
-  BUILDINGINFORMATIONCATNAME,
-  DIRECTORY_NODE_TYPE,
-  FILE_NODE_TYPE,
-  TO_FILE_RELATION,
-  TO_FOLDER_RELATION,
-  TO_ROOT_DIRECTORY_RELATION
-};
+export const DIRECTORY_MODEL_TYPE: string = "Directory";
+export const FILE_MODEL_TYPE: string = "File";

@@ -37,6 +37,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+console.warn("Warning: spinal-env-viewer-plugin-documentation is deprecated. Please use spinal-env-viewer-plugin-service-documentation instead.");
 const ServiceDocumentation_1 = require("./Models/ServiceDocumentation");
 __exportStar(require("./Models/constants"), exports);
 __exportStar(require("./interfaces/index"), exports);

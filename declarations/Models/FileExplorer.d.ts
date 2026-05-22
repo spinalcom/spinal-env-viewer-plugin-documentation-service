@@ -25,14 +25,14 @@ export declare class FileExplorer {
     static _getFileType(file: File): string;
     static getMimeType(fileName: string): string;
     /**
-     * @static
-     * @param {spinal.Directory<any>} directory
-     * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files - HTML Files
-     * @return {*}  {spinal.File<any>[]}
-     * @memberof FileExplorer
-    
-    
-    */
+   * @static
+   * @param {spinal.Directory<any>} directory
+   * @param {((File | { name: string; buffer: Buffer })[] | FileList | any)} files - HTML Files
+   * @return {*}  {spinal.File<any>[]}
+   * @memberof FileExplorer
+  
+  
+  */
     /**
      * @static
      * @param {SpinalNode<any>} node
@@ -41,6 +41,6 @@ export declare class FileExplorer {
      * @memberof FileExplorer
      */
     static uploadFiles(node: SpinalNode<any>, files: FilesArgType): Promise<SpinalNode[]>;
-    static addFileUpload(node: SpinalNode<any>, files: FilesArgType): Promise<SpinalNode[]>;
+    static addFileUpload(node: SpinalNode<any>, files: FilesArgType, chunkSize?: number): Promise<SpinalNode[]>;
     static _getOrCreateFileDirectory(node: SpinalNode<any>): Promise<spinal.Directory<any>>;
 }
