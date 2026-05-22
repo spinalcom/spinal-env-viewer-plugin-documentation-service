@@ -3,13 +3,13 @@
 import { Directory as SpinalDirectory, File } from "spinal-core-connectorjs_type";
 import { SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
 import { FilesArgType } from "../interfaces";
-import { SpinalFile } from "../models_spinalcom/SpinalFileModel";
-export declare function convertFileToSpinalFile(files: FilesArgType, chunkSize?: number): SpinalFile[];
+import { SpinalDocument } from "../models_spinalcom/SpinalDocument";
+export declare function convertFileToSpinalFile(files: FilesArgType, chunkSize?: number): SpinalDocument[];
 export declare function addChildrenToNode(parentNode: SpinalNode, childNode: SpinalNode, relationName: string, contextNode?: SpinalContext): Promise<SpinalNode>;
-export declare function getFilesFromDirectory(directoryNode: File): Promise<(SpinalFile | SpinalDirectory)[]>;
-export declare function createFileNode(file: SpinalFile): Promise<SpinalNode>;
+export declare function getFilesFromDirectory(directoryNode: File): Promise<(SpinalDocument | SpinalDirectory)[]>;
+export declare function createFileNode(file: SpinalDocument): Promise<SpinalNode>;
 export declare function _getFileChildren(file: File, parentNode: SpinalNode): Promise<{
-    file: SpinalFile;
+    file: SpinalDocument;
     parent: SpinalNode;
 }[]>;
 export declare function _getFileAttributes(file: File): Promise<{
@@ -17,7 +17,7 @@ export declare function _getFileAttributes(file: File): Promise<{
     nodeType: string;
     relationName: string;
 }>;
-export declare function _getFileAsBuffer(file: SpinalFile | SpinalNode | File, hubUrl?: string): Promise<Buffer>;
+export declare function _getFileAsBuffer(file: SpinalDocument | SpinalNode | File, hubUrl?: string): Promise<Buffer>;
 export declare function getPathData(dynamicId: number, hubUrl?: string): Promise<Buffer>;
 export declare function convertTreeToFileBuffers(startNode: SpinalNode<any>, hubUrl?: string): Promise<{
     name: string;

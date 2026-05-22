@@ -7,11 +7,11 @@ import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_MODEL_TYPE, FILE_NODE_T
 import FileVersion from "./FileVersion";
 import VersionUtils from "../utils/versionUtils";
 
-export default class SpinalFile extends File {
+export default class SpinalDocument extends File {
 	private _node: SpinalNode | null = null;
 
 	constructor(name?: string, initialVersion?: FileVersion | Directory, info: { [key: string]: any } = {}) {
-		if (!name || !initialVersion) throw new Error("Name and initialVersion are required to create a SpinalFile.");
+		if (!name || !initialVersion) throw new Error("Name and initialVersion are required to create a SpinalDocument.");
 
 		const isDirectory = initialVersion instanceof Directory;
 
@@ -119,7 +119,7 @@ export default class SpinalFile extends File {
 		);
 	}
 
-	static async getFileModelFromNode(node: SpinalNode): Promise<SpinalFile | undefined> {
+	static async getFileModelFromNode(node: SpinalNode): Promise<SpinalDocument | undefined> {
 		const file = await node.getElement(true);
 		return file;
 	}
@@ -174,5 +174,5 @@ export default class SpinalFile extends File {
 	}
 }
 
-spinalCore.register_models([SpinalFile]);
-export { SpinalFile };
+spinalCore.register_models([SpinalDocument]);
+export { SpinalDocument };

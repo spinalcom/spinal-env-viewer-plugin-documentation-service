@@ -3,7 +3,7 @@ import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from "spinal-
 import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addChildrenToNode, convertFileToSpinalFile, convertTreeToFileBuffers, removeFileNode } from "../utils/files";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
 import { FilesArgType } from "../interfaces";
-import { SpinalFile } from "../models_spinalcom";
+import { SpinalDocument } from "../models_spinalcom";
 
 class SpinalDocumentary {
 	constructor() {}
@@ -19,8 +19,8 @@ class SpinalDocumentary {
 		return Promise.all(promises);
 	}
 
-	public async removeFile(fileNode: SpinalNode | SpinalFile): Promise<boolean> {
-		if (fileNode instanceof SpinalFile) fileNode = (await fileNode.getNode()) as SpinalNode;
+	public async removeFile(fileNode: SpinalNode | SpinalDocument): Promise<boolean> {
+		if (fileNode instanceof SpinalDocument) fileNode = (await fileNode.getNode()) as SpinalNode;
 
 		if (fileNode.getType().get() !== DIRECTORY_NODE_TYPE) return removeFileNode(fileNode);
 
@@ -37,12 +37,12 @@ class SpinalDocumentary {
 	}
 
 	public createDirectoryNode(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon: string = "folder"): Promise<SpinalNode> {
-		const file = new SpinalFile(name, new SpinalDirectory(), { model_type: DIRECTORY_MODEL_TYPE, icon });
+		const file = new SpinalDocument(name, new SpinalDirectory(), { model_type: DIRECTORY_MODEL_TYPE, icon });
 		return file.linkToNode(parentNode, contextNode);
 	}
 
-	public async importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalFile): Promise<SpinalNode[]> {
-		const queue: { file: SpinalFile; parent: SpinalNode }[] = [{ file: startFile, parent: parentNode }];
+	public async importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalDocument): Promise<SpinalNode[]> {
+		const queue: { file: SpinalDocument; parent: SpinalNode }[] = [{ file: startFile, parent: parentNode }];
 		const createdNodes: SpinalNode[] = [];
 
 		while (queue.length > 0) {
@@ -69,8 +69,8 @@ class SpinalDocumentary {
 		return convertTreeToFileBuffers(startNode, hubUrl);
 	}
 
-	public async convertFileToBuffer(file: SpinalNode | SpinalFile, hubUrl: string = ""): Promise<{ name: string; buffer: Buffer }> {
-		// if (file instanceof SpinalNode) file = (await file.getElement(true)) as SpinalFile;
+	public async convertFileToBuffer(file: SpinalNode | SpinalDocument, hubUrl: string = ""): Promise<{ name: string; buffer: Buffer }> {
+		// if (file instanceof SpinalNode) file = (await file.getElement(true)) as SpinalDocument;
 		const buffer = await _getFileAsBuffer(file, hubUrl);
 		const name = file.name.get();
 
@@ -108,7 +108,7 @@ class SpinalDocumentary {
 		await rootDirNode.removeChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE);
 	}
 
-	private async _createNodeInContext(file: SpinalFile, parent: SpinalNode, relationName: string, contextNode: SpinalContext<any>) {
+	private async _createNodeInContext(file: SpinalDocument, parent: SpinalNode, relationName: string, contextNode: SpinalContext<any>) {
 		const node = await file.getNode();
 		await parent.addChildInContext(node, relationName, SPINAL_RELATION_PTR_LST_TYPE, contextNode);
 		return node as SpinalNode;

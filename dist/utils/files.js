@@ -6,7 +6,7 @@ const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-servi
 const constants_1 = require("../Models/constants");
 const axios_retry_1 = require("axios-retry");
 const axios_1 = require("axios");
-const SpinalFileModel_1 = require("../models_spinalcom/SpinalFileModel");
+const SpinalDocument_1 = require("../models_spinalcom/SpinalDocument");
 const versionUtils_1 = require("./versionUtils");
 const FileVersion_1 = require("../models_spinalcom/FileVersion");
 function convertFileToSpinalFile(files, chunkSize = -1) {
@@ -21,7 +21,7 @@ function convertFileToSpinalFile(files, chunkSize = -1) {
         // else filePath = new SpinalPath(element, FileExplorer.getMimeType(element.name));
         const hashes = versionUtils_1.default.getInstance().convertFileToHashes(element.buffer || element, [], chunkSize);
         const fileVersion = new FileVersion_1.FileVersion({ version: 1, hashes });
-        let file = new SpinalFileModel_1.SpinalFile(element.name, fileVersion, { model_type: constants_1.FILE_MODEL_TYPE });
+        let file = new SpinalDocument_1.SpinalDocument(element.name, fileVersion, { model_type: constants_1.FILE_MODEL_TYPE });
         res.push(file);
     }
     return res;
@@ -46,7 +46,7 @@ function addChildrenToNode(parentNode, childNode, relationName, contextNode) {
 exports.addChildrenToNode = addChildrenToNode;
 async function _addFileNodeToDirectory(directoryNode, file) {
     let directory = await directoryNode.getElement(true);
-    if (directory instanceof SpinalFileModel_1.SpinalFile && directory.isDirectory()) {
+    if (directory instanceof SpinalDocument_1.SpinalDocument && directory.isDirectory()) {
         const directoryElement = await new Promise((resolve) => directory.load((e) => resolve(e)));
         if (directoryElement instanceof spinal_core_connectorjs_type_1.Directory)
             directory = directoryElement;
@@ -90,8 +90,8 @@ async function _getFileAttributes(file) {
 exports._getFileAttributes = _getFileAttributes;
 async function _getFileAsBuffer(file, hubUrl = "") {
     if (file instanceof spinal_env_viewer_graph_service_1.SpinalNode)
-        file = (await SpinalFileModel_1.SpinalFile.getFileModelFromNode(file));
-    if (file instanceof SpinalFileModel_1.SpinalFile)
+        file = (await SpinalDocument_1.SpinalDocument.getFileModelFromNode(file));
+    if (file instanceof SpinalDocument_1.SpinalDocument)
         return file.getCurrentVersionAsBuffer();
     const pathServerId = file._ptr.data.value;
     return getPathData(pathServerId, hubUrl);
@@ -161,7 +161,7 @@ async function _getOrCreateRootNode(node, createIfNotExist = true) {
     if (!createIfNotExist)
         return null;
     const name = node.getName().get() + "_root_directory";
-    const file = new SpinalFileModel_1.SpinalFile(name, new spinal_core_connectorjs_type_1.Directory(), { model_type: constants_1.DIRECTORY_MODEL_TYPE, icon: "folder" });
+    const file = new SpinalDocument_1.SpinalDocument(name, new spinal_core_connectorjs_type_1.Directory(), { model_type: constants_1.DIRECTORY_MODEL_TYPE, icon: "folder" });
     const directoryNode = await createFileNode(file);
     await node.addChild(directoryNode, constants_1.TO_ROOT_DIRECTORY_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
     return directoryNode;

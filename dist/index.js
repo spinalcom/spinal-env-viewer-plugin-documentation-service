@@ -46,5 +46,6 @@ __exportStar(require("./Models/FileExplorer"), exports);
 __exportStar(require("./Models/NoteService"), exports);
 __exportStar(require("./Models/UrlService"), exports);
 __exportStar(require("./Models/ServiceDocumentation"), exports);
+__exportStar(require("./models_spinalcom"), exports);
 exports.default = ServiceDocumentation_1.serviceDocumentation;
 //# sourceMappingURL=index.js.map

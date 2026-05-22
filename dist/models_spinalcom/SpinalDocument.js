@@ -1,16 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SpinalFile = void 0;
+exports.SpinalDocument = void 0;
 const spinal_core_connectorjs_1 = require("spinal-core-connectorjs");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const files_1 = require("../utils/files");
 const constants_1 = require("../Models/constants");
 const FileVersion_1 = require("./FileVersion");
 const versionUtils_1 = require("../utils/versionUtils");
-class SpinalFile extends spinal_core_connectorjs_1.File {
+class SpinalDocument extends spinal_core_connectorjs_1.File {
     constructor(name, initialVersion, info = {}) {
         if (!name || !initialVersion)
-            throw new Error("Name and initialVersion are required to create a SpinalFile.");
+            throw new Error("Name and initialVersion are required to create a SpinalDocument.");
         const isDirectory = initialVersion instanceof spinal_core_connectorjs_1.Directory;
         if (!info.icon)
             info.icon = isDirectory ? "folder" : "file";
@@ -144,7 +144,7 @@ class SpinalFile extends spinal_core_connectorjs_1.File {
         });
     }
 }
-exports.default = SpinalFile;
-exports.SpinalFile = SpinalFile;
-spinal_core_connectorjs_1.spinalCore.register_models([SpinalFile]);
-//# sourceMappingURL=SpinalFileModel.js.map
+exports.default = SpinalDocument;
+exports.SpinalDocument = SpinalDocument;
+spinal_core_connectorjs_1.spinalCore.register_models([SpinalDocument]);
+//# sourceMappingURL=SpinalDocument.js.map

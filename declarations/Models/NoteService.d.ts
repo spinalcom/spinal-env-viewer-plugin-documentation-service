@@ -1,7 +1,7 @@
 import type { SpinalContext } from "spinal-model-graph";
 import { SpinalNode } from "spinal-env-viewer-graph-service";
 import { SpinalNote, ViewStateInterface, SpinalAttribute } from "spinal-models-documentation";
-import { File as SpinalFile } from "spinal-core-connectorjs_type";
+import { File as SpinalFileModel } from "spinal-core-connectorjs_type";
 declare class NoteService {
     constructor();
     /**
@@ -19,7 +19,7 @@ declare class NoteService {
     addNote(node: SpinalNode<any>, userInfo: {
         username: string;
         userId: number;
-    }, note: string, type?: string, file?: SpinalFile<spinal.Model>, noteContextId?: string, noteGroupId?: string, viewPoint?: ViewStateInterface): Promise<SpinalNode<any>>;
+    }, note: string, type?: string, file?: SpinalFileModel<spinal.Model>, noteContextId?: string, noteGroupId?: string, viewPoint?: ViewStateInterface): Promise<SpinalNode<any>>;
     /**
      * @param {SpinalNode<any>} node
      * @param {*} files

@@ -1,1 +1,2 @@
-export * from "./SpinalFileModel";
+export * from "./SpinalDocument";
+export * from "./FileVersion";

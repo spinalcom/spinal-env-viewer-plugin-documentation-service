@@ -5,15 +5,15 @@ import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_MODEL_TYPE, FILE_NODE_T
 import { FilesArgType } from "../interfaces";
 import axiosRetry from "axios-retry";
 import axios from "axios";
-import { SpinalFile } from "../models_spinalcom/SpinalFileModel";
+import { SpinalDocument } from "../models_spinalcom/SpinalDocument";
 import VersionUtils from "./versionUtils";
 import { FileVersion } from "../models_spinalcom/FileVersion";
 
-export function convertFileToSpinalFile(files: FilesArgType, chunkSize: number = -1): SpinalFile[] {
+export function convertFileToSpinalFile(files: FilesArgType, chunkSize: number = -1): SpinalDocument[] {
 	const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
 	if (!isFileList && !Array.isArray(files)) files = [files];
 
-	const res: SpinalFile[] = [];
+	const res: SpinalDocument[] = [];
 
 	for (let i = 0; i < files.length; i++) {
 		const element = files[i];
@@ -25,7 +25,7 @@ export function convertFileToSpinalFile(files: FilesArgType, chunkSize: number =
 
 		const hashes = VersionUtils.getInstance().convertFileToHashes(element.buffer || element, [], chunkSize);
 		const fileVersion = new FileVersion({ version: 1, hashes });
-		let file = new SpinalFile(element.name, fileVersion, { model_type: FILE_MODEL_TYPE });
+		let file = new SpinalDocument(element.name, fileVersion, { model_type: FILE_MODEL_TYPE });
 
 		res.push(file);
 	}
@@ -42,17 +42,17 @@ export function addChildrenToNode(parentNode: SpinalNode, childNode: SpinalNode,
 		if (parentNode.getType().get() === DIRECTORY_NODE_TYPE) {
 			const element = await childNode.getElement(true);
 			if (!element) return result;
-			await _addFileNodeToDirectory(parentNode, element as SpinalFile | SpinalDirectory);
+			await _addFileNodeToDirectory(parentNode, element as SpinalDocument | SpinalDirectory);
 		}
 
 		return result;
 	});
 }
 
-async function _addFileNodeToDirectory(directoryNode: SpinalNode, file: SpinalFile | SpinalDirectory): Promise<SpinalDirectory | undefined> {
+async function _addFileNodeToDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalDirectory): Promise<SpinalDirectory | undefined> {
 	let directory = await directoryNode.getElement(true);
 
-	if (directory instanceof SpinalFile && directory.isDirectory()) {
+	if (directory instanceof SpinalDocument && directory.isDirectory()) {
 		const directoryElement = await new Promise((resolve) => directory.load((e: SpinalDirectory) => resolve(e)));
 
 		if (directoryElement instanceof SpinalDirectory) directory = directoryElement;
@@ -64,9 +64,9 @@ async function _addFileNodeToDirectory(directoryNode: SpinalNode, file: SpinalFi
 	return directory;
 }
 
-export async function getFilesFromDirectory(directoryNode: File): Promise<(SpinalFile | SpinalDirectory)[]> {
+export async function getFilesFromDirectory(directoryNode: File): Promise<(SpinalDocument | SpinalDirectory)[]> {
 	const directory = await new Promise((resolve) => directoryNode.load((e: SpinalDirectory) => resolve(e)));
-	const res: (SpinalFile | SpinalDirectory)[] = [];
+	const res: (SpinalDocument | SpinalDirectory)[] = [];
 
 	if (directory instanceof SpinalDirectory) {
 		for (let i = 0; i < directory.length; i++) {
@@ -78,15 +78,15 @@ export async function getFilesFromDirectory(directoryNode: File): Promise<(Spina
 	return res;
 }
 
-export function createFileNode(file: SpinalFile): Promise<SpinalNode> {
+export function createFileNode(file: SpinalDocument): Promise<SpinalNode> {
 	return file.createNode();
 }
 
-export async function _getFileChildren(file: File, parentNode: SpinalNode): Promise<{ file: SpinalFile; parent: SpinalNode }[]> {
+export async function _getFileChildren(file: File, parentNode: SpinalNode): Promise<{ file: SpinalDocument; parent: SpinalNode }[]> {
 	const children = await getFilesFromDirectory(file);
 	const res = [];
 	for (const child of children) {
-		res.push({ file: child as SpinalFile, parent: parentNode });
+		res.push({ file: child as SpinalDocument, parent: parentNode });
 	}
 	return res;
 }
@@ -100,10 +100,10 @@ export async function _getFileAttributes(file: File) {
 	return { name, nodeType, relationName };
 }
 
-export async function _getFileAsBuffer(file: SpinalFile | SpinalNode | File, hubUrl: string = ""): Promise<Buffer> {
-	if (file instanceof SpinalNode) file = (await SpinalFile.getFileModelFromNode(file)) as SpinalFile;
+export async function _getFileAsBuffer(file: SpinalDocument | SpinalNode | File, hubUrl: string = ""): Promise<Buffer> {
+	if (file instanceof SpinalNode) file = (await SpinalDocument.getFileModelFromNode(file)) as SpinalDocument;
 
-	if (file instanceof SpinalFile) return file.getCurrentVersionAsBuffer();
+	if (file instanceof SpinalDocument) return file.getCurrentVersionAsBuffer();
 
 	const pathServerId = file._ptr.data.value;
 	return getPathData(pathServerId, hubUrl);
@@ -142,7 +142,7 @@ export async function convertTreeToFileBuffers(startNode: SpinalNode<any>, hubUr
 			const children = await getFilesFromDirectory(file);
 
 			for (const child of children) {
-				queue.push({ path: `${path}/${child.name.get()}`, file: child as SpinalFile });
+				queue.push({ path: `${path}/${child.name.get()}`, file: child as SpinalDocument });
 			}
 		}
 
@@ -152,9 +152,9 @@ export async function convertTreeToFileBuffers(startNode: SpinalNode<any>, hubUr
 	return filesBuffers;
 }
 
-async function getStarterQueue(startNode: SpinalNode): Promise<{ path: string; file: SpinalFile }[]> {
+async function getStarterQueue(startNode: SpinalNode): Promise<{ path: string; file: SpinalDocument }[]> {
 	const queue: { node: SpinalNode; path: string }[] = [{ node: startNode, path: startNode.getName().get() }];
-	const res: { path: string; file: SpinalFile }[] = [];
+	const res: { path: string; file: SpinalDocument }[] = [];
 
 	while (queue.length > 0) {
 		const data = queue.shift();
@@ -163,7 +163,7 @@ async function getStarterQueue(startNode: SpinalNode): Promise<{ path: string; f
 		const { node, path } = data;
 		const type = node.getType().get();
 		if (type === FILE_NODE_TYPE || type === DIRECTORY_NODE_TYPE) {
-			res.push({ path, file: (await node.getElement(true)) as SpinalFile });
+			res.push({ path, file: (await node.getElement(true)) as SpinalDocument });
 		}
 
 		const children = await node.getChildren();
@@ -184,7 +184,7 @@ export async function _getOrCreateRootNode(node: SpinalNode, createIfNotExist: b
 
 	const name = node.getName().get() + "_root_directory";
 
-	const file = new SpinalFile(name, new SpinalDirectory(), { model_type: DIRECTORY_MODEL_TYPE, icon: "folder" });
+	const file = new SpinalDocument(name, new SpinalDirectory(), { model_type: DIRECTORY_MODEL_TYPE, icon: "folder" });
 	const directoryNode = await createFileNode(file);
 
 	await node.addChild(directoryNode, TO_ROOT_DIRECTORY_RELATION, SPINAL_RELATION_PTR_LST_TYPE);
@@ -198,7 +198,7 @@ export async function removeFileNode(fileNode: SpinalNode): Promise<boolean> {
 	const unlinkPromises = parentNodes.map(async (parent) => {
 		if (parent.getType().get() === DIRECTORY_NODE_TYPE) {
 			const directory = await parent.getElement(true);
-			directory?.remove(fileElement as SpinalFile);
+			directory?.remove(fileElement as SpinalDocument);
 		}
 		return parent.removeChild(fileNode, TO_FILE_RELATION, SPINAL_RELATION_PTR_LST_TYPE);
 	});

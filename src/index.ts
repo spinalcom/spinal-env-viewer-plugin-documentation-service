@@ -33,5 +33,6 @@ export * from "./Models/FileExplorer";
 export * from "./Models/NoteService";
 export * from "./Models/UrlService";
 export * from "./Models/ServiceDocumentation";
+export * from "./models_spinalcom";
 
 export default serviceDocumentation;

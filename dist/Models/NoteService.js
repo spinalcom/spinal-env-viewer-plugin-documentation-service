@@ -138,6 +138,8 @@ class NoteService {
         }
         if (typeof groupId === "undefined") {
             const groupNode = await this.createDefaultGroup();
+            if (!groupNode)
+                throw new Error("Unable to create default group");
             groupId = groupNode.getId().get();
         }
         await this.linkNoteToGroup(contextId, groupId, spinalNode.getId().get());
@@ -300,7 +302,7 @@ class NoteService {
             return {
                 viewPoint: { viewState: file.viewState, objectState: file.objectState },
                 file: file,
-                type: FileExplorer_1.FileExplorer._getFileType(file)
+                type: FileExplorer_1.FileExplorer._getFileType(file),
                 // directory: await FileExplorer._getOrCreateFileDirectory(noteNode),
             };
         });
