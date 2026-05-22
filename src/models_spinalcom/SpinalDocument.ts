@@ -77,8 +77,8 @@ export default class SpinalDocument extends File {
 		return Array.from(historyLst);
 	}
 
-	linkToNode(parentNode: SpinalNode, contextNode?: SpinalContext): Promise<SpinalNode> {
-		if (!this._node) this.createNode();
+	async linkToNode(parentNode: SpinalNode, contextNode?: SpinalContext): Promise<SpinalNode> {
+		if (!this._node) await this.createNode();
 
 		const relationName = this.isDirectory() ? TO_FOLDER_RELATION : TO_FILE_RELATION;
 		return addChildrenToNode(parentNode, this._node as SpinalNode, relationName, contextNode);

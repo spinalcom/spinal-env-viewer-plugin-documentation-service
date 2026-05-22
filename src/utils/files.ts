@@ -50,17 +50,20 @@ export function addChildrenToNode(parentNode: SpinalNode, childNode: SpinalNode,
 }
 
 async function _addFileNodeToDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalDirectory): Promise<SpinalDirectory | undefined> {
-	let directory = await directoryNode.getElement(true);
+	let spinalDocument = await SpinalDocument.getFileModelFromNode(directoryNode);
 
-	if (directory instanceof SpinalDocument && directory.isDirectory()) {
-		const directoryElement = await new Promise((resolve) => directory.load((e: SpinalDirectory) => resolve(e)));
+	if (!spinalDocument) return;
+
+	let directory: SpinalDirectory | undefined;
+
+	if (spinalDocument instanceof SpinalDocument && spinalDocument.isDirectory()) {
+		const directoryElement = await new Promise((resolve) => spinalDocument?._ptr?.load((e: SpinalDirectory) => resolve(e)));
 
 		if (directoryElement instanceof SpinalDirectory) directory = directoryElement;
 	}
 
-	if (!directory) return;
+	if (directory) directory.push(file);
 
-	directory.push(file);
 	return directory;
 }
 

@@ -45,15 +45,17 @@ function addChildrenToNode(parentNode, childNode, relationName, contextNode) {
 }
 exports.addChildrenToNode = addChildrenToNode;
 async function _addFileNodeToDirectory(directoryNode, file) {
-    let directory = await directoryNode.getElement(true);
-    if (directory instanceof SpinalDocument_1.SpinalDocument && directory.isDirectory()) {
-        const directoryElement = await new Promise((resolve) => directory.load((e) => resolve(e)));
+    let spinalDocument = await SpinalDocument_1.SpinalDocument.getFileModelFromNode(directoryNode);
+    if (!spinalDocument)
+        return;
+    let directory;
+    if (spinalDocument instanceof SpinalDocument_1.SpinalDocument && spinalDocument.isDirectory()) {
+        const directoryElement = await new Promise((resolve) => spinalDocument?._ptr?.load((e) => resolve(e)));
         if (directoryElement instanceof spinal_core_connectorjs_type_1.Directory)
             directory = directoryElement;
     }
-    if (!directory)
-        return;
-    directory.push(file);
+    if (directory)
+        directory.push(file);
     return directory;
 }
 async function getFilesFromDirectory(directoryNode) {
