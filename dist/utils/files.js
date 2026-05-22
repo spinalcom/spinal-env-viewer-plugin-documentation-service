@@ -35,10 +35,10 @@ function addChildrenToNode(parentNode, childNode, relationName, contextNode) {
         prom = parentNode.addChild(childNode, relationName, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
     return prom.then(async (result) => {
         if (parentNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE) {
-            const element = await childNode.getElement(true);
-            if (!element)
+            const childSpinalDocument = await SpinalDocument_1.SpinalDocument.getFileModelFromNode(childNode);
+            if (!childSpinalDocument)
                 return result;
-            await _addFileNodeToDirectory(parentNode, element);
+            await _addFileNodeToDirectory(parentNode, childSpinalDocument);
         }
         return result;
     });

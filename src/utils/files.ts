@@ -40,9 +40,10 @@ export function addChildrenToNode(parentNode: SpinalNode, childNode: SpinalNode,
 
 	return prom.then(async (result) => {
 		if (parentNode.getType().get() === DIRECTORY_NODE_TYPE) {
-			const element = await childNode.getElement(true);
-			if (!element) return result;
-			await _addFileNodeToDirectory(parentNode, element as SpinalDocument | SpinalDirectory);
+			const childSpinalDocument = await SpinalDocument.getFileModelFromNode(childNode);
+			if (!childSpinalDocument) return result;
+
+			await _addFileNodeToDirectory(parentNode, childSpinalDocument as SpinalDocument | SpinalDirectory);
 		}
 
 		return result;
