@@ -1,12 +1,12 @@
 /// <reference types="node" />
 /// <reference types="node" />
-import { File, Directory } from "spinal-core-connectorjs";
+import { File, Directory, Lst } from "spinal-core-connectorjs";
 import { SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
 import { IFileBufferInfo } from "../interfaces";
 import FileVersion from "./FileVersion";
 export default class SpinalDocument extends File {
     private _node;
-    constructor(name?: string, initialVersion?: FileVersion | Directory, info?: {
+    constructor(name?: string, initialVersion?: FileVersion | Directory | Lst, info?: {
         [key: string]: any;
     });
     updateVersion(buffer: Buffer, hubUrl?: string, chunkSize?: number): Promise<void>;

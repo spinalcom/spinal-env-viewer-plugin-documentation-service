@@ -11,7 +11,7 @@ class SpinalDocument extends spinal_core_connectorjs_1.File {
     constructor(name, initialVersion, info = {}) {
         if (!name || !initialVersion)
             throw new Error("Name and initialVersion are required to create a SpinalDocument.");
-        const isDirectory = initialVersion instanceof spinal_core_connectorjs_1.Directory;
+        const isDirectory = initialVersion instanceof spinal_core_connectorjs_1.Lst || initialVersion instanceof spinal_core_connectorjs_1.Directory;
         if (!info.icon)
             info.icon = isDirectory ? "folder" : "file";
         if (!info.model_type)

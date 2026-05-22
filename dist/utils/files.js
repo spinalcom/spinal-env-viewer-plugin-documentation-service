@@ -51,7 +51,7 @@ async function _addFileNodeToDirectory(directoryNode, file) {
     let directory;
     if (spinalDocument instanceof SpinalDocument_1.SpinalDocument && spinalDocument.isDirectory()) {
         const directoryElement = await new Promise((resolve) => spinalDocument?._ptr?.load((e) => resolve(e)));
-        if (directoryElement instanceof spinal_core_connectorjs_type_1.Directory)
+        if (directoryElement instanceof spinal_core_connectorjs_type_1.Lst)
             directory = directoryElement;
     }
     if (directory)
@@ -61,7 +61,7 @@ async function _addFileNodeToDirectory(directoryNode, file) {
 async function getFilesFromDirectory(directoryNode) {
     const directory = await new Promise((resolve) => directoryNode.load((e) => resolve(e)));
     const res = [];
-    if (directory instanceof spinal_core_connectorjs_type_1.Directory) {
+    if (directory instanceof spinal_core_connectorjs_type_1.Lst) {
         for (let i = 0; i < directory.length; i++) {
             const element = directory[i];
             res.push(element);
@@ -163,7 +163,7 @@ async function _getOrCreateRootNode(node, createIfNotExist = true) {
     if (!createIfNotExist)
         return null;
     const name = node.getName().get() + "_root_directory";
-    const file = new SpinalDocument_1.SpinalDocument(name, new spinal_core_connectorjs_type_1.Directory(), { model_type: constants_1.DIRECTORY_MODEL_TYPE, icon: "folder" });
+    const file = new SpinalDocument_1.SpinalDocument(name, new spinal_core_connectorjs_type_1.Lst(), { model_type: constants_1.DIRECTORY_MODEL_TYPE, icon: "folder" });
     const directoryNode = await createFileNode(file);
     await node.addChild(directoryNode, constants_1.TO_ROOT_DIRECTORY_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
     return directoryNode;

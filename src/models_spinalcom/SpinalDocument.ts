@@ -10,10 +10,10 @@ import VersionUtils from "../utils/versionUtils";
 export default class SpinalDocument extends File {
 	private _node: SpinalNode | null = null;
 
-	constructor(name?: string, initialVersion?: FileVersion | Directory, info: { [key: string]: any } = {}) {
+	constructor(name?: string, initialVersion?: FileVersion | Directory | Lst, info: { [key: string]: any } = {}) {
 		if (!name || !initialVersion) throw new Error("Name and initialVersion are required to create a SpinalDocument.");
 
-		const isDirectory = initialVersion instanceof Directory;
+		const isDirectory = initialVersion instanceof Lst || initialVersion instanceof Directory;
 
 		if (!info.icon) info.icon = isDirectory ? "folder" : "file";
 		if (!info.model_type) info.model_type = isDirectory ? DIRECTORY_MODEL_TYPE : FILE_MODEL_TYPE;

@@ -1,4 +1,4 @@
-import { File, Directory as SpinalDirectory, Ptr } from "spinal-core-connectorjs_type";
+import { Lst } from "spinal-core-connectorjs_type";
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from "spinal-model-graph";
 import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addChildrenToNode, convertFileToSpinalFile, convertTreeToFileBuffers, removeFileNode } from "../utils/files";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
@@ -37,7 +37,7 @@ class SpinalDocumentary {
 	}
 
 	public createDirectoryNode(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon: string = "folder"): Promise<SpinalNode> {
-		const file = new SpinalDocument(name, new SpinalDirectory(), { model_type: DIRECTORY_MODEL_TYPE, icon });
+		const file = new SpinalDocument(name, new Lst(), { model_type: DIRECTORY_MODEL_TYPE, icon });
 		return file.linkToNode(parentNode, contextNode);
 	}
 
