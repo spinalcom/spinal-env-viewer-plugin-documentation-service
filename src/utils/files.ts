@@ -22,8 +22,9 @@ export function convertFileToSpinalFile(files: FilesArgType, chunkSize: number =
 
 		// if (element.buffer) filePath = new SpinalPath(element.buffer, FileExplorer.getMimeType(element.name));
 		// else filePath = new SpinalPath(element, FileExplorer.getMimeType(element.name));
+		const dataBuffer = convertFileToBuffer(element.buffer || element);
 
-		const hashes = VersionUtils.getInstance().convertFileToHashes(element.buffer || element, [], chunkSize);
+		const hashes = VersionUtils.getInstance().convertFileToHashes(dataBuffer, [], chunkSize);
 		const fileVersion = new FileVersion({ version: 1, hashes });
 		let file = new SpinalDocument(element.name, fileVersion, { model_type: FILE_MODEL_TYPE });
 
@@ -31,6 +32,12 @@ export function convertFileToSpinalFile(files: FilesArgType, chunkSize: number =
 	}
 
 	return res;
+}
+
+function convertFileToBuffer(file: any): Buffer {
+	if (Buffer.isBuffer(file)) return file;
+
+	return Buffer.from(file);
 }
 
 export function addChildrenToNode(parentNode: SpinalNode, childNode: SpinalNode, relationName: string, contextNode?: SpinalContext): Promise<SpinalNode> {
