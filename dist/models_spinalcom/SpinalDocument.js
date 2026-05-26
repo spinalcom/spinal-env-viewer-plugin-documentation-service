@@ -9,17 +9,16 @@ const FileVersion_1 = require("./FileVersion");
 const versionUtils_1 = require("../utils/versionUtils");
 class SpinalDocument extends spinal_core_connectorjs_1.File {
     constructor(name, initialVersion, info = {}) {
-        super();
+        name = name || "";
+        const isDirectory = initialVersion instanceof spinal_core_connectorjs_1.Lst || initialVersion instanceof spinal_core_connectorjs_1.Directory;
+        if (!info.model_type)
+            info.model_type = isDirectory ? constants_1.DIRECTORY_MODEL_TYPE : constants_1.FILE_MODEL_TYPE;
+        if (!info.icon)
+            info.icon = isDirectory ? "folder" : "file";
+        super(name, undefined, info);
         this._node = null;
         if (!name || !initialVersion)
             return;
-        const isDirectory = initialVersion instanceof spinal_core_connectorjs_1.Lst || initialVersion instanceof spinal_core_connectorjs_1.Directory;
-        if (!info.icon)
-            info.icon = isDirectory ? "folder" : "file";
-        if (!info.model_type)
-            info.model_type = isDirectory ? constants_1.DIRECTORY_MODEL_TYPE : constants_1.FILE_MODEL_TYPE;
-        this.mod_attr("name", name);
-        this.mod_attr("_info", info);
         const element = isDirectory ? initialVersion : undefined;
         if (element)
             this.mod_attr("_ptr", new spinal_core_connectorjs_1.Ptr(element));
