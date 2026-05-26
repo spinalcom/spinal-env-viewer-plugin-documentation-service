@@ -11,7 +11,7 @@ export default class SpinalDocument extends File {
 	private _node: SpinalNode | null = null;
 
 	constructor(name?: string, initialVersion?: FileVersion | Directory | Lst, info: { [key: string]: any } = {}) {
-		if (!name || !initialVersion) throw new Error("Name and initialVersion are required to create a SpinalDocument.");
+		if (!name || !initialVersion) return;
 
 		const isDirectory = initialVersion instanceof Lst || initialVersion instanceof Directory;
 

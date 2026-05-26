@@ -10,7 +10,7 @@ const versionUtils_1 = require("../utils/versionUtils");
 class SpinalDocument extends spinal_core_connectorjs_1.File {
     constructor(name, initialVersion, info = {}) {
         if (!name || !initialVersion)
-            throw new Error("Name and initialVersion are required to create a SpinalDocument.");
+            return;
         const isDirectory = initialVersion instanceof spinal_core_connectorjs_1.Lst || initialVersion instanceof spinal_core_connectorjs_1.Directory;
         if (!info.icon)
             info.icon = isDirectory ? "folder" : "file";

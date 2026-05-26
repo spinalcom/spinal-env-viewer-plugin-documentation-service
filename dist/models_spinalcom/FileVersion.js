@@ -7,7 +7,6 @@ const crypto_1 = require("crypto");
 class FileVersion extends spinal_core_connectorjs_1.Model {
     constructor(versionInfo) {
         super();
-        console.log("Creating FileVersion with info:", versionInfo);
         if (!versionInfo || !versionInfo.version || !Array.isArray(versionInfo.hashes) || versionInfo.hashes.length === 0) {
             return;
         }

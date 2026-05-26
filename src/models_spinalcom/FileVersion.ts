@@ -7,8 +7,6 @@ class FileVersion extends Model {
 	constructor(versionInfo: IFileVersionInfo) {
 		super();
 
-		console.log("Creating FileVersion with info:", versionInfo);
-
 		if (!versionInfo || !versionInfo.version || !Array.isArray(versionInfo.hashes) || versionInfo.hashes.length === 0) {
 			return;
 		}
