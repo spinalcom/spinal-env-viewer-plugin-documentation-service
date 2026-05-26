@@ -11,6 +11,7 @@ export default class SpinalDocument extends File {
 	private _node: SpinalNode | null = null;
 
 	constructor(name?: string, initialVersion?: FileVersion | Directory | Lst, info: { [key: string]: any } = {}) {
+		super();
 		if (!name || !initialVersion) return;
 
 		const isDirectory = initialVersion instanceof Lst || initialVersion instanceof Directory;
@@ -18,8 +19,11 @@ export default class SpinalDocument extends File {
 		if (!info.icon) info.icon = isDirectory ? "folder" : "file";
 		if (!info.model_type) info.model_type = isDirectory ? DIRECTORY_MODEL_TYPE : FILE_MODEL_TYPE;
 
+		this.mod_attr("name", name);
+		this.mod_attr("info", info);
+
 		const element = isDirectory ? initialVersion : undefined;
-		super(name, element, info);
+		if (element) this.mod_attr("_ptr", new Ptr(element));
 
 		this._addNodeToInfo();
 
