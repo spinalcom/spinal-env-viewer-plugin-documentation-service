@@ -14,7 +14,7 @@ class FileVersion extends spinal_core_connectorjs_1.Model {
         const hashesModel = new spinal_core_connectorjs_1.Lst(versionInfo.hashes);
         this.add_attr({
             creationDate: Date.now(),
-            id: (0, crypto_1.randomUUID)(),
+            id: globalThis.crypto ? globalThis.crypto.randomUUID() : (0, crypto_1.randomUUID)(),
             version: versionInfo.version,
             hashes: hashesModel,
         });

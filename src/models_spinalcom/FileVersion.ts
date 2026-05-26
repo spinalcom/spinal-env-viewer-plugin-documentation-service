@@ -2,6 +2,7 @@ import { Lst, Model, Path, Ptr, spinalCore } from "spinal-core-connectorjs";
 import { IFileVersionInfo, IHash } from "../interfaces";
 import { getPathData } from "../utils/files";
 import { randomUUID } from "crypto";
+
 class FileVersion extends Model {
 	constructor(versionInfo: IFileVersionInfo) {
 		super();
@@ -16,7 +17,7 @@ class FileVersion extends Model {
 
 		this.add_attr({
 			creationDate: Date.now(),
-			id: randomUUID(),
+			id: globalThis.crypto ? globalThis.crypto.randomUUID() : randomUUID(),
 			version: versionInfo.version,
 			hashes: hashesModel,
 		});
