@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileVersion = void 0;
 const spinal_core_connectorjs_1 = require("spinal-core-connectorjs");
 const files_1 = require("../utils/files");
-const uuid_1 = require("uuid");
+const crypto_1 = require("crypto");
 class FileVersion extends spinal_core_connectorjs_1.Model {
     constructor(versionInfo) {
         super();
@@ -14,7 +14,7 @@ class FileVersion extends spinal_core_connectorjs_1.Model {
         const hashesModel = new spinal_core_connectorjs_1.Lst(versionInfo.hashes);
         this.add_attr({
             creationDate: Date.now(),
-            id: (0, uuid_1.v4)(),
+            id: (0, crypto_1.randomUUID)(),
             version: versionInfo.version,
             hashes: hashesModel,
         });
