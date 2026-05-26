@@ -8,8 +8,8 @@ import { SpinalDocument } from "../models_spinalcom";
 class SpinalDocumentary {
 	constructor() {}
 
-	public addFileToNode(parentNode: SpinalNode, files: FilesArgType, contextNode?: SpinalContext, chunkSize: number = -1): Promise<SpinalNode[]> {
-		const filesConverted = convertFileToSpinalFile(files, chunkSize);
+	public async addFileToNode(parentNode: SpinalNode, files: FilesArgType, contextNode?: SpinalContext, chunkSize: number = -1): Promise<SpinalNode[]> {
+		const filesConverted = await convertFileToSpinalFile(files, chunkSize);
 		const promises: Promise<SpinalNode>[] = [];
 
 		for (const file of filesConverted) {

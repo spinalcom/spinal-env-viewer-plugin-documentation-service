@@ -9,7 +9,7 @@ const axios_1 = require("axios");
 const SpinalDocument_1 = require("../models_spinalcom/SpinalDocument");
 const versionUtils_1 = require("./versionUtils");
 const FileVersion_1 = require("../models_spinalcom/FileVersion");
-function convertFileToSpinalFile(files, chunkSize = -1) {
+async function convertFileToSpinalFile(files, chunkSize = -1) {
     const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
     if (!isFileList && !Array.isArray(files))
         files = [files];
@@ -19,7 +19,7 @@ function convertFileToSpinalFile(files, chunkSize = -1) {
         let filePath;
         // if (element.buffer) filePath = new SpinalPath(element.buffer, FileExplorer.getMimeType(element.name));
         // else filePath = new SpinalPath(element, FileExplorer.getMimeType(element.name));
-        const dataBuffer = convertFileToBuffer(element.buffer || element);
+        const dataBuffer = await convertFileToBuffer(element.buffer || element);
         const hashes = versionUtils_1.default.getInstance().convertFileToHashes(dataBuffer, [], chunkSize);
         const fileVersion = new FileVersion_1.FileVersion({ version: 1, hashes });
         let file = new SpinalDocument_1.SpinalDocument(element.name, fileVersion, { model_type: constants_1.FILE_MODEL_TYPE });
@@ -28,10 +28,11 @@ function convertFileToSpinalFile(files, chunkSize = -1) {
     return res;
 }
 exports.convertFileToSpinalFile = convertFileToSpinalFile;
-function convertFileToBuffer(file) {
+async function convertFileToBuffer(file) {
     if (Buffer.isBuffer(file))
         return file;
-    return Buffer.from(file);
+    let arrayBuffer = file instanceof ArrayBuffer ? file : await file.arrayBuffer();
+    return Buffer.from(arrayBuffer);
 }
 function addChildrenToNode(parentNode, childNode, relationName, contextNode) {
     let prom;

@@ -8,8 +8,8 @@ const constants_1 = require("./constants");
 const models_spinalcom_1 = require("../models_spinalcom");
 class SpinalDocumentary {
     constructor() { }
-    addFileToNode(parentNode, files, contextNode, chunkSize = -1) {
-        const filesConverted = (0, files_1.convertFileToSpinalFile)(files, chunkSize);
+    async addFileToNode(parentNode, files, contextNode, chunkSize = -1) {
+        const filesConverted = await (0, files_1.convertFileToSpinalFile)(files, chunkSize);
         const promises = [];
         for (const file of filesConverted) {
             promises.push(file.linkToNode(parentNode, contextNode));

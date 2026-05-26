@@ -4,7 +4,7 @@ import { Lst, File } from "spinal-core-connectorjs_type";
 import { SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
 import { FilesArgType } from "../interfaces";
 import { SpinalDocument } from "../models_spinalcom/SpinalDocument";
-export declare function convertFileToSpinalFile(files: FilesArgType, chunkSize?: number): SpinalDocument[];
+export declare function convertFileToSpinalFile(files: FilesArgType, chunkSize?: number): Promise<SpinalDocument[]>;
 export declare function addChildrenToNode(parentNode: SpinalNode, childNode: SpinalNode, relationName: string, contextNode?: SpinalContext): Promise<SpinalNode>;
 export declare function getFilesFromDirectory(directoryNode: File): Promise<(SpinalDocument | Lst)[]>;
 export declare function createFileNode(file: SpinalDocument): Promise<SpinalNode>;

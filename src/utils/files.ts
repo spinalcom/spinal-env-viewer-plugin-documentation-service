@@ -9,7 +9,7 @@ import { SpinalDocument } from "../models_spinalcom/SpinalDocument";
 import VersionUtils from "./versionUtils";
 import { FileVersion } from "../models_spinalcom/FileVersion";
 
-export function convertFileToSpinalFile(files: FilesArgType, chunkSize: number = -1): SpinalDocument[] {
+export async function convertFileToSpinalFile(files: FilesArgType, chunkSize: number = -1): Promise<SpinalDocument[]> {
 	const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
 	if (!isFileList && !Array.isArray(files)) files = [files];
 
@@ -22,7 +22,7 @@ export function convertFileToSpinalFile(files: FilesArgType, chunkSize: number =
 
 		// if (element.buffer) filePath = new SpinalPath(element.buffer, FileExplorer.getMimeType(element.name));
 		// else filePath = new SpinalPath(element, FileExplorer.getMimeType(element.name));
-		const dataBuffer = convertFileToBuffer(element.buffer || element);
+		const dataBuffer = await convertFileToBuffer(element.buffer || element);
 
 		const hashes = VersionUtils.getInstance().convertFileToHashes(dataBuffer, [], chunkSize);
 		const fileVersion = new FileVersion({ version: 1, hashes });
@@ -34,10 +34,11 @@ export function convertFileToSpinalFile(files: FilesArgType, chunkSize: number =
 	return res;
 }
 
-function convertFileToBuffer(file: any): Buffer {
+async function convertFileToBuffer(file: any): Promise<Buffer> {
 	if (Buffer.isBuffer(file)) return file;
+	let arrayBuffer = file instanceof ArrayBuffer ? file : await file.arrayBuffer();
 
-	return Buffer.from(file);
+	return Buffer.from(arrayBuffer);
 }
 
 export function addChildrenToNode(parentNode: SpinalNode, childNode: SpinalNode, relationName: string, contextNode?: SpinalContext): Promise<SpinalNode> {

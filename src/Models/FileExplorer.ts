@@ -138,7 +138,7 @@ export class FileExplorer {
 	}
 
 	public static async addFileUpload(node: SpinalNode<any>, files: FilesArgType, chunkSize: number = -1): Promise<SpinalNode[]> {
-		const filesConverted = convertFileToSpinalFile(files, chunkSize);
+		const filesConverted = await convertFileToSpinalFile(files, chunkSize);
 		const promises: Promise<SpinalNode>[] = [];
 
 		for (const file of filesConverted) {
