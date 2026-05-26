@@ -20,7 +20,7 @@ export default class SpinalDocument extends File {
 		if (!info.model_type) info.model_type = isDirectory ? DIRECTORY_MODEL_TYPE : FILE_MODEL_TYPE;
 
 		this.mod_attr("name", name);
-		this.mod_attr("info", info);
+		this.mod_attr("_info", info);
 
 		const element = isDirectory ? initialVersion : undefined;
 		if (element) this.mod_attr("_ptr", new Ptr(element));
