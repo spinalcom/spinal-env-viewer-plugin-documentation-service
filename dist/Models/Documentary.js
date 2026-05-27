@@ -44,6 +44,8 @@ class SpinalDocumentary {
             const { file, parent } = itemToProcess;
             const { name, nodeType, relationName } = await (0, files_1._getFileAttributes)(file);
             const node = await this._createNodeInContext(file, parent, relationName, contextNode);
+            if (!node)
+                continue;
             // Only push to createdNodes if it's a file, directories will be processed for their children
             if (nodeType === constants_1.DIRECTORY_NODE_TYPE) {
                 const children = await (0, files_1._getFileChildren)(file, node);
@@ -90,17 +92,8 @@ class SpinalDocumentary {
         await rootDirNode.removeChild(fileNode, relationName, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE);
     }
     async _createNodeInContext(file, parent, relationName, contextNode) {
-        let node = null;
-        if (file instanceof models_spinalcom_1.SpinalDocument) {
-            node = await file.getNode();
-        }
-        else if (file instanceof spinal_core_connectorjs_type_1.File) {
-            node = await new Promise((resolve) => {
-                if (!file._info?.node)
-                    return resolve(null);
-                file._info.node.load((loadedNode) => resolve(loadedNode));
-            });
-        }
+        // let node: SpinalNode | null = null;
+        const node = await (0, files_1.createFileNode)(file);
         if (!node)
             return null;
         await parent.addChildInContext(node, relationName, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE, contextNode);

@@ -1,6 +1,6 @@
-import { File, Lst } from "spinal-core-connectorjs_type";
+import { File as SpinalFile, Lst } from "spinal-core-connectorjs_type";
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from "spinal-model-graph";
-import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addSpinalDocumentAsNodeChild, convertFileToSpinalDocument, convertTreeToFileBuffers, removeFileNode } from "../utils/files";
+import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addSpinalDocumentAsNodeChild, convertFileToSpinalDocument, convertTreeToFileBuffers, createFileNode, removeFileNode } from "../utils/files";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
 import { FilesArgType } from "../interfaces";
 import { SpinalDocument } from "../models_spinalcom";
@@ -53,6 +53,7 @@ class SpinalDocumentary {
 			const { name, nodeType, relationName } = await _getFileAttributes(file);
 
 			const node = await this._createNodeInContext(file, parent, relationName, contextNode);
+			if (!node) continue;
 
 			// Only push to createdNodes if it's a file, directories will be processed for their children
 			if (nodeType === DIRECTORY_NODE_TYPE) {
@@ -108,17 +109,10 @@ class SpinalDocumentary {
 		await rootDirNode.removeChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE);
 	}
 
-	private async _createNodeInContext(file: SpinalDocument | File, parent: SpinalNode, relationName: string, contextNode: SpinalContext<any>) {
-		let node: SpinalNode | null = null;
+	private async _createNodeInContext(file: SpinalDocument | SpinalFile, parent: SpinalNode, relationName: string, contextNode: SpinalContext<any>) {
+		// let node: SpinalNode | null = null;
 
-		if (file instanceof SpinalDocument) {
-			node = await file.getNode();
-		} else if (file instanceof File) {
-			node = await new Promise((resolve) => {
-				if (!file._info?.node) return resolve(null);
-				file._info.node.load((loadedNode: SpinalNode) => resolve(loadedNode));
-			});
-		}
+		const node = await createFileNode(file);
 
 		if (!node) return null;
 
