@@ -1,6 +1,6 @@
 import { File as SpinalFile, Lst } from "spinal-core-connectorjs_type";
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from "spinal-model-graph";
-import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addSpinalDocumentAsNodeChild, convertFileToSpinalDocument, convertTreeToFileBuffers, createFileNode, removeFileNode } from "../utils/files";
+import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addSpinalDocumentAsNodeChild, convertFileToSpinalDocument, convertTreeToFileBuffers, createFileNode, getFileModelFromNode, removeFileNode } from "../utils/files";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
 import { FilesArgType } from "../interfaces";
 import { SpinalDocument } from "../models_spinalcom";
@@ -17,6 +17,13 @@ class SpinalDocumentary {
 		}
 
 		return Promise.all(promises);
+	}
+
+	public async updateFileVersion(fileNode: SpinalNode | SpinalDocument, buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<void> {
+		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
+		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
+
+		return fileNode.updateVeersion(buffer, versionName, chunkSize);
 	}
 
 	public async removeFile(fileNode: SpinalNode | SpinalDocument): Promise<boolean> {

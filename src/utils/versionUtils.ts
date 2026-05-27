@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import { Path } from "spinal-core-connectorjs";
-import { IHash } from "../interfaces";
-
+import { FilesArgType, IHash } from "../interfaces";
+import { convertFileToBuffer } from "./files";
 export default class VersionUtils {
 	private static _instance: VersionUtils | null = null;
 
@@ -12,7 +12,9 @@ export default class VersionUtils {
 		return this._instance;
 	}
 
-	convertFileToHashes(fileBuffer: Buffer, allHashes: IHash[] = [], _chunkSize: number = -1): IHash[] {
+	async convertFileToHashes(fileBuffer: Buffer | FilesArgType, allHashes: IHash[] = [], _chunkSize: number = -1): Promise<IHash[]> {
+		fileBuffer = await convertFileToBuffer(fileBuffer);
+
 		const chunks = this.splitBufferIntoChunks(fileBuffer, _chunkSize);
 		const chunkRefs = [];
 
@@ -32,7 +34,7 @@ export default class VersionUtils {
 		return chunkRefs;
 	}
 
-	splitBufferIntoChunks(fileBuffer: Buffer, chunkSize: number = -1): Buffer[] {
+	splitBufferIntoChunks(fileBuffer: Buffer | FilesArgType, chunkSize: number = -1): Buffer[] {
 		const chuncks = [];
 		if (chunkSize <= 0) chunkSize = fileBuffer.length;
 

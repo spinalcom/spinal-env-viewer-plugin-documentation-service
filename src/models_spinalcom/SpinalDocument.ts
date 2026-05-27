@@ -2,7 +2,7 @@ import { File, Path, Directory, spinalCore, Ptr, Lst } from "spinal-core-connect
 import { FileExplorer } from "../Models/FileExplorer";
 import { SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
 import { addSpinalDocumentAsNodeChild, convertTreeToFileBuffers, removeFileNode } from "../utils/files";
-import { IFileBufferInfo } from "../interfaces";
+import { FilesArgType, IFileBufferInfo } from "../interfaces";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_MODEL_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "../Models/constants";
 import FileVersion from "./FileVersion";
 import VersionUtils from "../utils/versionUtils";
@@ -38,13 +38,13 @@ export default class SpinalDocument extends File {
 		// this.createNode();
 	}
 
-	async updateVersion(buffer: Buffer, hubUrl: string = "", chunkSize?: number): Promise<void> {
+	async updateVersion(buffer: Buffer | FilesArgType, versionName: string, chunkSize?: number): Promise<void> {
 		if (this.isDirectory()) throw new Error("Cannot update version of a directory.");
 
-		const hashes = VersionUtils.getInstance().convertFileToHashes(buffer, Array.from(this.hashes), chunkSize);
+		const hashes = await VersionUtils.getInstance().convertFileToHashes(buffer, Array.from(this.hashes), chunkSize);
 		const versionHistory = await this._loadVersionHistory();
 
-		const newVersion = new FileVersion({ version: versionHistory.length + 1, hashes });
+		const newVersion = new FileVersion({ version: versionName || versionHistory.length + 1, hashes });
 
 		versionHistory.push(newVersion); // Add new version to history
 

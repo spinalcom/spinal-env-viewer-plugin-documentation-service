@@ -22,9 +22,8 @@ export async function convertFileToSpinalDocument(files: FilesArgType, chunkSize
 
 		// if (element.buffer) filePath = new SpinalPath(element.buffer, FileExplorer.getMimeType(element.name));
 		// else filePath = new SpinalPath(element, FileExplorer.getMimeType(element.name));
-		const dataBuffer = await convertFileToBuffer(element.buffer || element);
 
-		const hashes = VersionUtils.getInstance().convertFileToHashes(dataBuffer, [], chunkSize);
+		const hashes = await VersionUtils.getInstance().convertFileToHashes(element.buffer || element, [], chunkSize);
 		const fileVersion = new FileVersion({ version: 1, hashes });
 		let file = new SpinalDocument(element.name, fileVersion, { model_type: FILE_MODEL_TYPE });
 
@@ -34,7 +33,7 @@ export async function convertFileToSpinalDocument(files: FilesArgType, chunkSize
 	return res;
 }
 
-async function convertFileToBuffer(file: any): Promise<Buffer> {
+export async function convertFileToBuffer(file: any): Promise<Buffer> {
 	if (Buffer.isBuffer(file)) return file;
 	let arrayBuffer = file instanceof ArrayBuffer ? file : await file.arrayBuffer();
 

@@ -6,6 +6,7 @@ import { SpinalDocument } from "../models_spinalcom";
 declare class SpinalDocumentary {
     constructor();
     addFileToNode(parentNode: SpinalNode, files: FilesArgType, contextNode?: SpinalContext, chunkSize?: number): Promise<SpinalNode[]>;
+    updateFileVersion(fileNode: SpinalNode | SpinalDocument, buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<void>;
     removeFile(fileNode: SpinalNode | SpinalDocument): Promise<boolean>;
     createDirectoryNode(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon?: string): Promise<SpinalNode>;
     importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalDocument): Promise<SpinalNode[]>;

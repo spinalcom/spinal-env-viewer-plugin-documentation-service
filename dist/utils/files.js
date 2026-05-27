@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createFileNode = exports.getFilesFromDirectory = exports.getFileModelFromNode = exports.addSpinalDocumentAsNodeChild = exports.convertFileToSpinalDocument = void 0;
+exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createFileNode = exports.getFilesFromDirectory = exports.getFileModelFromNode = exports.addSpinalDocumentAsNodeChild = exports.convertFileToBuffer = exports.convertFileToSpinalDocument = void 0;
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const constants_1 = require("../Models/constants");
@@ -19,8 +19,7 @@ async function convertFileToSpinalDocument(files, chunkSize = -1) {
         let filePath;
         // if (element.buffer) filePath = new SpinalPath(element.buffer, FileExplorer.getMimeType(element.name));
         // else filePath = new SpinalPath(element, FileExplorer.getMimeType(element.name));
-        const dataBuffer = await convertFileToBuffer(element.buffer || element);
-        const hashes = versionUtils_1.default.getInstance().convertFileToHashes(dataBuffer, [], chunkSize);
+        const hashes = await versionUtils_1.default.getInstance().convertFileToHashes(element.buffer || element, [], chunkSize);
         const fileVersion = new FileVersion_1.FileVersion({ version: 1, hashes });
         let file = new SpinalDocument_1.SpinalDocument(element.name, fileVersion, { model_type: constants_1.FILE_MODEL_TYPE });
         res.push(file);
@@ -34,6 +33,7 @@ async function convertFileToBuffer(file) {
     let arrayBuffer = file instanceof ArrayBuffer ? file : await file.arrayBuffer();
     return Buffer.from(arrayBuffer);
 }
+exports.convertFileToBuffer = convertFileToBuffer;
 function addSpinalDocumentAsNodeChild(parentNode, spinalDocumentNode, relationName, contextNode) {
     let prom;
     if (contextNode)

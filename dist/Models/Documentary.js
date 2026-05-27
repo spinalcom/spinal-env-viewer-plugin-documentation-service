@@ -16,6 +16,13 @@ class SpinalDocumentary {
         }
         return Promise.all(promises);
     }
+    async updateFileVersion(fileNode, buffer, versionName, chunkSize) {
+        if (fileNode instanceof spinal_model_graph_1.SpinalNode)
+            fileNode = (await (0, files_1.getFileModelFromNode)(fileNode));
+        if (!fileNode || !(fileNode instanceof models_spinalcom_1.SpinalDocument))
+            throw new Error("File model not found for the given node.");
+        return fileNode.updateVeersion(buffer, versionName, chunkSize);
+    }
     async removeFile(fileNode) {
         if (fileNode instanceof models_spinalcom_1.SpinalDocument)
             fileNode = (await fileNode.getNode());

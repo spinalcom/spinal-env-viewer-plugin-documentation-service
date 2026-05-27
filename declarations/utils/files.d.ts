@@ -5,6 +5,7 @@ import { SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
 import { FilesArgType } from "../interfaces";
 import { SpinalDocument } from "../models_spinalcom/SpinalDocument";
 export declare function convertFileToSpinalDocument(files: FilesArgType, chunkSize?: number): Promise<SpinalDocument[]>;
+export declare function convertFileToBuffer(file: any): Promise<Buffer>;
 export declare function addSpinalDocumentAsNodeChild(parentNode: SpinalNode, spinalDocumentNode: SpinalNode, relationName: string, contextNode?: SpinalContext): Promise<SpinalNode>;
 export declare function getFileModelFromNode(node: SpinalNode): Promise<SpinalDocument | SpinalFile | undefined>;
 export declare function getFilesFromDirectory(directoryNode: SpinalFile | SpinalDocument): Promise<(SpinalDocument | SpinalFile)[]>;

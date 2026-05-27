@@ -33,12 +33,12 @@ class SpinalDocument extends spinal_core_connectorjs_1.File {
         // this.add_attr({});
         // this.createNode();
     }
-    async updateVersion(buffer, hubUrl = "", chunkSize) {
+    async updateVersion(buffer, versionName, chunkSize) {
         if (this.isDirectory())
             throw new Error("Cannot update version of a directory.");
-        const hashes = versionUtils_1.default.getInstance().convertFileToHashes(buffer, Array.from(this.hashes), chunkSize);
+        const hashes = await versionUtils_1.default.getInstance().convertFileToHashes(buffer, Array.from(this.hashes), chunkSize);
         const versionHistory = await this._loadVersionHistory();
-        const newVersion = new FileVersion_1.default({ version: versionHistory.length + 1, hashes });
+        const newVersion = new FileVersion_1.default({ version: versionName || versionHistory.length + 1, hashes });
         versionHistory.push(newVersion); // Add new version to history
         this.hashes.concat(newVersion.hashes); // Update file hashes with new version's hashes
         this.mod_attr("currentVersion", new spinal_core_connectorjs_1.Ptr(newVersion)); // Update current version pointer

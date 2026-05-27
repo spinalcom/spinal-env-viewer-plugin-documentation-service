@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.VersionUtils = void 0;
 const crypto_1 = require("crypto");
 const spinal_core_connectorjs_1 = require("spinal-core-connectorjs");
+const files_1 = require("./files");
 class VersionUtils {
     constructor() { }
     static getInstance() {
@@ -10,7 +11,8 @@ class VersionUtils {
             this._instance = new VersionUtils();
         return this._instance;
     }
-    convertFileToHashes(fileBuffer, allHashes = [], _chunkSize = -1) {
+    async convertFileToHashes(fileBuffer, allHashes = [], _chunkSize = -1) {
+        fileBuffer = await (0, files_1.convertFileToBuffer)(fileBuffer);
         const chunks = this.splitBufferIntoChunks(fileBuffer, _chunkSize);
         const chunkRefs = [];
         for (let i = 0; i < chunks.length; i++) {
