@@ -1,6 +1,6 @@
-import { Lst } from "spinal-core-connectorjs_type";
+import { File, Lst } from "spinal-core-connectorjs_type";
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from "spinal-model-graph";
-import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addChildrenToNode, convertFileToSpinalFile, convertTreeToFileBuffers, removeFileNode } from "../utils/files";
+import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addSpinalDocumentAsNodeChild, convertFileToSpinalDocument, convertTreeToFileBuffers, removeFileNode } from "../utils/files";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
 import { FilesArgType } from "../interfaces";
 import { SpinalDocument } from "../models_spinalcom";
@@ -9,7 +9,7 @@ class SpinalDocumentary {
 	constructor() {}
 
 	public async addFileToNode(parentNode: SpinalNode, files: FilesArgType, contextNode?: SpinalContext, chunkSize: number = -1): Promise<SpinalNode[]> {
-		const filesConverted = await convertFileToSpinalFile(files, chunkSize);
+		const filesConverted = await convertFileToSpinalDocument(files, chunkSize);
 		const promises: Promise<SpinalNode>[] = [];
 
 		for (const file of filesConverted) {
@@ -82,7 +82,7 @@ class SpinalDocumentary {
 		if (!rootDirNode) throw new Error("Unable to create or get root directory node");
 
 		const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
-		return addChildrenToNode(rootDirNode, fileNode, relationName, undefined);
+		return addSpinalDocumentAsNodeChild(rootDirNode, fileNode, relationName, undefined);
 	}
 
 	public async getFileLinkedToNode(node: SpinalNode): Promise<SpinalNode[]> {
@@ -108,8 +108,20 @@ class SpinalDocumentary {
 		await rootDirNode.removeChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE);
 	}
 
-	private async _createNodeInContext(file: SpinalDocument, parent: SpinalNode, relationName: string, contextNode: SpinalContext<any>) {
-		const node = await file.getNode();
+	private async _createNodeInContext(file: SpinalDocument | File, parent: SpinalNode, relationName: string, contextNode: SpinalContext<any>) {
+		let node: SpinalNode | null = null;
+
+		if (file instanceof SpinalDocument) {
+			node = await file.getNode();
+		} else if (file instanceof File) {
+			node = await new Promise((resolve) => {
+				if (!file._info?.node) return resolve(null);
+				file._info.node.load((loadedNode: SpinalNode) => resolve(loadedNode));
+			});
+		}
+
+		if (!node) return null;
+
 		await parent.addChildInContext(node, relationName, SPINAL_RELATION_PTR_LST_TYPE, contextNode);
 		return node as SpinalNode;
 	}

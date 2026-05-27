@@ -1,7 +1,7 @@
 import { File, Path, Directory, spinalCore, Ptr, Lst } from "spinal-core-connectorjs";
 import { FileExplorer } from "../Models/FileExplorer";
 import { SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
-import { addChildrenToNode, convertTreeToFileBuffers, removeFileNode } from "../utils/files";
+import { addSpinalDocumentAsNodeChild, convertTreeToFileBuffers, removeFileNode } from "../utils/files";
 import { IFileBufferInfo } from "../interfaces";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_MODEL_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "../Models/constants";
 import FileVersion from "./FileVersion";
@@ -83,7 +83,7 @@ export default class SpinalDocument extends File {
 		if (!this._node) await this.createNode();
 
 		const relationName = this.isDirectory() ? TO_FOLDER_RELATION : TO_FILE_RELATION;
-		return addChildrenToNode(parentNode, this._node as SpinalNode, relationName, contextNode);
+		return addSpinalDocumentAsNodeChild(parentNode, this._node as SpinalNode, relationName, contextNode);
 	}
 
 	async remove(): Promise<boolean> {
@@ -119,11 +119,6 @@ export default class SpinalDocument extends File {
 				resolve(node);
 			}),
 		);
-	}
-
-	static async getFileModelFromNode(node: SpinalNode): Promise<SpinalDocument | undefined> {
-		const file = await node.getElement(true);
-		return file;
 	}
 
 	async getParentNodes() {

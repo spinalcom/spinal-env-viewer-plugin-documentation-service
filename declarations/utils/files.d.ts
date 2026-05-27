@@ -1,23 +1,24 @@
 /// <reference types="node" />
 /// <reference types="node" />
-import { Lst, File } from "spinal-core-connectorjs_type";
+import { File as SpinalFile } from "spinal-core-connectorjs_type";
 import { SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
 import { FilesArgType } from "../interfaces";
 import { SpinalDocument } from "../models_spinalcom/SpinalDocument";
-export declare function convertFileToSpinalFile(files: FilesArgType, chunkSize?: number): Promise<SpinalDocument[]>;
-export declare function addChildrenToNode(parentNode: SpinalNode, childNode: SpinalNode, relationName: string, contextNode?: SpinalContext): Promise<SpinalNode>;
-export declare function getFilesFromDirectory(directoryNode: File): Promise<(SpinalDocument | Lst)[]>;
-export declare function createFileNode(file: SpinalDocument): Promise<SpinalNode>;
-export declare function _getFileChildren(file: File, parentNode: SpinalNode): Promise<{
+export declare function convertFileToSpinalDocument(files: FilesArgType, chunkSize?: number): Promise<SpinalDocument[]>;
+export declare function addSpinalDocumentAsNodeChild(parentNode: SpinalNode, spinalDocumentNode: SpinalNode, relationName: string, contextNode?: SpinalContext): Promise<SpinalNode>;
+export declare function getFileModelFromNode(node: SpinalNode): Promise<SpinalDocument | SpinalFile | undefined>;
+export declare function getFilesFromDirectory(directoryNode: SpinalFile | SpinalDocument): Promise<(SpinalDocument | SpinalFile)[]>;
+export declare function createFileNode(file: SpinalDocument | SpinalFile): Promise<SpinalNode>;
+export declare function _getFileChildren(file: SpinalDocument | SpinalFile, parentNode: SpinalNode): Promise<{
     file: SpinalDocument;
     parent: SpinalNode;
 }[]>;
-export declare function _getFileAttributes(file: File): Promise<{
+export declare function _getFileAttributes(file: SpinalDocument | SpinalFile): Promise<{
     name: string;
     nodeType: string;
     relationName: string;
 }>;
-export declare function _getFileAsBuffer(file: SpinalDocument | SpinalNode | File, hubUrl?: string): Promise<Buffer>;
+export declare function _getFileAsBuffer(file: SpinalDocument | SpinalNode | SpinalFile, hubUrl?: string): Promise<Buffer>;
 export declare function getPathData(dynamicId: number, hubUrl?: string): Promise<Buffer>;
 export declare function convertTreeToFileBuffers(startNode: SpinalNode<any>, hubUrl?: string): Promise<{
     name: string;

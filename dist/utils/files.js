@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createFileNode = exports.getFilesFromDirectory = exports.addChildrenToNode = exports.convertFileToSpinalFile = void 0;
+exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createFileNode = exports.getFilesFromDirectory = exports.getFileModelFromNode = exports.addSpinalDocumentAsNodeChild = exports.convertFileToSpinalDocument = void 0;
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const constants_1 = require("../Models/constants");
@@ -9,7 +9,7 @@ const axios_1 = require("axios");
 const SpinalDocument_1 = require("../models_spinalcom/SpinalDocument");
 const versionUtils_1 = require("./versionUtils");
 const FileVersion_1 = require("../models_spinalcom/FileVersion");
-async function convertFileToSpinalFile(files, chunkSize = -1) {
+async function convertFileToSpinalDocument(files, chunkSize = -1) {
     const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
     if (!isFileList && !Array.isArray(files))
         files = [files];
@@ -27,22 +27,22 @@ async function convertFileToSpinalFile(files, chunkSize = -1) {
     }
     return res;
 }
-exports.convertFileToSpinalFile = convertFileToSpinalFile;
+exports.convertFileToSpinalDocument = convertFileToSpinalDocument;
 async function convertFileToBuffer(file) {
     if (Buffer.isBuffer(file))
         return file;
     let arrayBuffer = file instanceof ArrayBuffer ? file : await file.arrayBuffer();
     return Buffer.from(arrayBuffer);
 }
-function addChildrenToNode(parentNode, childNode, relationName, contextNode) {
+function addSpinalDocumentAsNodeChild(parentNode, spinalDocumentNode, relationName, contextNode) {
     let prom;
     if (contextNode)
-        prom = parentNode.addChildInContext(childNode, relationName, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE, contextNode);
+        prom = parentNode.addChildInContext(spinalDocumentNode, relationName, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE, contextNode);
     else
-        prom = parentNode.addChild(childNode, relationName, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+        prom = parentNode.addChild(spinalDocumentNode, relationName, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
     return prom.then(async (result) => {
         if (parentNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE) {
-            const childSpinalDocument = await SpinalDocument_1.SpinalDocument.getFileModelFromNode(childNode);
+            const childSpinalDocument = await getFileModelFromNode(spinalDocumentNode);
             if (!childSpinalDocument)
                 return result;
             await _addFileNodeToDirectory(parentNode, childSpinalDocument);
@@ -50,37 +50,59 @@ function addChildrenToNode(parentNode, childNode, relationName, contextNode) {
         return result;
     });
 }
-exports.addChildrenToNode = addChildrenToNode;
+exports.addSpinalDocumentAsNodeChild = addSpinalDocumentAsNodeChild;
+async function getFileModelFromNode(node) {
+    const file = await node.getElement(true);
+    return file;
+}
+exports.getFileModelFromNode = getFileModelFromNode;
 async function _addFileNodeToDirectory(directoryNode, file) {
-    let spinalDocument = await SpinalDocument_1.SpinalDocument.getFileModelFromNode(directoryNode);
+    let spinalDocument = await getFileModelFromNode(directoryNode);
     if (!spinalDocument)
         return;
-    let directory;
-    if (spinalDocument instanceof SpinalDocument_1.SpinalDocument && spinalDocument.isDirectory()) {
-        const directoryElement = await new Promise((resolve) => spinalDocument?._ptr?.load((e) => resolve(e)));
-        if (directoryElement instanceof spinal_core_connectorjs_type_1.Lst)
-            directory = directoryElement;
-    }
+    let directory = await getDirectoryElement(spinalDocument);
     if (directory)
         directory.push(file);
     return directory;
 }
+async function getDirectoryElement(spinalDocument) {
+    const isDirectory = spinalDocument._info?.model_type?.get() === constants_1.DIRECTORY_MODEL_TYPE;
+    if (!isDirectory)
+        return;
+    return new Promise((resolve) => {
+        spinalDocument._ptr.load((element) => {
+            resolve(element);
+        });
+    });
+}
 async function getFilesFromDirectory(directoryNode) {
-    const directory = await new Promise((resolve) => directoryNode.load((e) => resolve(e)));
+    const directory = await getDirectoryElement(directoryNode); // Get the directory element (Lst or Directory) from the SpinalDocument
     const res = [];
-    if (directory instanceof spinal_core_connectorjs_type_1.Lst) {
-        for (let i = 0; i < directory.length; i++) {
-            const element = directory[i];
-            res.push(element);
-        }
+    if (!directory)
+        return res;
+    for (let i = 0; i < directory.length; i++) {
+        const element = directory[i];
+        res.push(element);
     }
     return res;
 }
 exports.getFilesFromDirectory = getFilesFromDirectory;
-function createFileNode(file) {
-    return file.createNode();
+async function createFileNode(file) {
+    if (file instanceof SpinalDocument_1.SpinalDocument)
+        return file.createNode();
+    if (!file._info?.node)
+        return createAndAddNodeToFile(file);
+    return new Promise((resolve) => file._info.node.load((node) => resolve(node)));
 }
 exports.createFileNode = createFileNode;
+function createAndAddNodeToFile(file) {
+    const isDirectory = file._info?.model_type?.get() === constants_1.DIRECTORY_MODEL_TYPE;
+    const type = isDirectory ? constants_1.DIRECTORY_NODE_TYPE : constants_1.FILE_NODE_TYPE;
+    const name = file.name.get();
+    const node = new spinal_env_viewer_graph_service_1.SpinalNode(name, type, file);
+    file._info.add_attr({ node: new spinal_core_connectorjs_type_1.Ptr(node) });
+    return node;
+}
 async function _getFileChildren(file, parentNode) {
     const children = await getFilesFromDirectory(file);
     const res = [];
@@ -92,14 +114,15 @@ async function _getFileChildren(file, parentNode) {
 exports._getFileChildren = _getFileChildren;
 async function _getFileAttributes(file) {
     const name = file.name.get();
-    const nodeType = file.isDirectory() ? constants_1.DIRECTORY_NODE_TYPE : constants_1.FILE_NODE_TYPE;
+    const isDirectory = file._info?.model_type?.get() === constants_1.DIRECTORY_MODEL_TYPE;
+    const nodeType = isDirectory ? constants_1.DIRECTORY_NODE_TYPE : constants_1.FILE_NODE_TYPE;
     const relationName = nodeType === constants_1.DIRECTORY_NODE_TYPE ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
     return { name, nodeType, relationName };
 }
 exports._getFileAttributes = _getFileAttributes;
 async function _getFileAsBuffer(file, hubUrl = "") {
     if (file instanceof spinal_env_viewer_graph_service_1.SpinalNode)
-        file = (await SpinalDocument_1.SpinalDocument.getFileModelFromNode(file));
+        file = (await getFileModelFromNode(file));
     if (file instanceof SpinalDocument_1.SpinalDocument)
         return file.getCurrentVersionAsBuffer();
     const pathServerId = file._ptr.data.value;
@@ -127,13 +150,13 @@ async function convertTreeToFileBuffers(startNode, hubUrl = "") {
         if (!itemToProcess)
             continue;
         const { path, file } = itemToProcess;
-        const serverId = file._ptr.data.value;
+        const serverId = file._server_id || 0;
         if (alreadyProcessedNodes.has(serverId))
             continue;
-        if (!file.isDirectory()) {
+        if (file._info.model_type?.get() !== constants_1.DIRECTORY_MODEL_TYPE) {
             filesBuffers.push({ name: file.name.get(), serverId, path, buffer: await _getFileAsBuffer(file, hubUrl) });
         }
-        if (file.isDirectory()) {
+        if (file._info.model_type?.get() === constants_1.DIRECTORY_MODEL_TYPE) {
             const children = await getFilesFromDirectory(file);
             for (const child of children) {
                 queue.push({ path: `${path}/${child.name.get()}`, file: child });
@@ -154,9 +177,9 @@ async function getStarterQueue(startNode) {
         const { node, path } = data;
         const type = node.getType().get();
         if (type === constants_1.FILE_NODE_TYPE || type === constants_1.DIRECTORY_NODE_TYPE) {
-            res.push({ path, file: (await node.getElement(true)) });
+            res.push({ path, file: (await getFileModelFromNode(node)) });
         }
-        const children = await node.getChildren();
+        const children = await node.getChildren([constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
         for (const child of children) {
             queue.push({ node: child, path: `${path}/${child.getName().get()}` });
         }
@@ -178,7 +201,7 @@ async function _getOrCreateRootNode(node, createIfNotExist = true) {
 exports._getOrCreateRootNode = _getOrCreateRootNode;
 async function removeFileNode(fileNode) {
     const parentNodes = await fileNode.getParents([constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
-    const fileElement = await fileNode.getElement(true);
+    const fileElement = await getFileModelFromNode(fileNode);
     const unlinkPromises = parentNodes.map(async (parent) => {
         if (parent.getType().get() === constants_1.DIRECTORY_NODE_TYPE) {
             const directory = await parent.getElement(true);

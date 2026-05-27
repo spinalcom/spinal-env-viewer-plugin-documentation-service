@@ -9,7 +9,7 @@ const models_spinalcom_1 = require("../models_spinalcom");
 class SpinalDocumentary {
     constructor() { }
     async addFileToNode(parentNode, files, contextNode, chunkSize = -1) {
-        const filesConverted = await (0, files_1.convertFileToSpinalFile)(files, chunkSize);
+        const filesConverted = await (0, files_1.convertFileToSpinalDocument)(files, chunkSize);
         const promises = [];
         for (const file of filesConverted) {
             promises.push(file.linkToNode(parentNode, contextNode));
@@ -67,7 +67,7 @@ class SpinalDocumentary {
         if (!rootDirNode)
             throw new Error("Unable to create or get root directory node");
         const relationName = fileNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
-        return (0, files_1.addChildrenToNode)(rootDirNode, fileNode, relationName, undefined);
+        return (0, files_1.addSpinalDocumentAsNodeChild)(rootDirNode, fileNode, relationName, undefined);
     }
     async getFileLinkedToNode(node) {
         const rootDirNode = await (0, files_1._getOrCreateRootNode)(node, false);
@@ -90,7 +90,19 @@ class SpinalDocumentary {
         await rootDirNode.removeChild(fileNode, relationName, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE);
     }
     async _createNodeInContext(file, parent, relationName, contextNode) {
-        const node = await file.getNode();
+        let node = null;
+        if (file instanceof models_spinalcom_1.SpinalDocument) {
+            node = await file.getNode();
+        }
+        else if (file instanceof spinal_core_connectorjs_type_1.File) {
+            node = await new Promise((resolve) => {
+                if (!file._info?.node)
+                    return resolve(null);
+                file._info.node.load((loadedNode) => resolve(loadedNode));
+            });
+        }
+        if (!node)
+            return null;
         await parent.addChildInContext(node, relationName, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE, contextNode);
         return node;
     }

@@ -126,7 +126,7 @@ class FileExplorer {
         return this.addFileUpload(node, files);
     }
     static async addFileUpload(node, files, chunkSize = -1) {
-        const filesConverted = await (0, files_1.convertFileToSpinalFile)(files, chunkSize);
+        const filesConverted = await (0, files_1.convertFileToSpinalDocument)(files, chunkSize);
         const promises = [];
         for (const file of filesConverted) {
             promises.push(file.linkToNode(node));

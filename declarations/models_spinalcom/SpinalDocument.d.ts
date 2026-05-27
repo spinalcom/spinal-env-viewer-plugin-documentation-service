@@ -16,7 +16,6 @@ export default class SpinalDocument extends File {
     linkToNode(parentNode: SpinalNode, contextNode?: SpinalContext): Promise<SpinalNode>;
     remove(): Promise<boolean>;
     getNode(): Promise<SpinalNode | null>;
-    static getFileModelFromNode(node: SpinalNode): Promise<SpinalDocument | undefined>;
     getParentNodes(): Promise<SpinalNode<any>[]>;
     getFilesTreeAsBuffers(hubUrl?: string): Promise<IFileBufferInfo[]>;
     createNode(): Promise<SpinalNode>;
