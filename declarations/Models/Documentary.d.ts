@@ -1,12 +1,13 @@
 /// <reference types="node" />
 /// <reference types="node" />
+import { File as SpinalFile } from "spinal-core-connectorjs_type";
 import { SpinalContext, SpinalNode } from "spinal-model-graph";
 import { FilesArgType } from "../interfaces";
 import { FileVersion, SpinalDocument } from "../models_spinalcom";
 declare class SpinalDocumentary {
     constructor();
     addFileToNode(parentNode: SpinalNode, files: FilesArgType, contextNode?: SpinalContext, chunkSize?: number): Promise<SpinalNode[]>;
-    getAllFileVersions(fileNode: SpinalNode | SpinalDocument): Promise<FileVersion[]>;
+    getAllFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]>;
     updateFileVersion(fileNode: SpinalNode | SpinalDocument, buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<void>;
     removeFile(fileNode: SpinalNode | SpinalDocument): Promise<boolean>;
     createDirectoryNode(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon?: string): Promise<SpinalNode>;

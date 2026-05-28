@@ -24,7 +24,7 @@
 
 import { SpinalNode } from "spinal-env-viewer-graph-service";
 import { MESSAGE_TYPES } from "spinal-models-documentation";
-import { _getOrCreateRootNode, convertFileToSpinalDocument } from "../utils/files";
+import { _getOrCreateRootNode, convertFileToSpinalDocument, createFileNode, getFileModelFromNode } from "../utils/files";
 import { FilesArgType } from "../interfaces";
 
 export class FileExplorer {
@@ -130,19 +130,22 @@ export class FileExplorer {
 	 * @return {*}  {Promise<spinal.File<any>[]>}
 	 * @memberof FileExplorer
 	 */
-	public static async uploadFiles(node: SpinalNode<any>, files: FilesArgType): Promise<SpinalNode[]> {
+	public static async uploadFiles(node: SpinalNode<any>, files: FilesArgType, chunkSize: number = -1): Promise<SpinalNode[]> {
 		const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
 		if (!isFileList && !Array.isArray(files)) files = [files];
 
-		return this.addFileUpload(node, files);
+		return this.addFileUpload(node, files, chunkSize);
 	}
 
 	public static async addFileUpload(node: SpinalNode<any>, files: FilesArgType, chunkSize: number = -1): Promise<SpinalNode[]> {
 		const filesConverted = await convertFileToSpinalDocument(files, chunkSize);
 		const promises: Promise<SpinalNode>[] = [];
+		const directory = await FileExplorer._getOrCreateFileDirectory(node);
 
 		for (const file of filesConverted) {
-			promises.push(file.linkToNode(node));
+			directory.push(file);
+			promises.push(createFileNode(file));
+			// promises.push(file.linkToNode(node));
 		}
 
 		return Promise.all(promises);

@@ -19,9 +19,15 @@ class SpinalDocumentary {
     async getAllFileVersions(fileNode) {
         if (fileNode instanceof spinal_model_graph_1.SpinalNode)
             fileNode = (await (0, files_1.getFileModelFromNode)(fileNode));
-        if (!fileNode || !(fileNode instanceof models_spinalcom_1.SpinalDocument))
+        if (!fileNode)
             throw new Error("File model not found for the given node.");
-        return fileNode.getVersionHistory();
+        if (fileNode instanceof models_spinalcom_1.SpinalDocument)
+            return fileNode.getVersionHistory();
+        // if (fileNode instanceof SpinalFile) {
+        // const fakeFileVersion = FileVersion.createFakeFileVersionInstance(fileNode);
+        // return [fakeFileVersion];
+        // }
+        throw new Error("Unsupported file model type.");
     }
     async updateFileVersion(fileNode, buffer, versionName, chunkSize) {
         if (fileNode instanceof spinal_model_graph_1.SpinalNode)

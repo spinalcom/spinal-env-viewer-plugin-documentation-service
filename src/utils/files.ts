@@ -9,16 +9,21 @@ import { SpinalDocument } from "../models_spinalcom/SpinalDocument";
 import VersionUtils from "./versionUtils";
 import { FileVersion } from "../models_spinalcom/FileVersion";
 
-export async function convertFileToSpinalDocument(files: FilesArgType, chunkSize: number = -1): Promise<SpinalDocument[]> {
+export async function convertFileToSpinalDocument(files: FilesArgType, chunkSize: number = -1): Promise<(SpinalDocument | SpinalFile)[]> {
 	const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
 	if (!isFileList && !Array.isArray(files)) files = [files];
 
-	const res: SpinalDocument[] = [];
+	const res: (SpinalDocument | SpinalFile)[] = [];
 
 	for (let i = 0; i < files.length; i++) {
 		const element = files[i];
 
-		let filePath: SpinalPath | undefined;
+		if (element instanceof SpinalFile || element instanceof SpinalDocument) {
+			res.push(element);
+			await createFileNode(element);
+			continue;
+		}
+		// let filePath: SpinalPath | undefined;
 
 		// if (element.buffer) filePath = new SpinalPath(element.buffer, FileExplorer.getMimeType(element.name));
 		// else filePath = new SpinalPath(element, FileExplorer.getMimeType(element.name));
@@ -220,7 +225,7 @@ export async function _getOrCreateRootNode(node: SpinalNode, createIfNotExist: b
 
 	const name = node.getName().get() + "_root_directory";
 
-	const file = new SpinalDocument(name, new Lst(), { model_type: DIRECTORY_MODEL_TYPE, icon: "folder" });
+	const file = new SpinalDocument(name, new Directory(), { model_type: DIRECTORY_MODEL_TYPE, icon: "folder" });
 	const directoryNode = await createFileNode(file);
 
 	await node.addChild(directoryNode, TO_ROOT_DIRECTORY_RELATION, SPINAL_RELATION_PTR_LST_TYPE);

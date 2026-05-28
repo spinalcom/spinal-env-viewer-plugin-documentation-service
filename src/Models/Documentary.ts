@@ -19,11 +19,18 @@ class SpinalDocumentary {
 		return Promise.all(promises);
 	}
 
-	public async getAllFileVersions(fileNode: SpinalNode | SpinalDocument): Promise<FileVersion[]> {
+	public async getAllFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]> {
 		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
-		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
+		if (!fileNode) throw new Error("File model not found for the given node.");
 
-		return fileNode.getVersionHistory();
+		if (fileNode instanceof SpinalDocument) return fileNode.getVersionHistory();
+
+		// if (fileNode instanceof SpinalFile) {
+		// const fakeFileVersion = FileVersion.createFakeFileVersionInstance(fileNode);
+		// return [fakeFileVersion];
+		// }
+
+		throw new Error("Unsupported file model type.");
 	}
 
 	public async updateFileVersion(fileNode: SpinalNode | SpinalDocument, buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<void> {

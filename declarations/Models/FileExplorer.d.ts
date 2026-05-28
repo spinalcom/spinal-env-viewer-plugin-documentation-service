@@ -40,7 +40,7 @@ export declare class FileExplorer {
      * @return {*}  {Promise<spinal.File<any>[]>}
      * @memberof FileExplorer
      */
-    static uploadFiles(node: SpinalNode<any>, files: FilesArgType): Promise<SpinalNode[]>;
+    static uploadFiles(node: SpinalNode<any>, files: FilesArgType, chunkSize?: number): Promise<SpinalNode[]>;
     static addFileUpload(node: SpinalNode<any>, files: FilesArgType, chunkSize?: number): Promise<SpinalNode[]>;
     static _getOrCreateFileDirectory(node: SpinalNode<any>): Promise<spinal.Directory<any>>;
 }

@@ -119,17 +119,20 @@ class FileExplorer {
      * @return {*}  {Promise<spinal.File<any>[]>}
      * @memberof FileExplorer
      */
-    static async uploadFiles(node, files) {
+    static async uploadFiles(node, files, chunkSize = -1) {
         const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
         if (!isFileList && !Array.isArray(files))
             files = [files];
-        return this.addFileUpload(node, files);
+        return this.addFileUpload(node, files, chunkSize);
     }
     static async addFileUpload(node, files, chunkSize = -1) {
         const filesConverted = await (0, files_1.convertFileToSpinalDocument)(files, chunkSize);
         const promises = [];
+        const directory = await FileExplorer._getOrCreateFileDirectory(node);
         for (const file of filesConverted) {
-            promises.push(file.linkToNode(node));
+            directory.push(file);
+            promises.push((0, files_1.createFileNode)(file));
+            // promises.push(file.linkToNode(node));
         }
         return Promise.all(promises);
         // for (const file of filesConverted) {
