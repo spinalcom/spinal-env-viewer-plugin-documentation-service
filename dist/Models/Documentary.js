@@ -21,7 +21,7 @@ class SpinalDocumentary {
             fileNode = (await (0, files_1.getFileModelFromNode)(fileNode));
         if (!fileNode || !(fileNode instanceof models_spinalcom_1.SpinalDocument))
             throw new Error("File model not found for the given node.");
-        return fileNode.updateVeersion(buffer, versionName, chunkSize);
+        return fileNode.updateVersion(buffer, versionName, chunkSize);
     }
     async removeFile(fileNode) {
         if (fileNode instanceof models_spinalcom_1.SpinalDocument)

@@ -38,7 +38,7 @@ export default class SpinalDocument extends File {
 		// this.createNode();
 	}
 
-	async updateVersion(buffer: Buffer | FilesArgType, versionName: string, chunkSize?: number): Promise<void> {
+	async updateVersion(buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<void> {
 		if (this.isDirectory()) throw new Error("Cannot update version of a directory.");
 
 		const hashes = await VersionUtils.getInstance().convertFileToHashes(buffer, Array.from(this.hashes), chunkSize);
