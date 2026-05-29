@@ -84,6 +84,7 @@ class SpinalDocumentary {
         const name = file.name.get();
         return { name, buffer };
     }
+    //TODO: merge this function with FileExplorer.addFileUpload
     async linkFileToNode(node, fileNode) {
         const rootDirNode = await (0, files_1._getOrCreateRootNode)(node);
         if (!rootDirNode)
@@ -91,6 +92,7 @@ class SpinalDocumentary {
         const relationName = fileNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
         return (0, files_1.addSpinalDocumentAsNodeChild)(rootDirNode, fileNode, relationName, undefined);
     }
+    //TODO: correct this function
     async getFileLinkedToNode(node) {
         const rootDirNode = await (0, files_1._getOrCreateRootNode)(node, false);
         if (!rootDirNode)
@@ -98,12 +100,14 @@ class SpinalDocumentary {
         const children = await rootDirNode.getChildren([constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
         return children;
     }
+    //TODO: correct this function
     async getFileLinkedToNodeAsBuffers(node, hubUrl = "") {
         const rootDirNode = await (0, files_1._getOrCreateRootNode)(node, false);
         if (!rootDirNode)
             return [];
         return (0, files_1.convertTreeToFileBuffers)(rootDirNode, hubUrl);
     }
+    //TODO: correct this function
     async unlinkFileFromNode(node, fileNode) {
         const rootDirNode = await (0, files_1._getOrCreateRootNode)(node, false);
         if (!rootDirNode)

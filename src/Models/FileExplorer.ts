@@ -138,9 +138,13 @@ export class FileExplorer {
 	}
 
 	public static async addFileUpload(node: SpinalNode<any>, files: FilesArgType, chunkSize: number = -1): Promise<SpinalNode[]> {
+		console.log("Adding files to node:", node.info.name.get(), "Files:", files);
 		const filesConverted = await convertFileToSpinalDocument(files, chunkSize);
 		const promises: Promise<SpinalNode>[] = [];
-		const directory = await FileExplorer._getOrCreateFileDirectory(node);
+		const spinalDocument = await FileExplorer._getOrCreateFileDirectory(node);
+		const directory = await spinalDocument.getDirectoryElement();
+
+		if (!directory) throw new Error("Failed to retrieve the directory element.");
 
 		for (const file of filesConverted) {
 			directory.push(file);

@@ -9,6 +9,7 @@ export default class SpinalDocument extends File {
     constructor(name?: string, initialVersion?: FileVersion | Directory | Lst, info?: {
         [key: string]: any;
     });
+    getDirectoryElement(): Promise<Directory | Lst | null>;
     updateVersion(buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<void>;
     getCurrentVersion(): Promise<FileVersion>;
     getCurrentVersionAsBuffer(hubUrl?: string): Promise<Buffer>;

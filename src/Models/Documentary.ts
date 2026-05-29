@@ -99,6 +99,7 @@ class SpinalDocumentary {
 		return { name, buffer };
 	}
 
+	//TODO: merge this function with FileExplorer.addFileUpload
 	public async linkFileToNode(node: SpinalNode, fileNode: SpinalNode) {
 		const rootDirNode = await _getOrCreateRootNode(node);
 		if (!rootDirNode) throw new Error("Unable to create or get root directory node");
@@ -107,6 +108,7 @@ class SpinalDocumentary {
 		return addSpinalDocumentAsNodeChild(rootDirNode, fileNode, relationName, undefined);
 	}
 
+	//TODO: correct this function
 	public async getFileLinkedToNode(node: SpinalNode): Promise<SpinalNode[]> {
 		const rootDirNode = await _getOrCreateRootNode(node, false);
 		if (!rootDirNode) return [];
@@ -115,6 +117,7 @@ class SpinalDocumentary {
 		return children;
 	}
 
+	//TODO: correct this function
 	public async getFileLinkedToNodeAsBuffers(node: SpinalNode, hubUrl: string = ""): Promise<{ name: string; path: string; buffer: Buffer }[]> {
 		const rootDirNode = await _getOrCreateRootNode(node, false);
 		if (!rootDirNode) return [];
@@ -122,6 +125,7 @@ class SpinalDocumentary {
 		return convertTreeToFileBuffers(rootDirNode, hubUrl);
 	}
 
+	//TODO: correct this function
 	public async unlinkFileFromNode(node: SpinalNode, fileNode: SpinalNode) {
 		const rootDirNode = await _getOrCreateRootNode(node, false);
 		if (!rootDirNode) return;

@@ -38,6 +38,11 @@ export default class SpinalDocument extends File {
 		// this.createNode();
 	}
 
+	async getDirectoryElement(): Promise<Directory | Lst | null> {
+		if (!this.isDirectory()) return null;
+		return new Promise((resolve) => this._ptr.load((element: Directory | Lst) => resolve(element)));
+	}
+
 	async updateVersion(buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<void> {
 		if (this.isDirectory()) throw new Error("Cannot update version of a directory.");
 

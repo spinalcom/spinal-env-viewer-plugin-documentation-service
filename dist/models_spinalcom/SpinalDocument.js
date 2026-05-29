@@ -33,6 +33,11 @@ class SpinalDocument extends spinal_core_connectorjs_1.File {
         // this.add_attr({});
         // this.createNode();
     }
+    async getDirectoryElement() {
+        if (!this.isDirectory())
+            return null;
+        return new Promise((resolve) => this._ptr.load((element) => resolve(element)));
+    }
     async updateVersion(buffer, versionName, chunkSize) {
         if (this.isDirectory())
             throw new Error("Cannot update version of a directory.");
