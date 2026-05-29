@@ -10,7 +10,7 @@ const versionUtils_1 = require("../utils/versionUtils");
 class SpinalDocument extends spinal_core_connectorjs_1.File {
     constructor(name, initialVersion, info = {}) {
         name = name || "";
-        const isDirectory = initialVersion instanceof spinal_core_connectorjs_1.Lst || initialVersion instanceof spinal_core_connectorjs_1.Directory;
+        const isDirectory = !(0, files_1.isFileVersion)(initialVersion);
         if (!info.model_type)
             info.model_type = isDirectory ? constants_1.DIRECTORY_MODEL_TYPE : constants_1.FILE_MODEL_TYPE;
         if (!info.icon)
@@ -23,7 +23,7 @@ class SpinalDocument extends spinal_core_connectorjs_1.File {
         if (element)
             this.mod_attr("_ptr", new spinal_core_connectorjs_1.Ptr(element));
         this._addNodeToInfo();
-        if (initialVersion instanceof FileVersion_1.default) {
+        if (!isDirectory) {
             this.add_attr({
                 currentVersion: new spinal_core_connectorjs_1.Ptr(initialVersion),
                 versionHistory: new spinal_core_connectorjs_1.Ptr(new spinal_core_connectorjs_1.Lst([initialVersion])),

@@ -248,3 +248,7 @@ export async function removeFileNode(fileNode: SpinalNode): Promise<boolean> {
 		.then(() => true)
 		.catch((err) => false);
 }
+
+export function isFileVersion(fileVersion: any): fileVersion is FileVersion {
+	return fileVersion.constructor.name === "FileVersion";
+}

@@ -1,18 +1,18 @@
-import { File, Path, Directory, spinalCore, Ptr, Lst } from "spinal-core-connectorjs";
+import { File as SpinalFile, Path, Directory, spinalCore, Ptr, Lst } from "spinal-core-connectorjs";
 import { FileExplorer } from "../Models/FileExplorer";
 import { SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
-import { addSpinalDocumentAsNodeChild, convertTreeToFileBuffers, removeFileNode } from "../utils/files";
+import { addSpinalDocumentAsNodeChild, convertTreeToFileBuffers, isFileVersion, removeFileNode } from "../utils/files";
 import { FilesArgType, IFileBufferInfo } from "../interfaces";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_MODEL_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "../Models/constants";
 import FileVersion from "./FileVersion";
 import VersionUtils from "../utils/versionUtils";
 
-export default class SpinalDocument extends File {
+export default class SpinalDocument extends SpinalFile {
 	private _node: SpinalNode | null = null;
 
 	constructor(name?: string, initialVersion?: FileVersion | Directory | Lst, info: { [key: string]: any } = {}) {
 		name = name || "";
-		const isDirectory = initialVersion instanceof Lst || initialVersion instanceof Directory;
+		const isDirectory = !isFileVersion(initialVersion);
 		if (!info.model_type) info.model_type = isDirectory ? DIRECTORY_MODEL_TYPE : FILE_MODEL_TYPE;
 		if (!info.icon) info.icon = isDirectory ? "folder" : "file";
 
@@ -25,7 +25,7 @@ export default class SpinalDocument extends File {
 
 		this._addNodeToInfo();
 
-		if (initialVersion instanceof FileVersion) {
+		if (!isDirectory) {
 			this.add_attr({
 				currentVersion: new Ptr(initialVersion),
 				versionHistory: new Ptr(new Lst([initialVersion])),

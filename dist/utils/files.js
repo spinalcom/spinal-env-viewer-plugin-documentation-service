@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createFileNode = exports.getFilesFromDirectory = exports.getFileModelFromNode = exports.addSpinalDocumentAsNodeChild = exports.convertFileToBuffer = exports.convertFileToSpinalDocument = void 0;
+exports.isFileVersion = exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createFileNode = exports.getFilesFromDirectory = exports.getFileModelFromNode = exports.addSpinalDocumentAsNodeChild = exports.convertFileToBuffer = exports.convertFileToSpinalDocument = void 0;
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const constants_1 = require("../Models/constants");
@@ -219,4 +219,8 @@ async function removeFileNode(fileNode) {
         .catch((err) => false);
 }
 exports.removeFileNode = removeFileNode;
+function isFileVersion(fileVersion) {
+    return fileVersion.constructor.name === "FileVersion";
+}
+exports.isFileVersion = isFileVersion;
 //# sourceMappingURL=files.js.map

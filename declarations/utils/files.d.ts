@@ -4,6 +4,7 @@ import { File as SpinalFile } from "spinal-core-connectorjs_type";
 import { SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
 import { FilesArgType } from "../interfaces";
 import { SpinalDocument } from "../models_spinalcom/SpinalDocument";
+import { FileVersion } from "../models_spinalcom/FileVersion";
 export declare function convertFileToSpinalDocument(files: FilesArgType, chunkSize?: number): Promise<(SpinalDocument | SpinalFile)[]>;
 export declare function convertFileToBuffer(file: any): Promise<Buffer>;
 export declare function addSpinalDocumentAsNodeChild(parentNode: SpinalNode, spinalDocumentNode: SpinalNode, relationName: string, contextNode?: SpinalContext): Promise<SpinalNode>;
@@ -29,3 +30,4 @@ export declare function convertTreeToFileBuffers(startNode: SpinalNode<any>, hub
 }[]>;
 export declare function _getOrCreateRootNode(node: SpinalNode, createIfNotExist?: boolean): Promise<SpinalNode | null>;
 export declare function removeFileNode(fileNode: SpinalNode): Promise<boolean>;
+export declare function isFileVersion(fileVersion: any): fileVersion is FileVersion;

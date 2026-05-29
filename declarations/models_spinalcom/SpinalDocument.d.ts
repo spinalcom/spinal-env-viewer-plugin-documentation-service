@@ -1,10 +1,10 @@
 /// <reference types="node" />
 /// <reference types="node" />
-import { File, Directory, Lst } from "spinal-core-connectorjs";
+import { File as SpinalFile, Directory, Lst } from "spinal-core-connectorjs";
 import { SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
 import { FilesArgType, IFileBufferInfo } from "../interfaces";
 import FileVersion from "./FileVersion";
-export default class SpinalDocument extends File {
+export default class SpinalDocument extends SpinalFile {
     private _node;
     constructor(name?: string, initialVersion?: FileVersion | Directory | Lst, info?: {
         [key: string]: any;
