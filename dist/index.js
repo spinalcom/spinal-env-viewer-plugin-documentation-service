@@ -48,4 +48,20 @@ __exportStar(require("./Models/UrlService"), exports);
 __exportStar(require("./Models/ServiceDocumentation"), exports);
 __exportStar(require("./models_spinalcom"), exports);
 exports.default = ServiceDocumentation_1.serviceDocumentation;
+// const spinalDocument = new SpinalDocument(
+// 	"test",
+// 	new FileVersion({
+// 		version: 1,
+// 		hashes: [
+// 			{
+// 				index: 0,
+// 				path: new Path(Buffer.from("test"), "text/plain"),
+// 				size: 4,
+// 				hash: "098f6bcd4621373cade4e832627b4f6",
+// 			},
+// 		],
+// 	}),
+// 	{ model_type: "directory" },
+// );
+// console.log("spinalDocument", spinalDocument instanceof File);
 //# sourceMappingURL=index.js.map

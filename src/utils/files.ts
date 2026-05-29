@@ -225,7 +225,7 @@ export async function _getOrCreateRootNode(node: SpinalNode, createIfNotExist: b
 
 	const name = node.getName().get() + "_root_directory";
 
-	const file = new SpinalDocument(name, new Directory(), { model_type: DIRECTORY_MODEL_TYPE, icon: "folder" });
+	const file = new SpinalDocument(name, new Lst(), { model_type: DIRECTORY_MODEL_TYPE, icon: "folder" });
 	const directoryNode = await createFileNode(file);
 
 	await node.addChild(directoryNode, TO_ROOT_DIRECTORY_RELATION, SPINAL_RELATION_PTR_LST_TYPE);

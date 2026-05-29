@@ -26,7 +26,8 @@ console.warn("Warning: spinal-env-viewer-plugin-documentation is deprecated. Ple
 
 import { Directory } from "spinal-core-connectorjs_type";
 import { serviceDocumentation } from "./Models/ServiceDocumentation";
-import { SpinalDocument } from "./models_spinalcom";
+import { FileVersion, SpinalDocument } from "./models_spinalcom";
+import { File, Path } from "spinal-core-connectorjs";
 
 export * from "./Models/constants";
 export * from "./interfaces/index";
@@ -38,3 +39,20 @@ export * from "./Models/ServiceDocumentation";
 export * from "./models_spinalcom";
 
 export default serviceDocumentation;
+
+// const spinalDocument = new SpinalDocument(
+// 	"test",
+// 	new FileVersion({
+// 		version: 1,
+// 		hashes: [
+// 			{
+// 				index: 0,
+// 				path: new Path(Buffer.from("test"), "text/plain"),
+// 				size: 4,
+// 				hash: "098f6bcd4621373cade4e832627b4f6",
+// 			},
+// 		],
+// 	}),
+// 	{ model_type: "directory" },
+// );
+// console.log("spinalDocument", spinalDocument instanceof File);
