@@ -4,6 +4,7 @@ import { File as SpinalFile } from "spinal-core-connectorjs_type";
 import { SpinalContext, SpinalNode } from "spinal-model-graph";
 import { FilesArgType } from "../interfaces";
 import { FileVersion, SpinalDocument } from "../models_spinalcom";
+import { FileExplorer } from "./FileExplorer";
 declare class SpinalDocumentary {
     constructor();
     addFileToNode(parentNode: SpinalNode, files: FilesArgType, contextNode?: SpinalContext, chunkSize?: number): Promise<SpinalNode[]>;
@@ -21,8 +22,8 @@ declare class SpinalDocumentary {
         name: string;
         buffer: Buffer;
     }>;
-    linkFileToNode(node: SpinalNode, fileNode: SpinalNode): Promise<SpinalNode<any>>;
-    getFileLinkedToNode(node: SpinalNode): Promise<SpinalNode[]>;
+    linkFileToNode(node: SpinalNode, fileNode: SpinalNode): Promise<SpinalNode<any>[]>;
+    getFileLinkedToNode(node: SpinalNode): ReturnType<typeof FileExplorer.getFilesLinkedToNode>;
     getFileLinkedToNodeAsBuffers(node: SpinalNode, hubUrl?: string): Promise<{
         name: string;
         path: string;

@@ -1,4 +1,4 @@
-import { SpinalNode } from "spinal-env-viewer-graph-service";
+import { SpinalNode } from "spinal-model-graph";
 import { FilesArgType } from "../interfaces";
 export declare class FileExplorer {
     /**
@@ -7,7 +7,7 @@ export declare class FileExplorer {
      * @return {*}  {Promise<spinal.Directory<spinal.File<spinal.Path>>>}
      * @memberof FileExplorer
      */
-    static getDirectory(selectedNode: SpinalNode<any>): Promise<spinal.Directory | null>;
+    static getDirectory(selectedNode: SpinalNode<any>): Promise<SpinalNode | null>;
     /**
      * @static
      * @param {SpinalNode<any>} selectedNode
@@ -15,7 +15,7 @@ export declare class FileExplorer {
      * @memberof FileExplorer
      */
     static getNbChildren(selectedNode: SpinalNode<any>): Promise<number>;
-    static createDirectory(selectedNode: SpinalNode<any>): Promise<spinal.Directory>;
+    static createDirectory(selectedNode: SpinalNode<any>): Promise<SpinalNode | null>;
     /**
      * @static
      * @param {File} file - HTML File
@@ -42,5 +42,6 @@ export declare class FileExplorer {
      */
     static uploadFiles(node: SpinalNode<any>, files: FilesArgType, chunkSize?: number): Promise<SpinalNode[]>;
     static addFileUpload(node: SpinalNode<any>, files: FilesArgType, chunkSize?: number): Promise<SpinalNode[]>;
-    static _getOrCreateFileDirectory(node: SpinalNode<any>): Promise<spinal.Directory<any>>;
+    static getFilesLinkedToNode(node: SpinalNode<any>): Promise<SpinalNode[]>;
+    static _getOrCreateFileDirectory(node: SpinalNode<any>): Promise<SpinalNode | null>;
 }

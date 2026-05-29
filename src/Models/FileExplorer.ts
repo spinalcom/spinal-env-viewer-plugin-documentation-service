@@ -22,10 +22,11 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-import { SpinalNode } from "spinal-env-viewer-graph-service";
-import { MESSAGE_TYPES } from "spinal-models-documentation";
+import { SpinalNode } from "spinal-model-graph";
+import { MESSAGE_TYPES, SpinalFile } from "spinal-models-documentation";
 import { _getOrCreateRootNode, convertFileToSpinalDocument, createFileNode, getFileModelFromNode } from "../utils/files";
 import { FilesArgType } from "../interfaces";
+import { DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
 
 export class FileExplorer {
 	/**
@@ -34,12 +35,12 @@ export class FileExplorer {
 	 * @return {*}  {Promise<spinal.Directory<spinal.File<spinal.Path>>>}
 	 * @memberof FileExplorer
 	 */
-	public static async getDirectory(selectedNode: SpinalNode<any>): Promise<spinal.Directory | null> {
+	public static async getDirectory(selectedNode: SpinalNode<any>): Promise<SpinalNode | null> {
 		const createIfNotExist = false;
-		const node = await _getOrCreateRootNode(selectedNode, createIfNotExist);
-		if (node) return node.getElement(true);
+		return _getOrCreateRootNode(selectedNode, createIfNotExist);
+		// if (node) return node.getElement(true);
 
-		return null;
+		// return null;
 
 		// if (selectedNode != undefined) {
 		//   const fileNode = await selectedNode.getChildren("hasFiles");
@@ -67,23 +68,13 @@ export class FileExplorer {
 		// return fileNode.length;
 	}
 
-	public static async createDirectory(selectedNode: SpinalNode<any>): Promise<spinal.Directory> {
+	public static async createDirectory(selectedNode: SpinalNode<any>): Promise<SpinalNode | null> {
 		const createIfNotExist = true;
-		const node = await _getOrCreateRootNode(selectedNode, createIfNotExist);
-		if (!node) throw new Error("Failed to create or retrieve the directory node.");
+		return _getOrCreateRootNode(selectedNode, createIfNotExist);
+		// const node = await _getOrCreateRootNode(selectedNode, createIfNotExist);
+		// if (!node) throw new Error("Failed to create or retrieve the directory node.");
 
-		return node.getElement(true);
-
-		// let nbNode = await this.getNbChildren(selectedNode);
-		// if (nbNode == 0) {
-		//   let myDirectory = new Directory();
-		//   let node = await selectedNode.addChild(myDirectory, "hasFiles", SPINAL_RELATION_PTR_LST_TYPE);
-		//   node.info.name.set("[Files]");
-		//   node.info.type.set("SpinalFiles");
-		//   return myDirectory;
-		// } else {
-		//   return this.getDirectory(selectedNode);
-		// }
+		// return node.getElement(true);
 	}
 
 	/**
@@ -140,15 +131,17 @@ export class FileExplorer {
 	public static async addFileUpload(node: SpinalNode<any>, files: FilesArgType, chunkSize: number = -1): Promise<SpinalNode[]> {
 		console.log("Adding files to node:", node.info.name.get(), "Files:", files);
 		const filesConverted = await convertFileToSpinalDocument(files, chunkSize);
-		const promises: Promise<SpinalNode>[] = [];
-		const spinalDocument = await FileExplorer._getOrCreateFileDirectory(node);
-		const directory = await spinalDocument.getDirectoryElement();
+		const directory: SpinalNode | null = await FileExplorer._getOrCreateFileDirectory(node);
+		// const directory = await spinalDocument.getDirectoryElement();
 
-		if (!directory) throw new Error("Failed to retrieve the directory element.");
+		if (!directory) throw new Error("Failed to retrieve or create the directory for the node.");
+
+		const promises: Promise<SpinalNode>[] = [];
 
 		for (const file of filesConverted) {
-			directory.push(file);
-			promises.push(createFileNode(file));
+			promises.push(file.linkToNode(directory));
+			// directory.push(file);
+			// promises.push(createFileNode(file));
 			// promises.push(file.linkToNode(node));
 		}
 
@@ -160,7 +153,17 @@ export class FileExplorer {
 		// return filesConverted;
 	}
 
-	public static async _getOrCreateFileDirectory(node: SpinalNode<any>): Promise<spinal.Directory<any>> {
+	public static async getFilesLinkedToNode(node: SpinalNode<any>): Promise<SpinalNode[]> {
+		let rootDirNode;
+		if (node.getType().get() === DIRECTORY_NODE_TYPE || node.getType().get() === FILE_NODE_TYPE) rootDirNode = node;
+		else rootDirNode = await FileExplorer.getDirectory(node);
+
+		if (!rootDirNode) return [];
+
+		return rootDirNode.getChildren([TO_FILE_RELATION, TO_FOLDER_RELATION]);
+	}
+
+	public static async _getOrCreateFileDirectory(node: SpinalNode<any>): Promise<SpinalNode | null> {
 		let directory = await FileExplorer.getDirectory(node);
 
 		if (!directory) {

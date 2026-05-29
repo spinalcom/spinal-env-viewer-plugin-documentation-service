@@ -26,6 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileExplorer = void 0;
 const spinal_models_documentation_1 = require("spinal-models-documentation");
 const files_1 = require("../utils/files");
+const constants_1 = require("./constants");
 class FileExplorer {
     /**
      * @static
@@ -35,10 +36,9 @@ class FileExplorer {
      */
     static async getDirectory(selectedNode) {
         const createIfNotExist = false;
-        const node = await (0, files_1._getOrCreateRootNode)(selectedNode, createIfNotExist);
-        if (node)
-            return node.getElement(true);
-        return null;
+        return (0, files_1._getOrCreateRootNode)(selectedNode, createIfNotExist);
+        // if (node) return node.getElement(true);
+        // return null;
         // if (selectedNode != undefined) {
         //   const fileNode = await selectedNode.getChildren("hasFiles");
         //   if (fileNode.length == 0) {
@@ -65,20 +65,10 @@ class FileExplorer {
     }
     static async createDirectory(selectedNode) {
         const createIfNotExist = true;
-        const node = await (0, files_1._getOrCreateRootNode)(selectedNode, createIfNotExist);
-        if (!node)
-            throw new Error("Failed to create or retrieve the directory node.");
-        return node.getElement(true);
-        // let nbNode = await this.getNbChildren(selectedNode);
-        // if (nbNode == 0) {
-        //   let myDirectory = new Directory();
-        //   let node = await selectedNode.addChild(myDirectory, "hasFiles", SPINAL_RELATION_PTR_LST_TYPE);
-        //   node.info.name.set("[Files]");
-        //   node.info.type.set("SpinalFiles");
-        //   return myDirectory;
-        // } else {
-        //   return this.getDirectory(selectedNode);
-        // }
+        return (0, files_1._getOrCreateRootNode)(selectedNode, createIfNotExist);
+        // const node = await _getOrCreateRootNode(selectedNode, createIfNotExist);
+        // if (!node) throw new Error("Failed to create or retrieve the directory node.");
+        // return node.getElement(true);
     }
     /**
      * @static
@@ -128,14 +118,15 @@ class FileExplorer {
     static async addFileUpload(node, files, chunkSize = -1) {
         console.log("Adding files to node:", node.info.name.get(), "Files:", files);
         const filesConverted = await (0, files_1.convertFileToSpinalDocument)(files, chunkSize);
-        const promises = [];
-        const spinalDocument = await FileExplorer._getOrCreateFileDirectory(node);
-        const directory = await spinalDocument.getDirectoryElement();
+        const directory = await FileExplorer._getOrCreateFileDirectory(node);
+        // const directory = await spinalDocument.getDirectoryElement();
         if (!directory)
-            throw new Error("Failed to retrieve the directory element.");
+            throw new Error("Failed to retrieve or create the directory for the node.");
+        const promises = [];
         for (const file of filesConverted) {
-            directory.push(file);
-            promises.push((0, files_1.createFileNode)(file));
+            promises.push(file.linkToNode(directory));
+            // directory.push(file);
+            // promises.push(createFileNode(file));
             // promises.push(file.linkToNode(node));
         }
         return Promise.all(promises);
@@ -143,6 +134,16 @@ class FileExplorer {
         //   directory.push(file);
         // }
         // return filesConverted;
+    }
+    static async getFilesLinkedToNode(node) {
+        let rootDirNode;
+        if (node.getType().get() === constants_1.DIRECTORY_NODE_TYPE || node.getType().get() === constants_1.FILE_NODE_TYPE)
+            rootDirNode = node;
+        else
+            rootDirNode = await FileExplorer.getDirectory(node);
+        if (!rootDirNode)
+            return [];
+        return rootDirNode.getChildren([constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
     }
     static async _getOrCreateFileDirectory(node) {
         let directory = await FileExplorer.getDirectory(node);

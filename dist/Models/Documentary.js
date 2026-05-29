@@ -6,6 +6,7 @@ const spinal_model_graph_1 = require("spinal-model-graph");
 const files_1 = require("../utils/files");
 const constants_1 = require("./constants");
 const models_spinalcom_1 = require("../models_spinalcom");
+const FileExplorer_1 = require("./FileExplorer");
 class SpinalDocumentary {
     constructor() { }
     async addFileToNode(parentNode, files, contextNode, chunkSize = -1) {
@@ -84,23 +85,21 @@ class SpinalDocumentary {
         const name = file.name.get();
         return { name, buffer };
     }
-    //TODO: merge this function with FileExplorer.addFileUpload
     async linkFileToNode(node, fileNode) {
-        const rootDirNode = await (0, files_1._getOrCreateRootNode)(node);
-        if (!rootDirNode)
-            throw new Error("Unable to create or get root directory node");
-        const relationName = fileNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
-        return (0, files_1.addSpinalDocumentAsNodeChild)(rootDirNode, fileNode, relationName, undefined);
+        const fileModel = await (0, files_1.getFileModelFromNode)(fileNode);
+        return FileExplorer_1.FileExplorer.addFileUpload(node, fileModel);
+        // const rootDirNode = await _getOrCreateRootNode(node);
+        // if (!rootDirNode) throw new Error("Unable to create or get root directory node");
+        // const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
+        // return addSpinalDocumentAsNodeChild(rootDirNode, fileNode, relationName, undefined);
     }
-    //TODO: correct this function
     async getFileLinkedToNode(node) {
-        const rootDirNode = await (0, files_1._getOrCreateRootNode)(node, false);
-        if (!rootDirNode)
-            return [];
-        const children = await rootDirNode.getChildren([constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
-        return children;
+        return FileExplorer_1.FileExplorer.getFilesLinkedToNode(node);
+        // const rootDirNode = await _getOrCreateRootNode(node, false);
+        // if (!rootDirNode) return [];
+        // const children = await rootDirNode.getChildren([TO_FILE_RELATION, TO_FOLDER_RELATION]);
+        // return children;
     }
-    //TODO: correct this function
     async getFileLinkedToNodeAsBuffers(node, hubUrl = "") {
         const rootDirNode = await (0, files_1._getOrCreateRootNode)(node, false);
         if (!rootDirNode)
