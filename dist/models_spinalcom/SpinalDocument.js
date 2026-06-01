@@ -9,9 +9,9 @@ const FileVersion_1 = require("./FileVersion");
 const versionUtils_1 = require("../utils/versionUtils");
 class SpinalDocument extends spinal_core_connectorjs_1.File {
     constructor(name, initialVersion, info = {}) {
-        if (!initialVersion)
-            return;
         name = name || "";
+        if (!initialVersion)
+            initialVersion = new spinal_core_connectorjs_1.Lst();
         const isDirectory = !(0, files_1.isFileVersion)(initialVersion);
         if (!info.model_type)
             info.model_type = isDirectory ? constants_1.DIRECTORY_MODEL_TYPE : constants_1.FILE_MODEL_TYPE;
