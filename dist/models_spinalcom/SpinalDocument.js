@@ -11,7 +11,7 @@ class SpinalDocument extends spinal_core_connectorjs_1.File {
     constructor(name, initialVersion, info = {}) {
         name = name || "";
         if (!initialVersion)
-            initialVersion = new spinal_core_connectorjs_1.Lst();
+            initialVersion = new spinal_core_connectorjs_1.Directory();
         const isDirectory = !(0, files_1.isFileVersion)(initialVersion);
         if (!info.model_type)
             info.model_type = isDirectory ? constants_1.DIRECTORY_MODEL_TYPE : constants_1.FILE_MODEL_TYPE;
@@ -152,5 +152,6 @@ class SpinalDocument extends spinal_core_connectorjs_1.File {
 }
 exports.default = SpinalDocument;
 exports.SpinalDocument = SpinalDocument;
+// spinalCore.register_models(SpinalDocument, "SpinalDocument");
 spinal_core_connectorjs_1.spinalCore.register_models([SpinalDocument]);
 //# sourceMappingURL=SpinalDocument.js.map

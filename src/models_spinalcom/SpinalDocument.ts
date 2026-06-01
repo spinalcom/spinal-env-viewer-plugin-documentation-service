@@ -13,7 +13,7 @@ export default class SpinalDocument extends SpinalFile {
 	constructor(name?: string, initialVersion?: FileVersion | Directory | Lst, info: { [key: string]: any } = {}) {
 		name = name || "";
 
-		if (!initialVersion) initialVersion = new Lst();
+		if (!initialVersion) initialVersion = new Directory();
 		const isDirectory = !isFileVersion(initialVersion);
 
 		if (!info.model_type) info.model_type = isDirectory ? DIRECTORY_MODEL_TYPE : FILE_MODEL_TYPE;
@@ -178,6 +178,6 @@ export default class SpinalDocument extends SpinalFile {
 		});
 	}
 }
-
+// spinalCore.register_models(SpinalDocument, "SpinalDocument");
 spinalCore.register_models([SpinalDocument]);
 export { SpinalDocument };
