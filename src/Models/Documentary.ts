@@ -59,7 +59,7 @@ class SpinalDocumentary {
 	}
 
 	public createDirectoryNode(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon: string = "folder"): Promise<SpinalNode> {
-		const file = new SpinalDocument(name, new Directory(), { model_type: DIRECTORY_MODEL_TYPE, icon });
+		const file = new SpinalDocument(name, new Lst(), { model_type: DIRECTORY_MODEL_TYPE, icon });
 		return file.linkToNode(parentNode, contextNode);
 	}
 

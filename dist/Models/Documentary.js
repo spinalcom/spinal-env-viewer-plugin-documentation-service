@@ -52,7 +52,7 @@ class SpinalDocumentary {
         });
     }
     createDirectoryNode(parentNode, name, contextNode, icon = "folder") {
-        const file = new models_spinalcom_1.SpinalDocument(name, new spinal_core_connectorjs_type_1.Directory(), { model_type: constants_1.DIRECTORY_MODEL_TYPE, icon });
+        const file = new models_spinalcom_1.SpinalDocument(name, new spinal_core_connectorjs_type_1.Lst(), { model_type: constants_1.DIRECTORY_MODEL_TYPE, icon });
         return file.linkToNode(parentNode, contextNode);
     }
     async importFilesFromSpinalDrive(contextNode, parentNode, startFile) {
