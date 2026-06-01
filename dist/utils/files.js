@@ -220,7 +220,7 @@ async function removeFileNode(fileNode) {
 }
 exports.removeFileNode = removeFileNode;
 function isFileVersion(fileVersion) {
-    return fileVersion.constructor.name === "FileVersion";
+    return fileVersion?.constructor?.name === "FileVersion";
 }
 exports.isFileVersion = isFileVersion;
 //# sourceMappingURL=files.js.map

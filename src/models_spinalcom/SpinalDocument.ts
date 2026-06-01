@@ -11,8 +11,11 @@ export default class SpinalDocument extends SpinalFile {
 	private _node: SpinalNode | null = null;
 
 	constructor(name?: string, initialVersion?: FileVersion | Directory | Lst, info: { [key: string]: any } = {}) {
+		if (!initialVersion) return;
+
 		name = name || "";
 		const isDirectory = !isFileVersion(initialVersion);
+
 		if (!info.model_type) info.model_type = isDirectory ? DIRECTORY_MODEL_TYPE : FILE_MODEL_TYPE;
 		if (!info.icon) info.icon = isDirectory ? "folder" : "file";
 
