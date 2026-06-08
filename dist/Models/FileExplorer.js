@@ -27,6 +27,7 @@ exports.FileExplorer = void 0;
 const spinal_models_documentation_1 = require("spinal-models-documentation");
 const files_1 = require("../utils/files");
 const constants_1 = require("./constants");
+const models_spinalcom_1 = require("../models_spinalcom");
 class FileExplorer {
     /**
      * @static
@@ -137,6 +138,8 @@ class FileExplorer {
     }
     static async getFilesLinkedToNode(node) {
         let rootDirNode;
+        if (node instanceof models_spinalcom_1.SpinalDocument)
+            node = (await node.getNode());
         if (node.getType().get() === constants_1.DIRECTORY_NODE_TYPE || node.getType().get() === constants_1.FILE_NODE_TYPE)
             rootDirNode = node;
         else
