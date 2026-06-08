@@ -1,5 +1,7 @@
 import { SpinalNode } from "spinal-model-graph";
 import { FilesArgType } from "../interfaces";
+import { SpinalDocument } from "../models_spinalcom";
+import { File as SpinalFile } from "spinal-core-connectorjs_type";
 export declare class FileExplorer {
     /**
      * @static
@@ -42,6 +44,6 @@ export declare class FileExplorer {
      */
     static uploadFiles(node: SpinalNode<any>, files: FilesArgType, chunkSize?: number): Promise<SpinalNode[]>;
     static addFileUpload(node: SpinalNode<any>, files: FilesArgType, chunkSize?: number): Promise<SpinalNode[]>;
-    static getFilesLinkedToNode(node: SpinalNode<any>): Promise<SpinalNode[]>;
+    static getFilesLinkedToNode(node: SpinalNode<any>): Promise<(SpinalDocument | SpinalFile)[]>;
     static _getOrCreateFileDirectory(node: SpinalNode<any>): Promise<SpinalNode | null>;
 }

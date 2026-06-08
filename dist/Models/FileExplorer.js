@@ -146,7 +146,15 @@ class FileExplorer {
             rootDirNode = await FileExplorer.getDirectory(node);
         if (!rootDirNode)
             return [];
-        return rootDirNode.getChildren([constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
+        return rootDirNode.getChildren([constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]).then(async (children) => {
+            const files = [];
+            for (const child of children) {
+                const element = await (0, files_1.getFileModelFromNode)(child);
+                if (element)
+                    files.push(element);
+            }
+            return files;
+        });
     }
     static async _getOrCreateFileDirectory(node) {
         let directory = await FileExplorer.getDirectory(node);

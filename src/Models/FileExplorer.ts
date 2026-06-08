@@ -23,11 +23,12 @@
  */
 
 import { SpinalNode } from "spinal-model-graph";
-import { MESSAGE_TYPES, SpinalFile } from "spinal-models-documentation";
+import { MESSAGE_TYPES } from "spinal-models-documentation";
 import { _getOrCreateRootNode, convertFileToSpinalDocument, createFileNode, getFileModelFromNode } from "../utils/files";
 import { FilesArgType } from "../interfaces";
 import { DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
 import { SpinalDocument } from "../models_spinalcom";
+import { File as SpinalFile } from "spinal-core-connectorjs_type";
 
 export class FileExplorer {
 	/**
@@ -154,7 +155,7 @@ export class FileExplorer {
 		// return filesConverted;
 	}
 
-	public static async getFilesLinkedToNode(node: SpinalNode<any>): Promise<SpinalNode[]> {
+	public static async getFilesLinkedToNode(node: SpinalNode<any>): Promise<(SpinalDocument | SpinalFile)[]> {
 		let rootDirNode;
 		if (node instanceof SpinalDocument) node = (await node.getNode()) as SpinalNode;
 		if (node.getType().get() === DIRECTORY_NODE_TYPE || node.getType().get() === FILE_NODE_TYPE) rootDirNode = node;
@@ -162,7 +163,14 @@ export class FileExplorer {
 
 		if (!rootDirNode) return [];
 
-		return rootDirNode.getChildren([TO_FILE_RELATION, TO_FOLDER_RELATION]);
+		return rootDirNode.getChildren([TO_FILE_RELATION, TO_FOLDER_RELATION]).then(async (children) => {
+			const files: (SpinalDocument | SpinalFile)[] = [];
+			for (const child of children) {
+				const element = await getFileModelFromNode(child);
+				if (element) files.push(element);
+			}
+			return files;
+		});
 	}
 
 	public static async _getOrCreateFileDirectory(node: SpinalNode<any>): Promise<SpinalNode | null> {
