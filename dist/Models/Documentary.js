@@ -122,6 +122,17 @@ class SpinalDocumentary {
         await parent.addChildInContext(node, relationName, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE, contextNode);
         return node;
     }
+    static async pushFileToDirectory(directoryNode, file) {
+        const fileNode = await (0, files_1.createFileNode)(file);
+        const directoryElement = await (0, files_1.getFileModelFromNode)(directoryNode);
+        const list = await new Promise((resolve) => directoryElement?._ptr.load((e) => resolve(e)));
+        if (list instanceof spinal_core_connectorjs_type_1.Lst || list instanceof spinal_core_connectorjs_type_1.Directory) {
+            const relationName = fileNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
+            list.push(file);
+            return directoryNode.addChild(fileNode, relationName, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE);
+        }
+        return null;
+    }
 }
 exports.SpinalDocumentary = SpinalDocumentary;
 exports.default = SpinalDocumentary;

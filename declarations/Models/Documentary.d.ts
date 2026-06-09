@@ -31,6 +31,7 @@ declare class SpinalDocumentary {
     }[]>;
     unlinkFileFromNode(node: SpinalNode, fileNode: SpinalNode): Promise<void>;
     private _createNodeInContext;
+    static pushFileToDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<SpinalNode | null>;
 }
 export { SpinalDocumentary };
 export default SpinalDocumentary;

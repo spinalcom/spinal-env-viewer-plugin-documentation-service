@@ -146,6 +146,20 @@ class SpinalDocumentary {
 		await parent.addChildInContext(node, relationName, SPINAL_RELATION_PTR_LST_TYPE, contextNode);
 		return node as SpinalNode;
 	}
+
+	public static async pushFileToDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<SpinalNode | null> {
+		const fileNode = await createFileNode(file);
+		const directoryElement = await getFileModelFromNode(directoryNode);
+		const list = await new Promise((resolve) => directoryElement?._ptr.load((e) => resolve(e)));
+
+		if (list instanceof Lst || list instanceof Directory) {
+			const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
+			list.push(file);
+			return directoryNode.addChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE);
+		}
+
+		return null;
+	}
 }
 
 export { SpinalDocumentary };

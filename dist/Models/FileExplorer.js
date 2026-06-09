@@ -28,6 +28,8 @@ const spinal_models_documentation_1 = require("spinal-models-documentation");
 const files_1 = require("../utils/files");
 const constants_1 = require("./constants");
 const models_spinalcom_1 = require("../models_spinalcom");
+const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
+const Documentary_1 = require("./Documentary");
 class FileExplorer {
     /**
      * @static
@@ -117,7 +119,6 @@ class FileExplorer {
         return this.addFileUpload(node, files, chunkSize);
     }
     static async addFileUpload(node, files, chunkSize = -1) {
-        console.log("Adding files to node:", node.info.name.get(), "Files:", files);
         const filesConverted = await (0, files_1.convertFileToSpinalDocument)(files, chunkSize);
         const directory = await FileExplorer._getOrCreateFileDirectory(node);
         // const directory = await spinalDocument.getDirectoryElement();
@@ -125,16 +126,19 @@ class FileExplorer {
             throw new Error("Failed to retrieve or create the directory for the node.");
         const promises = [];
         for (const file of filesConverted) {
-            promises.push(file.linkToNode(directory));
+            if (file instanceof models_spinalcom_1.SpinalDocument) {
+                promises.push(file.linkToNode(directory));
+            }
+            else if (file instanceof spinal_core_connectorjs_type_1.File) {
+                promises.push(Documentary_1.SpinalDocumentary.pushFileToDirectory(directory, file));
+            }
             // directory.push(file);
             // promises.push(createFileNode(file));
             // promises.push(file.linkToNode(node));
         }
-        return Promise.all(promises);
-        // for (const file of filesConverted) {
-        //   directory.push(file);
-        // }
-        // return filesConverted;
+        return Promise.all(promises).then((results) => {
+            return results.filter((result) => result !== null);
+        });
     }
     static async getFilesLinkedToNode(node) {
         let rootDirNode;

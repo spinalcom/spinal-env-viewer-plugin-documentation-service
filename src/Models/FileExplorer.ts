@@ -29,6 +29,7 @@ import { FilesArgType } from "../interfaces";
 import { DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
 import { SpinalDocument } from "../models_spinalcom";
 import { File as SpinalFile } from "spinal-core-connectorjs_type";
+import { SpinalDocumentary } from "./Documentary";
 
 export class FileExplorer {
 	/**
@@ -131,28 +132,29 @@ export class FileExplorer {
 	}
 
 	public static async addFileUpload(node: SpinalNode<any>, files: FilesArgType, chunkSize: number = -1): Promise<SpinalNode[]> {
-		console.log("Adding files to node:", node.info.name.get(), "Files:", files);
 		const filesConverted = await convertFileToSpinalDocument(files, chunkSize);
 		const directory: SpinalNode | null = await FileExplorer._getOrCreateFileDirectory(node);
 		// const directory = await spinalDocument.getDirectoryElement();
 
 		if (!directory) throw new Error("Failed to retrieve or create the directory for the node.");
 
-		const promises: Promise<SpinalNode>[] = [];
+		const promises: Promise<SpinalNode | null>[] = [];
 
 		for (const file of filesConverted) {
-			promises.push(file.linkToNode(directory));
+			if (file instanceof SpinalDocument) {
+				promises.push(file.linkToNode(directory));
+			} else if (file instanceof SpinalFile) {
+				promises.push(SpinalDocumentary.pushFileToDirectory(directory, file));
+			}
+
 			// directory.push(file);
 			// promises.push(createFileNode(file));
 			// promises.push(file.linkToNode(node));
 		}
 
-		return Promise.all(promises);
-		// for (const file of filesConverted) {
-		//   directory.push(file);
-		// }
-
-		// return filesConverted;
+		return Promise.all(promises).then((results) => {
+			return results.filter((result): result is SpinalNode => result !== null);
+		});
 	}
 
 	public static async getFilesLinkedToNode(node: SpinalNode<any>): Promise<(SpinalDocument | SpinalFile)[]> {
