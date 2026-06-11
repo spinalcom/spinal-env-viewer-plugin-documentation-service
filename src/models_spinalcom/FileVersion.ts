@@ -1,7 +1,8 @@
-import { Lst, Model, Path, Ptr, spinalCore } from "spinal-core-connectorjs";
+import { Lst, Model, Path as SpinalPath, Ptr, spinalCore } from "spinal-core-connectorjs";
 import { IFileVersionInfo, IHash } from "../interfaces";
 import { getPathData } from "../utils/files";
 import { randomUUID } from "crypto";
+import VersionUtils from "../utils/versionUtils";
 
 class FileVersion extends Model {
 	constructor(versionInfo: IFileVersionInfo) {
@@ -37,6 +38,25 @@ class FileVersion extends Model {
 
 		const data = await getPathData(dynamicId, hubUrl);
 		return { index: hashInfo.index, buffer: data };
+	}
+
+	static async createFakeFileVersionInstance(spinalFile: any): Promise<FileVersion | undefined> {
+		const filePath = await new Promise((resolve) => (spinalFile._ptr ? spinalFile._ptr?.load((filePath: SpinalPath) => resolve(filePath)) : resolve(null)));
+		if (!filePath || !(filePath instanceof SpinalPath)) return;
+
+		const hashInfo: IHash = {
+			hash: VersionUtils.getInstance().hashBuffer(new Buffer(0)), // Create a hash for an empty buffer or use a default value
+			size: -1,
+			path: filePath,
+			index: 0,
+		};
+
+		const fileVersionInfo: IFileVersionInfo = {
+			version: 1,
+			hashes: [hashInfo],
+		};
+
+		return new FileVersion(fileVersionInfo);
 	}
 }
 

@@ -7,22 +7,22 @@ import { FileVersion, SpinalDocument } from "../models_spinalcom";
 import { FileExplorer } from "./FileExplorer";
 declare class SpinalDocumentary {
     constructor();
-    addFileToNode(parentNode: SpinalNode, files: FilesArgType, contextNode?: SpinalContext, chunkSize?: number): Promise<SpinalNode[]>;
-    getAllFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]>;
+    addFileToNodeInContext(parentNode: SpinalNode, files: FilesArgType, contextNode: SpinalContext, chunkSize?: number): Promise<SpinalNode[]>;
+    getFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]>;
     updateFileVersion(fileNode: SpinalNode | SpinalDocument, buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<void>;
-    removeFile(fileNode: SpinalNode | SpinalDocument): Promise<boolean>;
-    createDirectoryNode(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon?: string): Promise<SpinalNode>;
+    removeFileFromContext(fileNode: SpinalNode | SpinalDocument): Promise<boolean>;
+    addDirectoryToNodeInContext(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon?: string): Promise<SpinalNode>;
     importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalDocument): Promise<SpinalNode[]>;
-    getFilesInTreeAsBuffer(startNode: SpinalNode, hubUrl?: string): Promise<{
+    getFilesInTreeAsBuffer(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl?: string): Promise<{
         name: string;
         path: string;
         buffer: Buffer;
     }[]>;
-    convertFileToBuffer(file: SpinalNode | SpinalDocument, hubUrl?: string): Promise<{
+    convertFileToBuffer(file: SpinalNode | SpinalDocument | SpinalFile, hubUrl?: string): Promise<{
         name: string;
         buffer: Buffer;
     }>;
-    linkFileToNode(node: SpinalNode, fileNode: SpinalNode): Promise<SpinalNode<any>[]>;
+    linkFileToNode(node: SpinalNode, fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<SpinalNode | null>;
     getFileLinkedToNode(node: SpinalNode): ReturnType<typeof FileExplorer.getFilesLinkedToNode>;
     getFileLinkedToNodeAsBuffers(node: SpinalNode, hubUrl?: string): Promise<{
         name: string;

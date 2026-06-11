@@ -161,7 +161,7 @@ export function getPathData(dynamicId: number, hubUrl: string = ""): Promise<Buf
 	});
 }
 
-export async function convertTreeToFileBuffers(startNode: SpinalNode<any>, hubUrl: string = ""): Promise<{ name: string; serverId: number; path: string; buffer: Buffer }[]> {
+export async function convertTreeToFileBuffers(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<{ name: string; serverId: number; path: string; buffer: Buffer }[]> {
 	const queue = await getStarterQueue(startNode);
 	const filesBuffers: { name: string; serverId: number; path: string; buffer: Buffer }[] = [];
 	const alreadyProcessedNodes = new Set<number>();
@@ -193,7 +193,9 @@ export async function convertTreeToFileBuffers(startNode: SpinalNode<any>, hubUr
 	return filesBuffers;
 }
 
-async function getStarterQueue(startNode: SpinalNode): Promise<{ path: string; file: SpinalDocument | SpinalFile }[]> {
+async function getStarterQueue(startNode: SpinalNode | SpinalDocument | SpinalFile): Promise<{ path: string; file: SpinalDocument | SpinalFile }[]> {
+	if (!(startNode instanceof SpinalNode)) startNode = await createFileNode(startNode);
+
 	const queue: { node: SpinalNode; path: string }[] = [{ node: startNode, path: startNode.getName().get() }];
 	const res: { path: string; file: SpinalDocument | SpinalFile }[] = [];
 

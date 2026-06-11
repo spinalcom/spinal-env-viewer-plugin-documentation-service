@@ -22,7 +22,7 @@ export declare function _getFileAttributes(file: SpinalDocument | SpinalFile): P
 }>;
 export declare function _getFileAsBuffer(file: SpinalDocument | SpinalNode | SpinalFile, hubUrl?: string): Promise<Buffer>;
 export declare function getPathData(dynamicId: number, hubUrl?: string): Promise<Buffer>;
-export declare function convertTreeToFileBuffers(startNode: SpinalNode<any>, hubUrl?: string): Promise<{
+export declare function convertTreeToFileBuffers(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl?: string): Promise<{
     name: string;
     serverId: number;
     path: string;

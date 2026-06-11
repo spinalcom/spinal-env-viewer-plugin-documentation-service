@@ -173,6 +173,8 @@ async function convertTreeToFileBuffers(startNode, hubUrl = "") {
 }
 exports.convertTreeToFileBuffers = convertTreeToFileBuffers;
 async function getStarterQueue(startNode) {
+    if (!(startNode instanceof spinal_env_viewer_graph_service_1.SpinalNode))
+        startNode = await createFileNode(startNode);
     const queue = [{ node: startNode, path: startNode.getName().get() }];
     const res = [];
     while (queue.length > 0) {

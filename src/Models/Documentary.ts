@@ -9,7 +9,7 @@ import { FileExplorer } from "./FileExplorer";
 class SpinalDocumentary {
 	constructor() {}
 
-	public async addFileToNode(parentNode: SpinalNode, files: FilesArgType, contextNode?: SpinalContext, chunkSize: number = -1): Promise<SpinalNode[]> {
+	public async addFileToNodeInContext(parentNode: SpinalNode, files: FilesArgType, contextNode: SpinalContext, chunkSize: number = -1): Promise<SpinalNode[]> {
 		const filesConverted = await convertFileToSpinalDocument(files, chunkSize);
 		const promises: Promise<SpinalNode>[] = [];
 
@@ -20,11 +20,16 @@ class SpinalDocumentary {
 		return Promise.all(promises);
 	}
 
-	public async getAllFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]> {
+	public async getFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]> {
 		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
 		if (!fileNode) throw new Error("File model not found for the given node.");
 
 		if (fileNode instanceof SpinalDocument) return fileNode.getVersionHistory();
+
+		if (fileNode instanceof SpinalFile) {
+			const fakeFileVersion = await FileVersion.createFakeFileVersionInstance(fileNode);
+			if (fakeFileVersion) return [fakeFileVersion];
+		}
 
 		// if (fileNode instanceof SpinalFile) {
 		// const fakeFileVersion = FileVersion.createFakeFileVersionInstance(fileNode);
@@ -41,7 +46,7 @@ class SpinalDocumentary {
 		return fileNode.updateVersion(buffer, versionName, chunkSize);
 	}
 
-	public async removeFile(fileNode: SpinalNode | SpinalDocument): Promise<boolean> {
+	public async removeFileFromContext(fileNode: SpinalNode | SpinalDocument): Promise<boolean> {
 		if (fileNode instanceof SpinalDocument) fileNode = (await fileNode.getNode()) as SpinalNode;
 
 		if (fileNode.getType().get() !== DIRECTORY_NODE_TYPE) return removeFileNode(fileNode);
@@ -50,7 +55,7 @@ class SpinalDocumentary {
 		const promises: Promise<boolean | boolean[]>[] = [];
 
 		for (const file of files) {
-			promises.push(this.removeFile(file));
+			promises.push(this.removeFileFromContext(file));
 		}
 
 		return Promise.all(promises).then((result) => {
@@ -58,7 +63,7 @@ class SpinalDocumentary {
 		});
 	}
 
-	public createDirectoryNode(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon: string = "folder"): Promise<SpinalNode> {
+	public addDirectoryToNodeInContext(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon: string = "folder"): Promise<SpinalNode> {
 		const file = new SpinalDocument(name, new Lst(), { model_type: DIRECTORY_MODEL_TYPE, icon });
 		return file.linkToNode(parentNode, contextNode);
 	}
@@ -88,11 +93,13 @@ class SpinalDocumentary {
 		return createdNodes;
 	}
 
-	public async getFilesInTreeAsBuffer(startNode: SpinalNode, hubUrl: string = ""): Promise<{ name: string; path: string; buffer: Buffer }[]> {
+	//////////////////////////////////
+
+	public async getFilesInTreeAsBuffer(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<{ name: string; path: string; buffer: Buffer }[]> {
 		return convertTreeToFileBuffers(startNode, hubUrl);
 	}
 
-	public async convertFileToBuffer(file: SpinalNode | SpinalDocument, hubUrl: string = ""): Promise<{ name: string; buffer: Buffer }> {
+	public async convertFileToBuffer(file: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<{ name: string; buffer: Buffer }> {
 		// if (file instanceof SpinalNode) file = (await file.getElement(true)) as SpinalDocument;
 		const buffer = await _getFileAsBuffer(file, hubUrl);
 		const name = file.name.get();
@@ -100,24 +107,18 @@ class SpinalDocumentary {
 		return { name, buffer };
 	}
 
-	public async linkFileToNode(node: SpinalNode, fileNode: SpinalNode) {
-		const fileModel = await getFileModelFromNode(fileNode);
-		return FileExplorer.addFileUpload(node, fileModel);
+	public async linkFileToNode(node: SpinalNode, fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<SpinalNode | null> {
+		let fileModel: SpinalDocument | SpinalFile | undefined;
 
-		// const rootDirNode = await _getOrCreateRootNode(node);
-		// if (!rootDirNode) throw new Error("Unable to create or get root directory node");
+		if (fileNode instanceof SpinalNode) fileModel = await getFileModelFromNode(fileNode);
+		else fileModel = fileNode;
 
-		// const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
-		// return addSpinalDocumentAsNodeChild(rootDirNode, fileNode, relationName, undefined);
+		const filesUploaded = await FileExplorer.addFileUpload(node, fileModel);
+		return filesUploaded[0] || null;
 	}
 
 	public async getFileLinkedToNode(node: SpinalNode): ReturnType<typeof FileExplorer.getFilesLinkedToNode> {
 		return FileExplorer.getFilesLinkedToNode(node);
-		// const rootDirNode = await _getOrCreateRootNode(node, false);
-		// if (!rootDirNode) return [];
-
-		// const children = await rootDirNode.getChildren([TO_FILE_RELATION, TO_FOLDER_RELATION]);
-		// return children;
 	}
 
 	public async getFileLinkedToNodeAsBuffers(node: SpinalNode, hubUrl: string = ""): Promise<{ name: string; path: string; buffer: Buffer }[]> {

@@ -4,6 +4,7 @@ exports.FileVersion = void 0;
 const spinal_core_connectorjs_1 = require("spinal-core-connectorjs");
 const files_1 = require("../utils/files");
 const crypto_1 = require("crypto");
+const versionUtils_1 = require("../utils/versionUtils");
 class FileVersion extends spinal_core_connectorjs_1.Model {
     constructor(versionInfo) {
         super();
@@ -32,6 +33,22 @@ class FileVersion extends spinal_core_connectorjs_1.Model {
             throw new Error("Invalid path: missing _server_id");
         const data = await (0, files_1.getPathData)(dynamicId, hubUrl);
         return { index: hashInfo.index, buffer: data };
+    }
+    static async createFakeFileVersionInstance(spinalFile) {
+        const filePath = await new Promise((resolve) => (spinalFile._ptr ? spinalFile._ptr?.load((filePath) => resolve(filePath)) : resolve(null)));
+        if (!filePath || !(filePath instanceof spinal_core_connectorjs_1.Path))
+            return;
+        const hashInfo = {
+            hash: versionUtils_1.default.getInstance().hashBuffer(new Buffer(0)),
+            size: -1,
+            path: filePath,
+            index: 0,
+        };
+        const fileVersionInfo = {
+            version: 1,
+            hashes: [hashInfo],
+        };
+        return new FileVersion(fileVersionInfo);
     }
 }
 exports.FileVersion = FileVersion;
