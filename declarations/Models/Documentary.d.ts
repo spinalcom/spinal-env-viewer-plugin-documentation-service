@@ -29,9 +29,10 @@ declare class SpinalDocumentary {
         path: string;
         buffer: Buffer;
     }[]>;
-    unlinkFileFromNode(node: SpinalNode, fileNode: SpinalNode): Promise<void>;
+    unlinkFileFromNode(node: SpinalNode, fileNode: SpinalNode): Promise<boolean>;
     private _createNodeInContext;
     static pushFileToDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<SpinalNode | null>;
+    static removeFileFromDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<boolean>;
 }
 export { SpinalDocumentary };
 export default SpinalDocumentary;

@@ -129,11 +129,7 @@ class SpinalDocumentary {
 
 	//TODO: correct this function
 	public async unlinkFileFromNode(node: SpinalNode, fileNode: SpinalNode) {
-		const rootDirNode = await _getOrCreateRootNode(node, false);
-		if (!rootDirNode) return;
-
-		const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
-		await rootDirNode.removeChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE);
+		return FileExplorer.removeFileLinked(node, fileNode);
 	}
 
 	private async _createNodeInContext(file: SpinalDocument | SpinalFile, parent: SpinalNode, relationName: string, contextNode: SpinalContext<any>) {
@@ -150,7 +146,8 @@ class SpinalDocumentary {
 	public static async pushFileToDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<SpinalNode | null> {
 		const fileNode = await createFileNode(file);
 		const directoryElement = await getFileModelFromNode(directoryNode);
-		const list = await new Promise((resolve) => directoryElement?._ptr.load((e) => resolve(e)));
+		const list = await new Promise((resolve) => directoryElement?._ptr?.load((e) => resolve(e)));
+		if (!list) throw new Error("Directory list not found or failed to load.");
 
 		if (list instanceof Lst || list instanceof Directory) {
 			const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
@@ -159,6 +156,23 @@ class SpinalDocumentary {
 		}
 
 		return null;
+	}
+
+	public static async removeFileFromDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<boolean> {
+		const directoryElement = await getFileModelFromNode(directoryNode);
+		const list = await new Promise((resolve) => directoryElement?._ptr?.load((e) => resolve(e)));
+		if (!list) return false;
+
+		if (list instanceof Lst || list instanceof Directory) {
+			for (let f of list) {
+				if (f._server_id === file._server_id) {
+					list.remove(f);
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 }
 

@@ -45,5 +45,6 @@ export declare class FileExplorer {
     static uploadFiles(node: SpinalNode<any>, files: FilesArgType, chunkSize?: number): Promise<SpinalNode[]>;
     static addFileUpload(node: SpinalNode<any>, files: FilesArgType, chunkSize?: number): Promise<SpinalNode[]>;
     static getFilesLinkedToNode(node: SpinalNode<any>): Promise<(SpinalDocument | SpinalFile)[]>;
+    static removeFileLinked(node: SpinalNode, fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<boolean>;
     static _getOrCreateFileDirectory(node: SpinalNode<any>): Promise<SpinalNode | null>;
 }

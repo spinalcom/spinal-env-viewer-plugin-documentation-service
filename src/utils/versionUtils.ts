@@ -2,6 +2,8 @@ import { createHash } from "crypto";
 import { Path } from "spinal-core-connectorjs";
 import { FilesArgType, IHash } from "../interfaces";
 import { convertFileToBuffer } from "./files";
+import { File as SpinalFile } from "spinal-core-connectorjs_type";
+
 export default class VersionUtils {
 	private static _instance: VersionUtils | null = null;
 

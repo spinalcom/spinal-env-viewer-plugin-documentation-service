@@ -22,7 +22,7 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-import { SpinalNode } from "spinal-model-graph";
+import { SPINAL_RELATION_PTR_LST_TYPE, SpinalNode } from "spinal-model-graph";
 import { MESSAGE_TYPES } from "spinal-models-documentation";
 import { _getOrCreateRootNode, convertFileToSpinalDocument, createFileNode, getFileModelFromNode } from "../utils/files";
 import { FilesArgType } from "../interfaces";
@@ -173,6 +173,28 @@ export class FileExplorer {
 			}
 			return files;
 		});
+	}
+
+	public static async removeFileLinked(node: SpinalNode, fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<boolean> {
+		const rootDirNode = await _getOrCreateRootNode(node, false);
+		if (!rootDirNode) return false;
+
+		let fileModel: SpinalDocument | SpinalFile | undefined = undefined;
+
+		if (fileNode instanceof SpinalDocument || fileNode instanceof SpinalFile) {
+			fileModel = fileNode;
+			fileNode = await createFileNode(fileNode instanceof SpinalDocument ? fileNode : (fileNode as SpinalFile));
+		}
+
+		const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
+		return rootDirNode
+			.removeChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE)
+			.then(async () => {
+				fileModel = fileModel || (await getFileModelFromNode(fileNode as SpinalNode));
+
+				return SpinalDocumentary.removeFileFromDirectory(rootDirNode, fileModel as any);
+			})
+			.catch(() => false);
 	}
 
 	public static async _getOrCreateFileDirectory(node: SpinalNode<any>): Promise<SpinalNode | null> {
