@@ -1,31 +1,32 @@
 {
-  "version": "1.6.2",
-  "types": "declarations",
-  "author": "",
-  "dependencies": {
-    "@types/node": "^18.11.9",
-    "jszip": "^3.10.1",
-    "uuid": "^14.0.0"
-  },
-  "description": "",
-  "devDependencies": {
-    "typescript": "^4.9.5"
-  },
-  "keywords": [],
-  "license": "ISC",
-  "main": "dist/index.js",
-  "name": "spinal-env-viewer-plugin-documentation-service",
-  "scripts": {
-    "build": "rm -rf dist && tsc",
-    "dev": "tsc -w",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "spinalDependencies": {
-    "spinal-core-connectorjs": "spinal-core-connectorjs",
-    "spinal-core-connectorjs_type": "spinal-core-connectorjs_type",
-    "spinal-env-viewer-context-geographic-service": "spinal-env-viewer-context-geographic-service",
-    "spinal-env-viewer-graph-service": "Spinal-Graph-Service",
-    "spinal-env-viewer-plugin-group-manager-service": "spinal-env-viewer-plugin-group-manager-service",
-    "spinal-models-documentation": "spinal-models-documentation"
-  }
+	"version": "1.6.2",
+	"types": "declarations",
+	"author": "",
+	"dependencies": {
+		"@types/node": "^18.11.9",
+		"axios-retry": "^4.5.0",
+		"jszip": "^3.10.1",
+		"uuid": "^14.0.0"
+	},
+	"description": "",
+	"devDependencies": {
+		"typescript": "^4.9.5"
+	},
+	"keywords": [],
+	"license": "ISC",
+	"main": "dist/index.js",
+	"name": "spinal-env-viewer-plugin-documentation-service",
+	"scripts": {
+		"build": "rm -rf dist && tsc",
+		"dev": "tsc -w",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"spinalDependencies": {
+		"spinal-core-connectorjs": "spinal-core-connectorjs",
+		"spinal-core-connectorjs_type": "spinal-core-connectorjs_type",
+		"spinal-env-viewer-context-geographic-service": "spinal-env-viewer-context-geographic-service",
+		"spinal-env-viewer-graph-service": "Spinal-Graph-Service",
+		"spinal-env-viewer-plugin-group-manager-service": "spinal-env-viewer-plugin-group-manager-service",
+		"spinal-models-documentation": "spinal-models-documentation"
+	}
 }
