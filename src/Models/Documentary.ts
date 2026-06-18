@@ -1,10 +1,11 @@
 import { File as SpinalFile, Lst, Directory } from "spinal-core-connectorjs_type";
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from "spinal-model-graph";
-import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addSpinalDocumentAsNodeChild, convertFileToSpinalDocument, convertTreeToFileBuffers, createFileNode, getFileModelFromNode, removeFileNode } from "../utils/files";
+import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addSpinalDocumentAsNodeChild, convertFileInTreeToSpecialFormat, convertFileToSpecialFormat, convertFileToSpinalDocument, convertTreeToFileBuffers, createFileNode, getFileModelFromNode, removeFileNode } from "../utils/files";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
-import { FilesArgType } from "../interfaces";
+import { fileFormat, FilesArgType } from "../interfaces";
 import { FileVersion, SpinalDocument } from "../models_spinalcom";
 import { FileExplorer } from "./FileExplorer";
+import { Readable } from "node:stream";
 
 class SpinalDocumentary {
 	constructor() {}
@@ -99,12 +100,18 @@ class SpinalDocumentary {
 		return convertTreeToFileBuffers(startNode, hubUrl);
 	}
 
-	public async convertFileToBuffer(file: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<{ name: string; buffer: Buffer }> {
-		// if (file instanceof SpinalNode) file = (await file.getElement(true)) as SpinalDocument;
-		const buffer = await _getFileAsBuffer(file, hubUrl);
-		const name = file.name.get();
+	public async getFilesInTreeToSpecificFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl: string = ""): Promise<{ name: string; path: string; data: Buffer | string | NodeJS.ReadableStream }[]> {
+		return convertFileInTreeToSpecialFormat(startNode, format, hubUrl);
+	}
 
-		return { name, buffer };
+	public async convertFileToBuffer(file: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<{ name: string; buffer: Buffer }> {
+		return convertFileToSpecialFormat(file, "buffer", hubUrl).then((result) => {
+			return { name: result.name, buffer: result.data as Buffer };
+		});
+	}
+
+	public async convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl: string = ""): Promise<{ name: string; data: Buffer | string | NodeJS.ReadableStream }> {
+		return convertFileToSpecialFormat(file, format, hubUrl);
 	}
 
 	public async linkFileToNode(node: SpinalNode, fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<SpinalNode | null> {
@@ -117,6 +124,7 @@ class SpinalDocumentary {
 		return filesUploaded[0] || null;
 	}
 
+	///////////// file Linked to node functions
 	public async getFileLinkedToNode(node: SpinalNode): ReturnType<typeof FileExplorer.getFilesLinkedToNode> {
 		return FileExplorer.getFilesLinkedToNode(node);
 	}
@@ -127,6 +135,14 @@ class SpinalDocumentary {
 
 		return convertTreeToFileBuffers(rootDirNode, hubUrl);
 	}
+
+	public async getFileLinkedToNodeToSpecificFormat(node: SpinalNode, format: fileFormat, hubUrl: string = ""): Promise<{ name: string; data: Buffer | string | NodeJS.ReadableStream }[]> {
+		const rootDirNode = await _getOrCreateRootNode(node, false);
+		if (!rootDirNode) return [];
+
+		return convertFileInTreeToSpecialFormat(rootDirNode, format, hubUrl);
+	}
+	///////////// end of file Linked to node functions
 
 	//TODO: correct this function
 	public async unlinkFileFromNode(node: SpinalNode, fileNode: SpinalNode) {

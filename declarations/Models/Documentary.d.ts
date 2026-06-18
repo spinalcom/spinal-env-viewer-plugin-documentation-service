@@ -1,8 +1,9 @@
 /// <reference types="node" />
 /// <reference types="node" />
+/// <reference types="node" />
 import { File as SpinalFile } from "spinal-core-connectorjs_type";
 import { SpinalContext, SpinalNode } from "spinal-model-graph";
-import { FilesArgType } from "../interfaces";
+import { fileFormat, FilesArgType } from "../interfaces";
 import { FileVersion, SpinalDocument } from "../models_spinalcom";
 import { FileExplorer } from "./FileExplorer";
 declare class SpinalDocumentary {
@@ -18,9 +19,18 @@ declare class SpinalDocumentary {
         path: string;
         buffer: Buffer;
     }[]>;
+    getFilesInTreeToSpecificFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl?: string): Promise<{
+        name: string;
+        path: string;
+        data: Buffer | string | NodeJS.ReadableStream;
+    }[]>;
     convertFileToBuffer(file: SpinalNode | SpinalDocument | SpinalFile, hubUrl?: string): Promise<{
         name: string;
         buffer: Buffer;
+    }>;
+    convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl?: string): Promise<{
+        name: string;
+        data: Buffer | string | NodeJS.ReadableStream;
     }>;
     linkFileToNode(node: SpinalNode, fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<SpinalNode | null>;
     getFileLinkedToNode(node: SpinalNode): ReturnType<typeof FileExplorer.getFilesLinkedToNode>;
@@ -28,6 +38,10 @@ declare class SpinalDocumentary {
         name: string;
         path: string;
         buffer: Buffer;
+    }[]>;
+    getFileLinkedToNodeToSpecificFormat(node: SpinalNode, format: fileFormat, hubUrl?: string): Promise<{
+        name: string;
+        data: Buffer | string | NodeJS.ReadableStream;
     }[]>;
     unlinkFileFromNode(node: SpinalNode, fileNode: SpinalNode): Promise<boolean>;
     private _createNodeInContext;

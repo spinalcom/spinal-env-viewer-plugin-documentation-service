@@ -2,12 +2,13 @@ import { Path as SpinalPath, Lst, File as SpinalFile, Ptr, Directory } from "spi
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
 import { FileExplorer } from "../Models/FileExplorer";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_MODEL_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION, TO_ROOT_DIRECTORY_RELATION } from "../Models/constants";
-import { FilesArgType } from "../interfaces";
+import { fileFormat, FilesArgType, IFileBufferInfo, IFileFormattedInfo } from "../interfaces";
 import axiosRetry from "axios-retry";
 import axios from "axios";
 import { SpinalDocument } from "../models_spinalcom/SpinalDocument";
 import VersionUtils from "./versionUtils";
 import { FileVersion } from "../models_spinalcom/FileVersion";
+import { Readable } from "stream";
 
 export async function convertFileToSpinalDocument(files: FilesArgType, chunkSize: number = -1): Promise<(SpinalDocument | SpinalFile)[]> {
 	const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
@@ -154,16 +155,16 @@ export function getPathData(dynamicId: number, hubUrl: string = ""): Promise<Buf
 
 	const path = `${hubUrl}/sceen/_?u=${dynamicId}`;
 	const client = axios.create({ baseURL: hubUrl });
-	axiosRetry(client as any, { retries: 3, retryDelay: axiosRetry.exponentialDelay });
+	axiosRetry(client as any, { retries: 5, retryDelay: axiosRetry.exponentialDelay });
 	return client.get(path, { responseType: "arraybuffer" }).then((response) => {
 		return Buffer.from(response.data);
 		// return new Uint8Array(response.data);
 	});
 }
 
-export async function convertTreeToFileBuffers(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<{ name: string; serverId: number; path: string; buffer: Buffer }[]> {
+export async function convertFileInTreeToSpecialFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl: string = ""): Promise<IFileFormattedInfo[]> {
 	const queue = await getStarterQueue(startNode);
-	const filesBuffers: { name: string; serverId: number; path: string; buffer: Buffer }[] = [];
+	const filesBuffers: IFileFormattedInfo[] = [];
 	const alreadyProcessedNodes = new Set<number>();
 
 	while (queue.length > 0) {
@@ -176,7 +177,8 @@ export async function convertTreeToFileBuffers(startNode: SpinalNode | SpinalDoc
 		if (alreadyProcessedNodes.has(serverId)) continue;
 
 		if (file._info.model_type?.get() !== DIRECTORY_MODEL_TYPE) {
-			filesBuffers.push({ name: file.name.get(), serverId, path, buffer: await _getFileAsBuffer(file, hubUrl) });
+			const data = await convertFileToSpecialFormat(file, format, hubUrl);
+			filesBuffers.push({ path, ...data });
 		}
 
 		if (file._info.model_type?.get() === DIRECTORY_MODEL_TYPE) {
@@ -191,6 +193,27 @@ export async function convertTreeToFileBuffers(startNode: SpinalNode | SpinalDoc
 	}
 
 	return filesBuffers;
+}
+
+function bufferToStream(buffer: Buffer): NodeJS.ReadableStream {
+	const stream = new Readable();
+	stream.push(buffer);
+	stream.push(null);
+	return stream;
+}
+
+export async function convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl: string = ""): Promise<{ name: string; serverId: number; data: Buffer | string | NodeJS.ReadableStream }> {
+	const buffer = await _getFileAsBuffer(file, hubUrl);
+	const data = format === "base64" ? buffer.toString("base64") : format === "stream" ? bufferToStream(buffer) : buffer;
+	return { name: file.name.get(), serverId: file._server_id as number, data };
+}
+
+export async function convertTreeToFileBuffers(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<IFileBufferInfo[]> {
+	return convertFileInTreeToSpecialFormat(startNode, "buffer", hubUrl).then((files) => {
+		return files.map((file) => {
+			return { name: file.name, path: file.path, buffer: file.data as Buffer };
+		});
+	});
 }
 
 async function getStarterQueue(startNode: SpinalNode | SpinalDocument | SpinalFile): Promise<{ path: string; file: SpinalDocument | SpinalFile }[]> {

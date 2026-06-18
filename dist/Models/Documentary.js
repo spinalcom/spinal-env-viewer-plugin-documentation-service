@@ -85,11 +85,16 @@ class SpinalDocumentary {
     async getFilesInTreeAsBuffer(startNode, hubUrl = "") {
         return (0, files_1.convertTreeToFileBuffers)(startNode, hubUrl);
     }
+    async getFilesInTreeToSpecificFormat(startNode, format, hubUrl = "") {
+        return (0, files_1.convertFileInTreeToSpecialFormat)(startNode, format, hubUrl);
+    }
     async convertFileToBuffer(file, hubUrl = "") {
-        // if (file instanceof SpinalNode) file = (await file.getElement(true)) as SpinalDocument;
-        const buffer = await (0, files_1._getFileAsBuffer)(file, hubUrl);
-        const name = file.name.get();
-        return { name, buffer };
+        return (0, files_1.convertFileToSpecialFormat)(file, "buffer", hubUrl).then((result) => {
+            return { name: result.name, buffer: result.data };
+        });
+    }
+    async convertFileToSpecialFormat(file, format, hubUrl = "") {
+        return (0, files_1.convertFileToSpecialFormat)(file, format, hubUrl);
     }
     async linkFileToNode(node, fileNode) {
         let fileModel;
@@ -100,6 +105,7 @@ class SpinalDocumentary {
         const filesUploaded = await FileExplorer_1.FileExplorer.addFileUpload(node, fileModel);
         return filesUploaded[0] || null;
     }
+    ///////////// file Linked to node functions
     async getFileLinkedToNode(node) {
         return FileExplorer_1.FileExplorer.getFilesLinkedToNode(node);
     }
@@ -109,6 +115,13 @@ class SpinalDocumentary {
             return [];
         return (0, files_1.convertTreeToFileBuffers)(rootDirNode, hubUrl);
     }
+    async getFileLinkedToNodeToSpecificFormat(node, format, hubUrl = "") {
+        const rootDirNode = await (0, files_1._getOrCreateRootNode)(node, false);
+        if (!rootDirNode)
+            return [];
+        return (0, files_1.convertFileInTreeToSpecialFormat)(rootDirNode, format, hubUrl);
+    }
+    ///////////// end of file Linked to node functions
     //TODO: correct this function
     async unlinkFileFromNode(node, fileNode) {
         return FileExplorer_1.FileExplorer.removeFileLinked(node, fileNode);

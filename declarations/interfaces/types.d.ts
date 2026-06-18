@@ -6,3 +6,4 @@ export type FilesArgType = (SpinalFileModel | {
     name: string;
     buffer: Buffer;
 })[] | FileList | SpinalDocument | any;
+export type fileFormat = "buffer" | "base64" | "stream";

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isFileVersion = exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createFileNode = exports.getFilesFromDirectory = exports.getFileModelFromNode = exports.addSpinalDocumentAsNodeChild = exports.convertFileToBuffer = exports.convertFileToSpinalDocument = void 0;
+exports.isFileVersion = exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.convertFileToSpecialFormat = exports.convertFileInTreeToSpecialFormat = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createFileNode = exports.getFilesFromDirectory = exports.getFileModelFromNode = exports.addSpinalDocumentAsNodeChild = exports.convertFileToBuffer = exports.convertFileToSpinalDocument = void 0;
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const constants_1 = require("../Models/constants");
@@ -9,6 +9,7 @@ const axios_1 = require("axios");
 const SpinalDocument_1 = require("../models_spinalcom/SpinalDocument");
 const versionUtils_1 = require("./versionUtils");
 const FileVersion_1 = require("../models_spinalcom/FileVersion");
+const stream_1 = require("stream");
 async function convertFileToSpinalDocument(files, chunkSize = -1) {
     const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
     if (!isFileList && !Array.isArray(files))
@@ -139,14 +140,14 @@ function getPathData(dynamicId, hubUrl = "") {
         hubUrl = hubUrl.slice(0, -1);
     const path = `${hubUrl}/sceen/_?u=${dynamicId}`;
     const client = axios_1.default.create({ baseURL: hubUrl });
-    (0, axios_retry_1.default)(client, { retries: 3, retryDelay: axios_retry_1.default.exponentialDelay });
+    (0, axios_retry_1.default)(client, { retries: 5, retryDelay: axios_retry_1.default.exponentialDelay });
     return client.get(path, { responseType: "arraybuffer" }).then((response) => {
         return Buffer.from(response.data);
         // return new Uint8Array(response.data);
     });
 }
 exports.getPathData = getPathData;
-async function convertTreeToFileBuffers(startNode, hubUrl = "") {
+async function convertFileInTreeToSpecialFormat(startNode, format, hubUrl = "") {
     const queue = await getStarterQueue(startNode);
     const filesBuffers = [];
     const alreadyProcessedNodes = new Set();
@@ -159,7 +160,8 @@ async function convertTreeToFileBuffers(startNode, hubUrl = "") {
         if (alreadyProcessedNodes.has(serverId))
             continue;
         if (file._info.model_type?.get() !== constants_1.DIRECTORY_MODEL_TYPE) {
-            filesBuffers.push({ name: file.name.get(), serverId, path, buffer: await _getFileAsBuffer(file, hubUrl) });
+            const data = await convertFileToSpecialFormat(file, format, hubUrl);
+            filesBuffers.push({ path, ...data });
         }
         if (file._info.model_type?.get() === constants_1.DIRECTORY_MODEL_TYPE) {
             const children = await getFilesFromDirectory(file);
@@ -170,6 +172,26 @@ async function convertTreeToFileBuffers(startNode, hubUrl = "") {
         alreadyProcessedNodes.add(serverId);
     }
     return filesBuffers;
+}
+exports.convertFileInTreeToSpecialFormat = convertFileInTreeToSpecialFormat;
+function bufferToStream(buffer) {
+    const stream = new stream_1.Readable();
+    stream.push(buffer);
+    stream.push(null);
+    return stream;
+}
+async function convertFileToSpecialFormat(file, format, hubUrl = "") {
+    const buffer = await _getFileAsBuffer(file, hubUrl);
+    const data = format === "base64" ? buffer.toString("base64") : format === "stream" ? bufferToStream(buffer) : buffer;
+    return { name: file.name.get(), serverId: file._server_id, data };
+}
+exports.convertFileToSpecialFormat = convertFileToSpecialFormat;
+async function convertTreeToFileBuffers(startNode, hubUrl = "") {
+    return convertFileInTreeToSpecialFormat(startNode, "buffer", hubUrl).then((files) => {
+        return files.map((file) => {
+            return { name: file.name, path: file.path, buffer: file.data };
+        });
+    });
 }
 exports.convertTreeToFileBuffers = convertTreeToFileBuffers;
 async function getStarterQueue(startNode) {
