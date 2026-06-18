@@ -1,8 +1,9 @@
 import { Lst, Model, Path as SpinalPath, Ptr, spinalCore } from "spinal-core-connectorjs";
-import { IFileVersionInfo, IHash } from "../interfaces";
+import { fileFormat, IFileVersionInfo, IHash } from "../interfaces";
 import { getPathData } from "../utils/files";
 import { randomUUID } from "crypto";
 import VersionUtils from "../utils/versionUtils";
+import { Readable } from "stream";
 
 class FileVersion extends Model {
 	constructor(versionInfo: IFileVersionInfo) {
@@ -29,6 +30,32 @@ class FileVersion extends Model {
 		return Promise.all(promises).then((results) => {
 			const buffers = results.sort((a, b) => a.index - b.index).map((result) => result.buffer); // Ensure buffers are concatenated in the correct order based on index
 			return Buffer.concat(buffers);
+		});
+	}
+
+	getAsSpecialFormat(format: fileFormat, hubUrl: string = ""): Promise<Buffer | string | NodeJS.ReadableStream> {
+		switch (format) {
+			case "buffer":
+				return this.getAsBuffer(hubUrl);
+			case "base64":
+				return this.getAsBase64(hubUrl);
+			case "stream":
+				return this.getAsStream(hubUrl);
+			default:
+				return this.getAsBuffer(hubUrl);
+		}
+	}
+
+	getAsBase64(hubUrl: string = ""): Promise<string> {
+		return this.getAsBuffer(hubUrl).then((buffer) => buffer.toString("base64"));
+	}
+
+	getAsStream(hubUrl: string = ""): Promise<NodeJS.ReadableStream> {
+		return this.getAsBuffer(hubUrl).then((buffer) => {
+			const stream = new Readable();
+			stream.push(buffer);
+			stream.push(null); // Signal the end of the stream
+			return stream;
 		});
 	}
 

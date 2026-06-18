@@ -5,6 +5,7 @@ const spinal_core_connectorjs_1 = require("spinal-core-connectorjs");
 const files_1 = require("../utils/files");
 const crypto_1 = require("crypto");
 const versionUtils_1 = require("../utils/versionUtils");
+const stream_1 = require("stream");
 class FileVersion extends spinal_core_connectorjs_1.Model {
     constructor(versionInfo) {
         super();
@@ -25,6 +26,29 @@ class FileVersion extends spinal_core_connectorjs_1.Model {
         return Promise.all(promises).then((results) => {
             const buffers = results.sort((a, b) => a.index - b.index).map((result) => result.buffer); // Ensure buffers are concatenated in the correct order based on index
             return Buffer.concat(buffers);
+        });
+    }
+    getAsSpecialFormat(format, hubUrl = "") {
+        switch (format) {
+            case "buffer":
+                return this.getAsBuffer(hubUrl);
+            case "base64":
+                return this.getAsBase64(hubUrl);
+            case "stream":
+                return this.getAsStream(hubUrl);
+            default:
+                return this.getAsBuffer(hubUrl);
+        }
+    }
+    getAsBase64(hubUrl = "") {
+        return this.getAsBuffer(hubUrl).then((buffer) => buffer.toString("base64"));
+    }
+    getAsStream(hubUrl = "") {
+        return this.getAsBuffer(hubUrl).then((buffer) => {
+            const stream = new stream_1.Readable();
+            stream.push(buffer);
+            stream.push(null); // Signal the end of the stream
+            return stream;
         });
     }
     async _convertHashInfoToBuffer(hashInfo, hubUrl) {
