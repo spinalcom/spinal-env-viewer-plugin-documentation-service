@@ -19,11 +19,20 @@ export async function convertFileToSpinalDocument(files: FilesArgType, chunkSize
 	for (let i = 0; i < files.length; i++) {
 		const element = files[i];
 
-		if (element instanceof SpinalFile || element instanceof SpinalDocument) {
-			res.push(element);
-			await createFileNode(element);
+		// If the element is already a SpinalNode, we try to get its file model and add it to the result if it exists
+		if (element instanceof SpinalNode) {
+			const fileModel = await getFileModelFromNode(element);
+			if (fileModel) res.push(fileModel);
 			continue;
 		}
+
+		// If the element is already a SpinalDocument or SpinalFile, we add it to the result and ensure it has a node
+		if (element instanceof SpinalFile || element instanceof SpinalDocument) {
+			res.push(element);
+			await createorGetFileNode(element);
+			continue;
+		}
+
 		// let filePath: SpinalPath | undefined;
 
 		// if (element.buffer) filePath = new SpinalPath(element.buffer, FileExplorer.getMimeType(element.name));
@@ -104,7 +113,9 @@ export async function getFilesFromDirectory(directoryNode: SpinalFile | SpinalDo
 	return res;
 }
 
-export async function createFileNode(file: SpinalDocument | SpinalFile): Promise<SpinalNode> {
+export async function createorGetFileNode(file: SpinalDocument | SpinalFile | SpinalNode): Promise<SpinalNode> {
+	if (file instanceof SpinalNode) return file;
+
 	if (file instanceof SpinalDocument) return file.createNode();
 	if (!file._info?.node) return createAndAddNodeToFile(file);
 
@@ -217,7 +228,7 @@ export async function convertTreeToFileBuffers(startNode: SpinalNode | SpinalDoc
 }
 
 async function getStarterQueue(startNode: SpinalNode | SpinalDocument | SpinalFile): Promise<{ path: string; file: SpinalDocument | SpinalFile }[]> {
-	if (!(startNode instanceof SpinalNode)) startNode = await createFileNode(startNode);
+	if (!(startNode instanceof SpinalNode)) startNode = await createorGetFileNode(startNode);
 
 	const queue: { node: SpinalNode; path: string }[] = [{ node: startNode, path: startNode.getName().get() }];
 	const res: { path: string; file: SpinalDocument | SpinalFile }[] = [];
@@ -251,7 +262,7 @@ export async function _getOrCreateRootNode(node: SpinalNode, createIfNotExist: b
 	const name = node.getName().get() + "_root_directory";
 
 	const file = new SpinalDocument(name, new Lst(), { model_type: DIRECTORY_MODEL_TYPE, icon: "folder" });
-	const directoryNode = await createFileNode(file);
+	const directoryNode = await createorGetFileNode(file);
 
 	await node.addChild(directoryNode, TO_ROOT_DIRECTORY_RELATION, SPINAL_RELATION_PTR_LST_TYPE);
 	return directoryNode;

@@ -11,7 +11,7 @@ export declare function convertFileToBuffer(file: any): Promise<Buffer>;
 export declare function addSpinalDocumentAsNodeChild(parentNode: SpinalNode, spinalDocumentNode: SpinalNode, relationName: string, contextNode?: SpinalContext): Promise<SpinalNode>;
 export declare function getFileModelFromNode(node: SpinalNode): Promise<SpinalDocument | SpinalFile | undefined>;
 export declare function getFilesFromDirectory(directoryNode: SpinalFile | SpinalDocument): Promise<(SpinalDocument | SpinalFile)[]>;
-export declare function createFileNode(file: SpinalDocument | SpinalFile): Promise<SpinalNode>;
+export declare function createorGetFileNode(file: SpinalDocument | SpinalFile | SpinalNode): Promise<SpinalNode>;
 export declare function _getFileChildren(file: SpinalDocument | SpinalFile, parentNode: SpinalNode): Promise<{
     file: SpinalDocument;
     parent: SpinalNode;

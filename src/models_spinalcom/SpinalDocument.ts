@@ -46,7 +46,7 @@ export default class SpinalDocument extends SpinalFile {
 		return new Promise((resolve) => this._ptr.load((element: Directory | Lst) => resolve(element)));
 	}
 
-	async updateVersion(buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<void> {
+	async updateVersion(buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<FileVersion> {
 		if (this.isDirectory()) throw new Error("Cannot update version of a directory.");
 
 		const hashes = await VersionUtils.getInstance().convertFileToHashes(buffer, Array.from(this.hashes), chunkSize);
@@ -59,6 +59,7 @@ export default class SpinalDocument extends SpinalFile {
 		this.hashes.concat(newVersion.hashes); // Update file hashes with new version's hashes
 
 		this.mod_attr("currentVersion", new Ptr(newVersion)); // Update current version pointer
+		return newVersion;
 	}
 
 	getCurrentVersion(): Promise<FileVersion> {

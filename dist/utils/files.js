@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isFileVersion = exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.convertFileToSpecialFormat = exports.convertFileInTreeToSpecialFormat = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createFileNode = exports.getFilesFromDirectory = exports.getFileModelFromNode = exports.addSpinalDocumentAsNodeChild = exports.convertFileToBuffer = exports.convertFileToSpinalDocument = void 0;
+exports.isFileVersion = exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.convertFileToSpecialFormat = exports.convertFileInTreeToSpecialFormat = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createorGetFileNode = exports.getFilesFromDirectory = exports.getFileModelFromNode = exports.addSpinalDocumentAsNodeChild = exports.convertFileToBuffer = exports.convertFileToSpinalDocument = void 0;
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const constants_1 = require("../Models/constants");
@@ -17,9 +17,17 @@ async function convertFileToSpinalDocument(files, chunkSize = -1) {
     const res = [];
     for (let i = 0; i < files.length; i++) {
         const element = files[i];
+        // If the element is already a SpinalNode, we try to get its file model and add it to the result if it exists
+        if (element instanceof spinal_env_viewer_graph_service_1.SpinalNode) {
+            const fileModel = await getFileModelFromNode(element);
+            if (fileModel)
+                res.push(fileModel);
+            continue;
+        }
+        // If the element is already a SpinalDocument or SpinalFile, we add it to the result and ensure it has a node
         if (element instanceof spinal_core_connectorjs_type_1.File || element instanceof SpinalDocument_1.SpinalDocument) {
             res.push(element);
-            await createFileNode(element);
+            await createorGetFileNode(element);
             continue;
         }
         // let filePath: SpinalPath | undefined;
@@ -93,14 +101,16 @@ async function getFilesFromDirectory(directoryNode) {
     return res;
 }
 exports.getFilesFromDirectory = getFilesFromDirectory;
-async function createFileNode(file) {
+async function createorGetFileNode(file) {
+    if (file instanceof spinal_env_viewer_graph_service_1.SpinalNode)
+        return file;
     if (file instanceof SpinalDocument_1.SpinalDocument)
         return file.createNode();
     if (!file._info?.node)
         return createAndAddNodeToFile(file);
     return new Promise((resolve) => file._info.node.load((node) => resolve(node)));
 }
-exports.createFileNode = createFileNode;
+exports.createorGetFileNode = createorGetFileNode;
 function createAndAddNodeToFile(file) {
     const isDirectory = file._info?.model_type?.get() === constants_1.DIRECTORY_MODEL_TYPE;
     const type = isDirectory ? constants_1.DIRECTORY_NODE_TYPE : constants_1.FILE_NODE_TYPE;
@@ -196,7 +206,7 @@ async function convertTreeToFileBuffers(startNode, hubUrl = "") {
 exports.convertTreeToFileBuffers = convertTreeToFileBuffers;
 async function getStarterQueue(startNode) {
     if (!(startNode instanceof spinal_env_viewer_graph_service_1.SpinalNode))
-        startNode = await createFileNode(startNode);
+        startNode = await createorGetFileNode(startNode);
     const queue = [{ node: startNode, path: startNode.getName().get() }];
     const res = [];
     while (queue.length > 0) {
@@ -223,7 +233,7 @@ async function _getOrCreateRootNode(node, createIfNotExist = true) {
         return null;
     const name = node.getName().get() + "_root_directory";
     const file = new SpinalDocument_1.SpinalDocument(name, new spinal_core_connectorjs_type_1.Lst(), { model_type: constants_1.DIRECTORY_MODEL_TYPE, icon: "folder" });
-    const directoryNode = await createFileNode(file);
+    const directoryNode = await createorGetFileNode(file);
     await node.addChild(directoryNode, constants_1.TO_ROOT_DIRECTORY_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
     return directoryNode;
 }

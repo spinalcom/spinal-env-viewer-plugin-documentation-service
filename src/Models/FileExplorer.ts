@@ -24,7 +24,7 @@
 
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalNode } from "spinal-model-graph";
 import { MESSAGE_TYPES } from "spinal-models-documentation";
-import { _getOrCreateRootNode, convertFileToSpinalDocument, createFileNode, getFileModelFromNode } from "../utils/files";
+import { _getOrCreateRootNode, convertFileToSpinalDocument, createorGetFileNode, getFileModelFromNode } from "../utils/files";
 import { FilesArgType } from "../interfaces";
 import { DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
 import { SpinalDocument } from "../models_spinalcom";
@@ -148,7 +148,7 @@ export class FileExplorer {
 			}
 
 			// directory.push(file);
-			// promises.push(createFileNode(file));
+			// promises.push(createorGetFileNode(file));
 			// promises.push(file.linkToNode(node));
 		}
 
@@ -183,7 +183,7 @@ export class FileExplorer {
 
 		if (fileNode instanceof SpinalDocument || fileNode instanceof SpinalFile) {
 			fileModel = fileNode;
-			fileNode = await createFileNode(fileNode instanceof SpinalDocument ? fileNode : (fileNode as SpinalFile));
+			fileNode = await createorGetFileNode(fileNode instanceof SpinalDocument ? fileNode : (fileNode as SpinalFile));
 		}
 
 		const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;

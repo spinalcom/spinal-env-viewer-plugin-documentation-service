@@ -9,6 +9,7 @@ const models_spinalcom_1 = require("../models_spinalcom");
 const FileExplorer_1 = require("./FileExplorer");
 class SpinalDocumentary {
     constructor() { }
+    ////////////////// Inside context functions ///////////////////////
     async addFileToNodeInContext(parentNode, files, contextNode, chunkSize = -1) {
         const filesConverted = await (0, files_1.convertFileToSpinalDocument)(files, chunkSize);
         const promises = [];
@@ -17,6 +18,34 @@ class SpinalDocumentary {
         }
         return Promise.all(promises);
     }
+    async removeFileFromContext(fileNode) {
+        if (fileNode instanceof models_spinalcom_1.SpinalDocument)
+            fileNode = (await fileNode.getNode());
+        if (fileNode.getType().get() !== constants_1.DIRECTORY_NODE_TYPE)
+            return (0, files_1.removeFileNode)(fileNode);
+        const files = await fileNode.getChildren([constants_1.TO_FOLDER_RELATION, constants_1.TO_FILE_RELATION]);
+        const promises = [];
+        for (const file of files) {
+            promises.push(this.removeFileFromContext(file));
+        }
+        return Promise.all(promises).then((result) => {
+            return true;
+        });
+    }
+    addDirectoryToNodeInContext(parentNode, name, contextNode, icon = "folder") {
+        const file = new models_spinalcom_1.SpinalDocument(name, new spinal_core_connectorjs_type_1.Lst(), { model_type: constants_1.DIRECTORY_MODEL_TYPE, icon });
+        return file.linkToNode(parentNode, contextNode);
+    }
+    async moveDocumentInContext(documentToMove, sourceNode, targetNode, contextNode) {
+        documentToMove = await (0, files_1.createorGetFileNode)(documentToMove);
+        sourceNode = await (0, files_1.createorGetFileNode)(sourceNode);
+        targetNode = await (0, files_1.createorGetFileNode)(targetNode);
+        await this.removeFileFromContext(documentToMove);
+        return this.addFileToNodeInContext(targetNode, documentToMove, contextNode)
+            .then((result) => !!result)
+            .catch(() => false);
+    }
+    /////////////////// Versioning functions ///////////////////////
     async getFileVersions(fileNode) {
         if (fileNode instanceof spinal_model_graph_1.SpinalNode)
             fileNode = (await (0, files_1.getFileModelFromNode)(fileNode));
@@ -41,24 +70,6 @@ class SpinalDocumentary {
         if (!fileNode || !(fileNode instanceof models_spinalcom_1.SpinalDocument))
             throw new Error("File model not found for the given node.");
         return fileNode.updateVersion(buffer, versionName, chunkSize);
-    }
-    async removeFileFromContext(fileNode) {
-        if (fileNode instanceof models_spinalcom_1.SpinalDocument)
-            fileNode = (await fileNode.getNode());
-        if (fileNode.getType().get() !== constants_1.DIRECTORY_NODE_TYPE)
-            return (0, files_1.removeFileNode)(fileNode);
-        const files = await fileNode.getChildren([constants_1.TO_FOLDER_RELATION, constants_1.TO_FILE_RELATION]);
-        const promises = [];
-        for (const file of files) {
-            promises.push(this.removeFileFromContext(file));
-        }
-        return Promise.all(promises).then((result) => {
-            return true;
-        });
-    }
-    addDirectoryToNodeInContext(parentNode, name, contextNode, icon = "folder") {
-        const file = new models_spinalcom_1.SpinalDocument(name, new spinal_core_connectorjs_type_1.Lst(), { model_type: constants_1.DIRECTORY_MODEL_TYPE, icon });
-        return file.linkToNode(parentNode, contextNode);
     }
     async importFilesFromSpinalDrive(contextNode, parentNode, startFile) {
         const queue = [{ file: startFile, parent: parentNode }];
@@ -128,14 +139,14 @@ class SpinalDocumentary {
     }
     async _createNodeInContext(file, parent, relationName, contextNode) {
         // let node: SpinalNode | null = null;
-        const node = await (0, files_1.createFileNode)(file);
+        const node = await (0, files_1.createorGetFileNode)(file);
         if (!node)
             return null;
         await parent.addChildInContext(node, relationName, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE, contextNode);
         return node;
     }
     static async pushFileToDirectory(directoryNode, file) {
-        const fileNode = await (0, files_1.createFileNode)(file);
+        const fileNode = await (0, files_1.createorGetFileNode)(file);
         const directoryElement = await (0, files_1.getFileModelFromNode)(directoryNode);
         const list = await new Promise((resolve) => directoryElement?._ptr?.load((e) => resolve(e)));
         if (!list)
@@ -161,6 +172,15 @@ class SpinalDocumentary {
             }
         }
         return false;
+    }
+    async moveDocument(documentToMove, sourceNode, targetNode) {
+        documentToMove = await (0, files_1.createorGetFileNode)(documentToMove);
+        sourceNode = await (0, files_1.createorGetFileNode)(sourceNode);
+        targetNode = await (0, files_1.createorGetFileNode)(targetNode);
+        await this.unlinkFileFromNode(sourceNode, documentToMove);
+        return this.linkFileToNode(targetNode, documentToMove)
+            .then((result) => !!result)
+            .catch(() => false);
     }
 }
 exports.SpinalDocumentary = SpinalDocumentary;

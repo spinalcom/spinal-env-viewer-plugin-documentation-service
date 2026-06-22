@@ -49,6 +49,7 @@ class SpinalDocument extends spinal_core_connectorjs_1.File {
         versionHistory.push(newVersion); // Add new version to history
         this.hashes.concat(newVersion.hashes); // Update file hashes with new version's hashes
         this.mod_attr("currentVersion", new spinal_core_connectorjs_1.Ptr(newVersion)); // Update current version pointer
+        return newVersion;
     }
     getCurrentVersion() {
         if (this.isDirectory())

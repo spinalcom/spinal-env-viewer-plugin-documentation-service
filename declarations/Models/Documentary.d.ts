@@ -9,10 +9,11 @@ import { FileExplorer } from "./FileExplorer";
 declare class SpinalDocumentary {
     constructor();
     addFileToNodeInContext(parentNode: SpinalNode, files: FilesArgType, contextNode: SpinalContext, chunkSize?: number): Promise<SpinalNode[]>;
-    getFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]>;
-    updateFileVersion(fileNode: SpinalNode | SpinalDocument, buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<void>;
     removeFileFromContext(fileNode: SpinalNode | SpinalDocument): Promise<boolean>;
     addDirectoryToNodeInContext(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon?: string): Promise<SpinalNode>;
+    moveDocumentInContext(documentToMove: SpinalNode | SpinalDocument | SpinalFile, sourceNode: SpinalNode | SpinalDocument | SpinalFile, targetNode: SpinalNode | SpinalDocument | SpinalFile, contextNode: SpinalContext): Promise<boolean>;
+    getFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]>;
+    updateFileVersion(fileNode: SpinalNode | SpinalDocument, buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<FileVersion>;
     importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalDocument): Promise<SpinalNode[]>;
     getFilesInTreeAsBuffer(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl?: string): Promise<{
         name: string;
@@ -47,6 +48,7 @@ declare class SpinalDocumentary {
     private _createNodeInContext;
     static pushFileToDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<SpinalNode | null>;
     static removeFileFromDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<boolean>;
+    moveDocument(documentToMove: SpinalNode | SpinalDocument | SpinalFile, sourceNode: SpinalNode | SpinalDocument | SpinalFile, targetNode: SpinalNode | SpinalDocument | SpinalFile): Promise<boolean>;
 }
 export { SpinalDocumentary };
 export default SpinalDocumentary;

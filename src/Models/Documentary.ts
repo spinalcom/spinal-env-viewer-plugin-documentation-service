@@ -1,6 +1,6 @@
 import { File as SpinalFile, Lst, Directory } from "spinal-core-connectorjs_type";
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from "spinal-model-graph";
-import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addSpinalDocumentAsNodeChild, convertFileInTreeToSpecialFormat, convertFileToSpecialFormat, convertFileToSpinalDocument, convertTreeToFileBuffers, createFileNode, getFileModelFromNode, removeFileNode } from "../utils/files";
+import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addSpinalDocumentAsNodeChild, convertFileInTreeToSpecialFormat, convertFileToSpecialFormat, convertFileToSpinalDocument, convertTreeToFileBuffers, createorGetFileNode, getFileModelFromNode, removeFileNode } from "../utils/files";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
 import { fileFormat, FilesArgType } from "../interfaces";
 import { FileVersion, SpinalDocument } from "../models_spinalcom";
@@ -9,6 +9,8 @@ import { Readable } from "node:stream";
 
 class SpinalDocumentary {
 	constructor() {}
+
+	////////////////// Inside context functions ///////////////////////
 
 	public async addFileToNodeInContext(parentNode: SpinalNode, files: FilesArgType, contextNode: SpinalContext, chunkSize: number = -1): Promise<SpinalNode[]> {
 		const filesConverted = await convertFileToSpinalDocument(files, chunkSize);
@@ -19,32 +21,6 @@ class SpinalDocumentary {
 		}
 
 		return Promise.all(promises);
-	}
-
-	public async getFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]> {
-		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
-		if (!fileNode) throw new Error("File model not found for the given node.");
-
-		if (fileNode instanceof SpinalDocument) return fileNode.getVersionHistory();
-
-		if (fileNode instanceof SpinalFile) {
-			const fakeFileVersion = await FileVersion.createFakeFileVersionInstance(fileNode);
-			if (fakeFileVersion) return [fakeFileVersion];
-		}
-
-		// if (fileNode instanceof SpinalFile) {
-		// const fakeFileVersion = FileVersion.createFakeFileVersionInstance(fileNode);
-		// return [fakeFileVersion];
-		// }
-
-		throw new Error("Unsupported file model type.");
-	}
-
-	public async updateFileVersion(fileNode: SpinalNode | SpinalDocument, buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<void> {
-		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
-		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
-
-		return fileNode.updateVersion(buffer, versionName, chunkSize);
 	}
 
 	public async removeFileFromContext(fileNode: SpinalNode | SpinalDocument): Promise<boolean> {
@@ -67,6 +43,45 @@ class SpinalDocumentary {
 	public addDirectoryToNodeInContext(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon: string = "folder"): Promise<SpinalNode> {
 		const file = new SpinalDocument(name, new Lst(), { model_type: DIRECTORY_MODEL_TYPE, icon });
 		return file.linkToNode(parentNode, contextNode);
+	}
+
+	public async moveDocumentInContext(documentToMove: SpinalNode | SpinalDocument | SpinalFile, sourceNode: SpinalNode | SpinalDocument | SpinalFile, targetNode: SpinalNode | SpinalDocument | SpinalFile, contextNode: SpinalContext): Promise<boolean> {
+		documentToMove = await createorGetFileNode(documentToMove);
+		sourceNode = await createorGetFileNode(sourceNode);
+		targetNode = await createorGetFileNode(targetNode);
+
+		await this.removeFileFromContext(documentToMove);
+
+		return this.addFileToNodeInContext(targetNode, documentToMove, contextNode)
+			.then((result) => !!result)
+			.catch(() => false);
+	}
+	/////////////////// Versioning functions ///////////////////////
+
+	public async getFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]> {
+		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
+		if (!fileNode) throw new Error("File model not found for the given node.");
+
+		if (fileNode instanceof SpinalDocument) return fileNode.getVersionHistory();
+
+		if (fileNode instanceof SpinalFile) {
+			const fakeFileVersion = await FileVersion.createFakeFileVersionInstance(fileNode);
+			if (fakeFileVersion) return [fakeFileVersion];
+		}
+
+		// if (fileNode instanceof SpinalFile) {
+		// const fakeFileVersion = FileVersion.createFakeFileVersionInstance(fileNode);
+		// return [fakeFileVersion];
+		// }
+
+		throw new Error("Unsupported file model type.");
+	}
+
+	public async updateFileVersion(fileNode: SpinalNode | SpinalDocument, buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<FileVersion> {
+		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
+		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
+
+		return fileNode.updateVersion(buffer, versionName, chunkSize);
 	}
 
 	public async importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalDocument): Promise<SpinalNode[]> {
@@ -152,7 +167,7 @@ class SpinalDocumentary {
 	private async _createNodeInContext(file: SpinalDocument | SpinalFile, parent: SpinalNode, relationName: string, contextNode: SpinalContext<any>) {
 		// let node: SpinalNode | null = null;
 
-		const node = await createFileNode(file);
+		const node = await createorGetFileNode(file);
 
 		if (!node) return null;
 
@@ -161,7 +176,7 @@ class SpinalDocumentary {
 	}
 
 	public static async pushFileToDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<SpinalNode | null> {
-		const fileNode = await createFileNode(file);
+		const fileNode = await createorGetFileNode(file);
 		const directoryElement = await getFileModelFromNode(directoryNode);
 		const list = await new Promise((resolve) => directoryElement?._ptr?.load((e) => resolve(e)));
 		if (!list) throw new Error("Directory list not found or failed to load.");
@@ -190,6 +205,17 @@ class SpinalDocumentary {
 		}
 
 		return false;
+	}
+
+	public async moveDocument(documentToMove: SpinalNode | SpinalDocument | SpinalFile, sourceNode: SpinalNode | SpinalDocument | SpinalFile, targetNode: SpinalNode | SpinalDocument | SpinalFile): Promise<boolean> {
+		documentToMove = await createorGetFileNode(documentToMove);
+		sourceNode = await createorGetFileNode(sourceNode);
+		targetNode = await createorGetFileNode(targetNode);
+
+		await this.unlinkFileFromNode(sourceNode, documentToMove);
+		return this.linkFileToNode(targetNode, documentToMove)
+			.then((result) => !!result)
+			.catch(() => false);
 	}
 }
 

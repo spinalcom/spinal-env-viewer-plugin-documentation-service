@@ -134,7 +134,7 @@ class FileExplorer {
                 promises.push(Documentary_1.SpinalDocumentary.pushFileToDirectory(directory, file));
             }
             // directory.push(file);
-            // promises.push(createFileNode(file));
+            // promises.push(createorGetFileNode(file));
             // promises.push(file.linkToNode(node));
         }
         return Promise.all(promises).then((results) => {
@@ -168,7 +168,7 @@ class FileExplorer {
         let fileModel = undefined;
         if (fileNode instanceof models_spinalcom_1.SpinalDocument || fileNode instanceof spinal_core_connectorjs_type_1.File) {
             fileModel = fileNode;
-            fileNode = await (0, files_1.createFileNode)(fileNode instanceof models_spinalcom_1.SpinalDocument ? fileNode : fileNode);
+            fileNode = await (0, files_1.createorGetFileNode)(fileNode instanceof models_spinalcom_1.SpinalDocument ? fileNode : fileNode);
         }
         const relationName = fileNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
         return rootDirNode
