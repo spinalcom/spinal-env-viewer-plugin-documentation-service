@@ -23,7 +23,7 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TO_DOCUMENTARY_RELATION = exports.FILE_MODEL_TYPE = exports.DIRECTORY_MODEL_TYPE = exports.TO_ROOT_DIRECTORY_RELATION = exports.TO_FOLDER_RELATION = exports.TO_FILE_RELATION = exports.FILE_NODE_TYPE = exports.DIRECTORY_NODE_TYPE = exports.BUILDINGINFORMATIONCATNAME = exports.BUILDINGINFORMATION = exports.ATTRIBUTE_TYPE = exports.CATEGORY_TYPE = exports.NODE_TO_ATTRIBUTE = exports.NODE_TO_CATEGORY_RELATION = exports.NOTE_GROUP_NAME = exports.NOTE_CATEGORY_NAME = exports.NOTE_CONTEXT_NAME = exports.NOTE_TYPE = exports.NOTE_RELATION = exports.URL_TYPE = exports.URL_RELATION = void 0;
+exports.TO_DOCUMENTARY_RELATION = exports.DOCUMENTARY_CONTEXT_TYPE = exports.FILE_MODEL_TYPE = exports.DIRECTORY_MODEL_TYPE = exports.TO_ROOT_DIRECTORY_RELATION = exports.TO_FOLDER_RELATION = exports.TO_FILE_RELATION = exports.FILE_NODE_TYPE = exports.DIRECTORY_NODE_TYPE = exports.BUILDINGINFORMATIONCATNAME = exports.BUILDINGINFORMATION = exports.ATTRIBUTE_TYPE = exports.CATEGORY_TYPE = exports.NODE_TO_ATTRIBUTE = exports.NODE_TO_CATEGORY_RELATION = exports.NOTE_GROUP_NAME = exports.NOTE_CATEGORY_NAME = exports.NOTE_CONTEXT_NAME = exports.NOTE_TYPE = exports.NOTE_RELATION = exports.URL_TYPE = exports.URL_RELATION = void 0;
 exports.URL_RELATION = "hasURL";
 exports.URL_TYPE = "SpinalURL";
 exports.NOTE_RELATION = "hasNotes";
@@ -44,5 +44,6 @@ exports.TO_FOLDER_RELATION = "DirectoryhasDirectory";
 exports.TO_ROOT_DIRECTORY_RELATION = "hasFiles";
 exports.DIRECTORY_MODEL_TYPE = "Directory";
 exports.FILE_MODEL_TYPE = "File";
+exports.DOCUMENTARY_CONTEXT_TYPE = "DocumentaryContext";
 exports.TO_DOCUMENTARY_RELATION = "hasDocumentation";
 //# sourceMappingURL=constants.js.map

@@ -10,6 +10,10 @@ const FileExplorer_1 = require("./FileExplorer");
 class SpinalDocumentary {
     constructor() { }
     ////////////////// Inside context functions ///////////////////////
+    async createDocumentaryContext(graph, name) {
+        const context = new spinal_model_graph_1.SpinalContext(name, constants_1.DOCUMENTARY_CONTEXT_TYPE);
+        return graph.addContext(context);
+    }
     async addFileToNodeInContext(parentNode, files, contextNode, chunkSize = -1) {
         const filesConverted = await (0, files_1.convertFileToSpinalDocument)(files, chunkSize);
         const promises = [];
@@ -45,6 +49,11 @@ class SpinalDocumentary {
             .then((result) => !!result)
             .catch(() => false);
     }
+    // public async copyFileInContext(fileNode: SpinalNode | SpinalDocument | SpinalFile, targetNode: SpinalNode | SpinalDocument | SpinalFile, contextNode: SpinalContext, useSymbolicLink: boolean = false): Promise<SpinalNode | null> {
+    // 	if (!useSymbolicLink) {
+    // 		const
+    // 	}
+    // }
     /////////////////// Versioning functions ///////////////////////
     async getFileVersions(fileNode) {
         if (fileNode instanceof spinal_model_graph_1.SpinalNode)
@@ -172,15 +181,6 @@ class SpinalDocumentary {
             }
         }
         return false;
-    }
-    async moveDocument(documentToMove, sourceNode, targetNode) {
-        documentToMove = await (0, files_1.createorGetFileNode)(documentToMove);
-        sourceNode = await (0, files_1.createorGetFileNode)(sourceNode);
-        targetNode = await (0, files_1.createorGetFileNode)(targetNode);
-        await this.unlinkFileFromNode(sourceNode, documentToMove);
-        return this.linkFileToNode(targetNode, documentToMove)
-            .then((result) => !!result)
-            .catch(() => false);
     }
 }
 exports.SpinalDocumentary = SpinalDocumentary;

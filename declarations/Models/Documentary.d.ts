@@ -2,12 +2,13 @@
 /// <reference types="node" />
 /// <reference types="node" />
 import { File as SpinalFile } from "spinal-core-connectorjs_type";
-import { SpinalContext, SpinalNode } from "spinal-model-graph";
+import { SpinalContext, SpinalGraph, SpinalNode } from "spinal-model-graph";
 import { fileFormat, FilesArgType } from "../interfaces";
 import { FileVersion, SpinalDocument } from "../models_spinalcom";
 import { FileExplorer } from "./FileExplorer";
 declare class SpinalDocumentary {
     constructor();
+    createDocumentaryContext(graph: SpinalGraph, name: string): Promise<SpinalContext>;
     addFileToNodeInContext(parentNode: SpinalNode, files: FilesArgType, contextNode: SpinalContext, chunkSize?: number): Promise<SpinalNode[]>;
     removeFileFromContext(fileNode: SpinalNode | SpinalDocument): Promise<boolean>;
     addDirectoryToNodeInContext(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon?: string): Promise<SpinalNode>;
@@ -48,7 +49,6 @@ declare class SpinalDocumentary {
     private _createNodeInContext;
     static pushFileToDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<SpinalNode | null>;
     static removeFileFromDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<boolean>;
-    moveDocument(documentToMove: SpinalNode | SpinalDocument | SpinalFile, sourceNode: SpinalNode | SpinalDocument | SpinalFile, targetNode: SpinalNode | SpinalDocument | SpinalFile): Promise<boolean>;
 }
 export { SpinalDocumentary };
 export default SpinalDocumentary;

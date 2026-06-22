@@ -47,4 +47,5 @@ export const TO_ROOT_DIRECTORY_RELATION: string = "hasFiles";
 export const DIRECTORY_MODEL_TYPE: string = "Directory";
 export const FILE_MODEL_TYPE: string = "File";
 
+export const DOCUMENTARY_CONTEXT_TYPE = "DocumentaryContext";
 export const TO_DOCUMENTARY_RELATION: string = "hasDocumentation";

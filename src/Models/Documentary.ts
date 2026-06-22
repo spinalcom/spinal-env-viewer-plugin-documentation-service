@@ -1,7 +1,7 @@
 import { File as SpinalFile, Lst, Directory } from "spinal-core-connectorjs_type";
-import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from "spinal-model-graph";
+import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalGraph, SpinalNode } from "spinal-model-graph";
 import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addSpinalDocumentAsNodeChild, convertFileInTreeToSpecialFormat, convertFileToSpecialFormat, convertFileToSpinalDocument, convertTreeToFileBuffers, createorGetFileNode, getFileModelFromNode, removeFileNode } from "../utils/files";
-import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
+import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, DOCUMENTARY_CONTEXT_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
 import { fileFormat, FilesArgType } from "../interfaces";
 import { FileVersion, SpinalDocument } from "../models_spinalcom";
 import { FileExplorer } from "./FileExplorer";
@@ -11,6 +11,11 @@ class SpinalDocumentary {
 	constructor() {}
 
 	////////////////// Inside context functions ///////////////////////
+
+	public async createDocumentaryContext(graph: SpinalGraph, name: string): Promise<SpinalContext> {
+		const context = new SpinalContext(name, DOCUMENTARY_CONTEXT_TYPE);
+		return graph.addContext(context);
+	}
 
 	public async addFileToNodeInContext(parentNode: SpinalNode, files: FilesArgType, contextNode: SpinalContext, chunkSize: number = -1): Promise<SpinalNode[]> {
 		const filesConverted = await convertFileToSpinalDocument(files, chunkSize);
@@ -56,6 +61,13 @@ class SpinalDocumentary {
 			.then((result) => !!result)
 			.catch(() => false);
 	}
+
+	// public async copyFileInContext(fileNode: SpinalNode | SpinalDocument | SpinalFile, targetNode: SpinalNode | SpinalDocument | SpinalFile, contextNode: SpinalContext, useSymbolicLink: boolean = false): Promise<SpinalNode | null> {
+	// 	if (!useSymbolicLink) {
+	// 		const
+	// 	}
+	// }
+
 	/////////////////// Versioning functions ///////////////////////
 
 	public async getFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]> {
@@ -207,16 +219,16 @@ class SpinalDocumentary {
 		return false;
 	}
 
-	public async moveDocument(documentToMove: SpinalNode | SpinalDocument | SpinalFile, sourceNode: SpinalNode | SpinalDocument | SpinalFile, targetNode: SpinalNode | SpinalDocument | SpinalFile): Promise<boolean> {
-		documentToMove = await createorGetFileNode(documentToMove);
-		sourceNode = await createorGetFileNode(sourceNode);
-		targetNode = await createorGetFileNode(targetNode);
+	// public async moveDocument(documentToMove: SpinalNode | SpinalDocument | SpinalFile, sourceNode: SpinalNode | SpinalDocument | SpinalFile, targetNode: SpinalNode | SpinalDocument | SpinalFile): Promise<boolean> {
+	// 	documentToMove = await createorGetFileNode(documentToMove);
+	// 	sourceNode = await createorGetFileNode(sourceNode);
+	// 	targetNode = await createorGetFileNode(targetNode);
 
-		await this.unlinkFileFromNode(sourceNode, documentToMove);
-		return this.linkFileToNode(targetNode, documentToMove)
-			.then((result) => !!result)
-			.catch(() => false);
-	}
+	// 	await this.unlinkFileFromNode(sourceNode, documentToMove);
+	// 	return this.linkFileToNode(targetNode, documentToMove)
+	// 		.then((result) => !!result)
+	// 		.catch(() => false);
+	// }
 }
 
 export { SpinalDocumentary };

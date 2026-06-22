@@ -18,4 +18,5 @@ export declare const TO_FOLDER_RELATION: string;
 export declare const TO_ROOT_DIRECTORY_RELATION: string;
 export declare const DIRECTORY_MODEL_TYPE: string;
 export declare const FILE_MODEL_TYPE: string;
+export declare const DOCUMENTARY_CONTEXT_TYPE = "DocumentaryContext";
 export declare const TO_DOCUMENTARY_RELATION: string;
