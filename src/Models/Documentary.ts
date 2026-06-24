@@ -5,7 +5,6 @@ import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, DOCUMENTARY_CONTEXT_TYPE, FI
 import { fileFormat, FilesArgType } from "../interfaces";
 import { FileVersion, SpinalDocument } from "../models_spinalcom";
 import { FileExplorer } from "./FileExplorer";
-import { Readable } from "node:stream";
 
 class SpinalDocumentary {
 	constructor() {}
