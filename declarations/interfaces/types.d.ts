@@ -5,5 +5,8 @@ import { SpinalDocument } from "../models_spinalcom";
 export type FilesArgType = (SpinalFileModel | {
     name: string;
     buffer: Buffer;
+} | {
+    name: string;
+    data: Buffer;
 })[] | FileList | SpinalDocument | any;
 export type fileFormat = "buffer" | "base64" | "stream";

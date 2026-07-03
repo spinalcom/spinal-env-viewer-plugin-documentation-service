@@ -33,7 +33,7 @@ async function convertFileToSpinalDocument(files, chunkSize = -1) {
         // let filePath: SpinalPath | undefined;
         // if (element.buffer) filePath = new SpinalPath(element.buffer, FileExplorer.getMimeType(element.name));
         // else filePath = new SpinalPath(element, FileExplorer.getMimeType(element.name));
-        const hashes = await versionUtils_1.default.getInstance().convertFileToHashes(element.buffer || element, [], chunkSize);
+        const hashes = await versionUtils_1.default.getInstance().convertFileToHashes(element.buffer || element.data || element, [], chunkSize);
         const fileVersion = new FileVersion_1.FileVersion({ version: 1, hashes });
         let file = new SpinalDocument_1.SpinalDocument(element.name, fileVersion, { model_type: constants_1.FILE_MODEL_TYPE });
         res.push(file);
