@@ -216,7 +216,10 @@ function bufferToStream(buffer: Buffer): NodeJS.ReadableStream {
 export async function convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl: string = ""): Promise<{ name: string; serverId: number; data: Buffer | string | NodeJS.ReadableStream }> {
 	const buffer = await _getFileAsBuffer(file, hubUrl);
 	const data = format === "base64" ? buffer.toString("base64") : format === "stream" ? bufferToStream(buffer) : buffer;
-	return { name: file.name.get(), serverId: file._server_id as number, data };
+
+	const name = file instanceof SpinalNode ? file.getName().get() : file.name.get();
+
+	return { name, serverId: file._server_id as number, data };
 }
 
 export async function convertTreeToFileBuffers(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<IFileBufferInfo[]> {
