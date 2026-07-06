@@ -140,7 +140,7 @@ async function _getFileAsBuffer(file, hubUrl = "") {
     if (file instanceof spinal_env_viewer_graph_service_1.SpinalNode)
         file = (await getFileModelFromNode(file));
     if (file instanceof SpinalDocument_1.SpinalDocument)
-        return file.getCurrentVersionAsBuffer();
+        return file.getCurrentVersionAsBuffer(hubUrl);
     const pathServerId = file._ptr.data.value;
     return getPathData(pathServerId, hubUrl);
 }

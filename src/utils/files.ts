@@ -155,7 +155,7 @@ export async function _getFileAttributes(file: SpinalDocument | SpinalFile): Pro
 export async function _getFileAsBuffer(file: SpinalDocument | SpinalNode | SpinalFile, hubUrl: string = ""): Promise<Buffer> {
 	if (file instanceof SpinalNode) file = (await getFileModelFromNode(file)) as SpinalDocument | SpinalFile;
 
-	if (file instanceof SpinalDocument) return file.getCurrentVersionAsBuffer();
+	if (file instanceof SpinalDocument) return file.getCurrentVersionAsBuffer(hubUrl);
 
 	const pathServerId = file._ptr.data.value;
 	return getPathData(pathServerId, hubUrl);
