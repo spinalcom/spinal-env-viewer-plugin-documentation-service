@@ -9,7 +9,6 @@ import { SpinalDocument } from "../models_spinalcom/SpinalDocument";
 import VersionUtils from "./versionUtils";
 import { FileVersion } from "../models_spinalcom/FileVersion";
 import { Readable } from "stream";
-import path from "path";
 
 export async function convertFileToSpinalDocument(files: FilesArgType, chunkSize: number = -1): Promise<(SpinalDocument | SpinalFile)[]> {
 	const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
@@ -182,7 +181,7 @@ export async function getPathData(pathModel: Path, hubUrl: string = ""): Promise
 	});
 }
 
-export async function convertFileInTreeToSpecialFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl: string = ""): Promise<IFileFormattedInfo[]> {
+export async function convertFileInTreeToSpecialFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format?: fileFormat, hubUrl: string = ""): Promise<IFileFormattedInfo[]> {
 	const queue = await getStarterQueue(startNode);
 	const filesBuffers: IFileFormattedInfo[] = [];
 	const alreadyProcessedNodes = new Set<number>();
@@ -222,13 +221,16 @@ function bufferToStream(buffer: Buffer): NodeJS.ReadableStream {
 	return stream;
 }
 
-export async function convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl: string = ""): Promise<{ name: string; serverId: number; data: Buffer | string | NodeJS.ReadableStream }> {
-	const buffer = await _getFileAsBuffer(file, hubUrl);
-	const data = format === "base64" ? buffer.toString("base64") : format === "stream" ? bufferToStream(buffer) : buffer;
-
+export async function convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format?: fileFormat, hubUrl: string = ""): Promise<{ name: string; serverId: number; data: Buffer | string | NodeJS.ReadableStream }> {
 	const name = file instanceof SpinalNode ? file.getName().get() : file.name.get();
+	const fileData: any = { name, serverId: file._server_id as number };
 
-	return { name, serverId: file._server_id as number, data };
+	if (format) {
+		const buffer = await _getFileAsBuffer(file, hubUrl);
+		fileData.data = format === "base64" ? buffer.toString("base64") : format === "stream" ? bufferToStream(buffer) : buffer;
+	}
+
+	return fileData;
 }
 
 export async function convertTreeToFileBuffers(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<IFileBufferInfo[]> {

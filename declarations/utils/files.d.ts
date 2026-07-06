@@ -23,8 +23,8 @@ export declare function _getFileAttributes(file: SpinalDocument | SpinalFile): P
 }>;
 export declare function _getFileAsBuffer(file: SpinalDocument | SpinalNode | SpinalFile, hubUrl?: string): Promise<Buffer>;
 export declare function getPathData(pathModel: Path, hubUrl?: string): Promise<Buffer>;
-export declare function convertFileInTreeToSpecialFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl?: string): Promise<IFileFormattedInfo[]>;
-export declare function convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl?: string): Promise<{
+export declare function convertFileInTreeToSpecialFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format?: fileFormat, hubUrl?: string): Promise<IFileFormattedInfo[]>;
+export declare function convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format?: fileFormat, hubUrl?: string): Promise<{
     name: string;
     serverId: number;
     data: Buffer | string | NodeJS.ReadableStream;

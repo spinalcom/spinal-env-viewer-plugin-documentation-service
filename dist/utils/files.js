@@ -198,10 +198,13 @@ function bufferToStream(buffer) {
     return stream;
 }
 async function convertFileToSpecialFormat(file, format, hubUrl = "") {
-    const buffer = await _getFileAsBuffer(file, hubUrl);
-    const data = format === "base64" ? buffer.toString("base64") : format === "stream" ? bufferToStream(buffer) : buffer;
     const name = file instanceof spinal_env_viewer_graph_service_1.SpinalNode ? file.getName().get() : file.name.get();
-    return { name, serverId: file._server_id, data };
+    const fileData = { name, serverId: file._server_id };
+    if (format) {
+        const buffer = await _getFileAsBuffer(file, hubUrl);
+        fileData.data = format === "base64" ? buffer.toString("base64") : format === "stream" ? bufferToStream(buffer) : buffer;
+    }
+    return fileData;
 }
 exports.convertFileToSpecialFormat = convertFileToSpecialFormat;
 async function convertTreeToFileBuffers(startNode, hubUrl = "") {
