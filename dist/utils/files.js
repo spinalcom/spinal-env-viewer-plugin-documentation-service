@@ -142,11 +142,17 @@ async function _getFileAsBuffer(file, hubUrl = "") {
         file = (await getFileModelFromNode(file));
     if (file instanceof SpinalDocument_1.SpinalDocument)
         return file.getCurrentVersionAsBuffer(hubUrl);
-    const pathServerId = file._ptr.data.value;
-    return getPathData(pathServerId, hubUrl);
+    return new Promise((resolve, reject) => {
+        file._ptr.load(async (element) => {
+            const data = await getPathData(element, hubUrl);
+            resolve(data);
+        });
+    });
 }
 exports._getFileAsBuffer = _getFileAsBuffer;
-function getPathData(dynamicId, hubUrl = "") {
+async function getPathData(pathModel, hubUrl = "") {
+    await waitUntilPathIsLoaded(pathModel);
+    const dynamicId = pathModel._server_id;
     if (hubUrl.endsWith("/"))
         hubUrl = hubUrl.slice(0, -1);
     const path = `${hubUrl}/sceen/_?u=${dynamicId}`;
@@ -259,4 +265,16 @@ function isFileVersion(fileVersion) {
     return fileVersion?.constructor?.name === "FileVersion";
 }
 exports.isFileVersion = isFileVersion;
+async function waitUntilPathIsLoaded(pathModel) {
+    return new Promise((resolve, reject) => {
+        const waitTimeout = () => {
+            if (pathModel.remaining.get() == 0 && pathModel._server_id) {
+                resolve(true);
+                return;
+            }
+            setTimeout(waitTimeout, 100);
+        };
+        waitTimeout();
+    });
+}
 //# sourceMappingURL=files.js.map

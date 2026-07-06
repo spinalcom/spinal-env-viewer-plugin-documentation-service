@@ -1,4 +1,4 @@
-import { Path as SpinalPath, Lst, File as SpinalFile, Ptr, Directory } from "spinal-core-connectorjs_type";
+import { Path as SpinalPath, Lst, File as SpinalFile, Ptr, Directory, Path } from "spinal-core-connectorjs_type";
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
 import { FileExplorer } from "../Models/FileExplorer";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_MODEL_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION, TO_ROOT_DIRECTORY_RELATION } from "../Models/constants";
@@ -9,6 +9,7 @@ import { SpinalDocument } from "../models_spinalcom/SpinalDocument";
 import VersionUtils from "./versionUtils";
 import { FileVersion } from "../models_spinalcom/FileVersion";
 import { Readable } from "stream";
+import path from "path";
 
 export async function convertFileToSpinalDocument(files: FilesArgType, chunkSize: number = -1): Promise<(SpinalDocument | SpinalFile)[]> {
 	const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
@@ -159,11 +160,17 @@ export async function _getFileAsBuffer(file: SpinalDocument | SpinalNode | Spina
 
 	if (file instanceof SpinalDocument) return file.getCurrentVersionAsBuffer(hubUrl);
 
-	const pathServerId = file._ptr.data.value;
-	return getPathData(pathServerId, hubUrl);
+	return new Promise((resolve, reject) => {
+		file._ptr.load(async (element: SpinalPath) => {
+			const data = await getPathData(element, hubUrl);
+			resolve(data);
+		});
+	});
 }
 
-export function getPathData(dynamicId: number, hubUrl: string = ""): Promise<Buffer> {
+export async function getPathData(pathModel: Path, hubUrl: string = ""): Promise<Buffer> {
+	await waitUntilPathIsLoaded(pathModel);
+	const dynamicId = pathModel._server_id;
 	if (hubUrl.endsWith("/")) hubUrl = hubUrl.slice(0, -1);
 
 	const path = `${hubUrl}/sceen/_?u=${dynamicId}`;
@@ -292,4 +299,17 @@ export async function removeFileNode(fileNode: SpinalNode): Promise<boolean> {
 
 export function isFileVersion(fileVersion: any): fileVersion is FileVersion {
 	return fileVersion?.constructor?.name === "FileVersion";
+}
+
+async function waitUntilPathIsLoaded(pathModel: Path): Promise<boolean> {
+	return new Promise((resolve, reject) => {
+		const waitTimeout = () => {
+			if (pathModel.remaining.get() == 0 && pathModel._server_id) {
+				resolve(true);
+				return;
+			}
+			setTimeout(waitTimeout, 100);
+		};
+		waitTimeout();
+	});
 }
