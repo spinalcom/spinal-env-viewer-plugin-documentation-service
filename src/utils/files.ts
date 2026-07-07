@@ -9,6 +9,7 @@ import { SpinalDocument } from "../models_spinalcom/SpinalDocument";
 import VersionUtils from "./versionUtils";
 import { FileVersion } from "../models_spinalcom/FileVersion";
 import { Readable } from "stream";
+import SpinalDocumentary from "../Models/Documentary";
 
 export async function convertFileToSpinalDocument(files: FilesArgType, chunkSize: number = -1): Promise<(SpinalDocument | SpinalFile)[]> {
 	const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
@@ -269,7 +270,10 @@ async function getStarterQueue(startNode: SpinalNode | SpinalDocument | SpinalFi
 
 export async function _getOrCreateRootNode(node: SpinalNode, createIfNotExist: boolean = true): Promise<SpinalNode | null> {
 	const children = await node.getChildren([TO_ROOT_DIRECTORY_RELATION]);
-	if (children.length > 0) return children[0];
+	if (children.length > 0) {
+		await convertOldFilesToSpinalDocument(children[0]);
+		return children[0];
+	}
 
 	if (!createIfNotExist) return null;
 
@@ -314,4 +318,32 @@ async function waitUntilPathIsLoaded(pathModel: Path): Promise<boolean> {
 		};
 		waitTimeout();
 	});
+}
+
+async function convertOldFilesToSpinalDocument(node: SpinalNode): Promise<boolean> {
+	const directoryElement = await node.getElement(true);
+	if (!directoryElement) return false;
+	const documents: SpinalDocument[] = [];
+
+	for (let i = 0; i < directoryElement.length; i++) {
+		const element = directoryElement[i];
+		let document: SpinalDocument;
+
+		if (element instanceof SpinalDocument) {
+			document = element;
+		} else if (element instanceof SpinalFile) {
+			const fakeVersion = await FileVersion.createFakeFileVersionInstance(element);
+			const spinalDocument = new SpinalDocument(element.name.get(), fakeVersion, element._info.get());
+			document = spinalDocument;
+		}
+
+		const fileNode = await createorGetFileNode(document!);
+		documents.push(document!);
+		node.addChild(fileNode, TO_FILE_RELATION, SPINAL_RELATION_PTR_LST_TYPE);
+	}
+
+	directoryElement.clear();
+	return true;
+
+	// directory.clear();
 }

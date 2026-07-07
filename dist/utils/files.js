@@ -238,8 +238,10 @@ async function getStarterQueue(startNode) {
 }
 async function _getOrCreateRootNode(node, createIfNotExist = true) {
     const children = await node.getChildren([constants_1.TO_ROOT_DIRECTORY_RELATION]);
-    if (children.length > 0)
+    if (children.length > 0) {
+        await convertOldFilesToSpinalDocument(children[0]);
         return children[0];
+    }
     if (!createIfNotExist)
         return null;
     const name = node.getName().get() + "_root_directory";
@@ -279,5 +281,29 @@ async function waitUntilPathIsLoaded(pathModel) {
         };
         waitTimeout();
     });
+}
+async function convertOldFilesToSpinalDocument(node) {
+    const directoryElement = await node.getElement(true);
+    if (!directoryElement)
+        return false;
+    const documents = [];
+    for (let i = 0; i < directoryElement.length; i++) {
+        const element = directoryElement[i];
+        let document;
+        if (element instanceof SpinalDocument_1.SpinalDocument) {
+            document = element;
+        }
+        else if (element instanceof spinal_core_connectorjs_type_1.File) {
+            const fakeVersion = await FileVersion_1.FileVersion.createFakeFileVersionInstance(element);
+            const spinalDocument = new SpinalDocument_1.SpinalDocument(element.name.get(), fakeVersion, element._info.get());
+            document = spinalDocument;
+        }
+        const fileNode = await createorGetFileNode(document);
+        documents.push(document);
+        node.addChild(fileNode, constants_1.TO_FILE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+    }
+    directoryElement.clear();
+    return true;
+    // directory.clear();
 }
 //# sourceMappingURL=files.js.map
