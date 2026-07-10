@@ -60,10 +60,10 @@ class FileVersion extends Model {
 	}
 
 	private async _convertHashInfoToBuffer(hashInfo: IHash, hubUrl: string): Promise<{ index: number; buffer: Buffer }> {
-		const dynamicId = hashInfo.path._server_id;
-		if (!dynamicId) throw new Error("Invalid path: missing _server_id");
+		// const dynamicId = hashInfo.path._server_id;
+		// if (!dynamicId) throw new Error("Invalid path: missing _server_id");
 
-		const data = await getPathData(dynamicId, hubUrl);
+		const data = await getPathData(hashInfo.path, hubUrl);
 		return { index: hashInfo.index, buffer: data };
 	}
 

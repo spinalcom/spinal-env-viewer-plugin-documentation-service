@@ -52,10 +52,9 @@ class FileVersion extends spinal_core_connectorjs_1.Model {
         });
     }
     async _convertHashInfoToBuffer(hashInfo, hubUrl) {
-        const dynamicId = hashInfo.path._server_id;
-        if (!dynamicId)
-            throw new Error("Invalid path: missing _server_id");
-        const data = await (0, files_1.getPathData)(dynamicId, hubUrl);
+        // const dynamicId = hashInfo.path._server_id;
+        // if (!dynamicId) throw new Error("Invalid path: missing _server_id");
+        const data = await (0, files_1.getPathData)(hashInfo.path, hubUrl);
         return { index: hashInfo.index, buffer: data };
     }
     static async createFakeFileVersionInstance(spinalFile) {

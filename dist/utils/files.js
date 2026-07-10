@@ -33,7 +33,7 @@ async function convertFileToSpinalDocument(files, chunkSize = -1) {
         // let filePath: SpinalPath | undefined;
         // if (element.buffer) filePath = new SpinalPath(element.buffer, FileExplorer.getMimeType(element.name));
         // else filePath = new SpinalPath(element, FileExplorer.getMimeType(element.name));
-        const hashes = await versionUtils_1.default.getInstance().convertFileToHashes(element.buffer || element, [], chunkSize);
+        const hashes = await versionUtils_1.default.getInstance().convertFileToHashes(element, [], chunkSize);
         const fileVersion = new FileVersion_1.FileVersion({ version: 1, hashes });
         let file = new SpinalDocument_1.SpinalDocument(element.name, fileVersion, { model_type: constants_1.FILE_MODEL_TYPE });
         res.push(file);
@@ -42,9 +42,10 @@ async function convertFileToSpinalDocument(files, chunkSize = -1) {
 }
 exports.convertFileToSpinalDocument = convertFileToSpinalDocument;
 async function convertFileToBuffer(file) {
-    if (Buffer.isBuffer(file))
-        return file;
-    let arrayBuffer = file instanceof ArrayBuffer ? file : await file.arrayBuffer();
+    const buffer = file.buffer || file.data || file;
+    if (Buffer.isBuffer(buffer))
+        return buffer;
+    let arrayBuffer = buffer instanceof ArrayBuffer ? buffer : await buffer.arrayBuffer();
     return Buffer.from(arrayBuffer);
 }
 exports.convertFileToBuffer = convertFileToBuffer;
@@ -140,12 +141,18 @@ async function _getFileAsBuffer(file, hubUrl = "") {
     if (file instanceof spinal_env_viewer_graph_service_1.SpinalNode)
         file = (await getFileModelFromNode(file));
     if (file instanceof SpinalDocument_1.SpinalDocument)
-        return file.getCurrentVersionAsBuffer();
-    const pathServerId = file._ptr.data.value;
-    return getPathData(pathServerId, hubUrl);
+        return file.getCurrentVersionAsBuffer(hubUrl);
+    return new Promise((resolve, reject) => {
+        file._ptr.load(async (element) => {
+            const data = await getPathData(element, hubUrl);
+            resolve(data);
+        });
+    });
 }
 exports._getFileAsBuffer = _getFileAsBuffer;
-function getPathData(dynamicId, hubUrl = "") {
+async function getPathData(pathModel, hubUrl = "") {
+    await waitUntilPathIsLoaded(pathModel);
+    const dynamicId = pathModel._server_id;
     if (hubUrl.endsWith("/"))
         hubUrl = hubUrl.slice(0, -1);
     const path = `${hubUrl}/sceen/_?u=${dynamicId}`;
@@ -191,9 +198,13 @@ function bufferToStream(buffer) {
     return stream;
 }
 async function convertFileToSpecialFormat(file, format, hubUrl = "") {
-    const buffer = await _getFileAsBuffer(file, hubUrl);
-    const data = format === "base64" ? buffer.toString("base64") : format === "stream" ? bufferToStream(buffer) : buffer;
-    return { name: file.name.get(), serverId: file._server_id, data };
+    const name = file instanceof spinal_env_viewer_graph_service_1.SpinalNode ? file.getName().get() : file.name.get();
+    const fileData = { name, serverId: file._server_id };
+    if (format) {
+        const buffer = await _getFileAsBuffer(file, hubUrl);
+        fileData.data = format === "base64" ? buffer.toString("base64") : format === "stream" ? bufferToStream(buffer) : buffer;
+    }
+    return fileData;
 }
 exports.convertFileToSpecialFormat = convertFileToSpecialFormat;
 async function convertTreeToFileBuffers(startNode, hubUrl = "") {
@@ -227,8 +238,10 @@ async function getStarterQueue(startNode) {
 }
 async function _getOrCreateRootNode(node, createIfNotExist = true) {
     const children = await node.getChildren([constants_1.TO_ROOT_DIRECTORY_RELATION]);
-    if (children.length > 0)
+    if (children.length > 0) {
+        await convertOldFilesToSpinalDocument(children[0]);
         return children[0];
+    }
     if (!createIfNotExist)
         return null;
     const name = node.getName().get() + "_root_directory";
@@ -261,4 +274,41 @@ function isFileVersion(fileVersion) {
     return fileVersion?.constructor?.name === "FileVersion";
 }
 exports.isFileVersion = isFileVersion;
+async function waitUntilPathIsLoaded(pathModel) {
+    return new Promise((resolve, reject) => {
+        const waitTimeout = () => {
+            if (pathModel.remaining.get() == 0 && pathModel._server_id) {
+                resolve(true);
+                return;
+            }
+            setTimeout(waitTimeout, 100);
+        };
+        waitTimeout();
+    });
+}
+async function convertOldFilesToSpinalDocument(node) {
+    const directoryElement = await node.getElement(true);
+    if (!directoryElement)
+        return false;
+    const documents = [];
+    for (let i = 0; i < directoryElement.length; i++) {
+        const element = directoryElement[i];
+        let document;
+        if (element instanceof SpinalDocument_1.SpinalDocument) {
+            document = element;
+        }
+        else if (element instanceof spinal_core_connectorjs_type_1.File) {
+            const fakeVersion = await FileVersion_1.FileVersion.createFakeFileVersionInstance(element);
+            const spinalDocument = new SpinalDocument_1.SpinalDocument(element.name.get(), fakeVersion, element._info.get());
+            document = spinalDocument;
+        }
+        const fileNode = await createorGetFileNode(document);
+        documents.push(document);
+        node.addChild(fileNode, constants_1.TO_FILE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+    }
+    if (directoryElement instanceof spinal_core_connectorjs_type_1.Lst || directoryElement instanceof spinal_core_connectorjs_type_1.Directory)
+        directoryElement.clear();
+    return true;
+    // directory.clear();
+}
 //# sourceMappingURL=files.js.map

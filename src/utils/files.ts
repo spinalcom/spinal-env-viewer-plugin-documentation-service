@@ -1,4 +1,4 @@
-import { Path as SpinalPath, Lst, File as SpinalFile, Ptr, Directory } from "spinal-core-connectorjs_type";
+import { Path as SpinalPath, Lst, File as SpinalFile, Ptr, Directory, Path } from "spinal-core-connectorjs_type";
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
 import { FileExplorer } from "../Models/FileExplorer";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_MODEL_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION, TO_ROOT_DIRECTORY_RELATION } from "../Models/constants";
@@ -9,6 +9,7 @@ import { SpinalDocument } from "../models_spinalcom/SpinalDocument";
 import VersionUtils from "./versionUtils";
 import { FileVersion } from "../models_spinalcom/FileVersion";
 import { Readable } from "stream";
+import SpinalDocumentary from "../Models/Documentary";
 
 export async function convertFileToSpinalDocument(files: FilesArgType, chunkSize: number = -1): Promise<(SpinalDocument | SpinalFile)[]> {
 	const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
@@ -38,7 +39,7 @@ export async function convertFileToSpinalDocument(files: FilesArgType, chunkSize
 		// if (element.buffer) filePath = new SpinalPath(element.buffer, FileExplorer.getMimeType(element.name));
 		// else filePath = new SpinalPath(element, FileExplorer.getMimeType(element.name));
 
-		const hashes = await VersionUtils.getInstance().convertFileToHashes(element.buffer || element, [], chunkSize);
+		const hashes = await VersionUtils.getInstance().convertFileToHashes(element, [], chunkSize);
 		const fileVersion = new FileVersion({ version: 1, hashes });
 		let file = new SpinalDocument(element.name, fileVersion, { model_type: FILE_MODEL_TYPE });
 
@@ -49,8 +50,10 @@ export async function convertFileToSpinalDocument(files: FilesArgType, chunkSize
 }
 
 export async function convertFileToBuffer(file: any): Promise<Buffer> {
-	if (Buffer.isBuffer(file)) return file;
-	let arrayBuffer = file instanceof ArrayBuffer ? file : await file.arrayBuffer();
+	const buffer = file.buffer || file.data || file;
+
+	if (Buffer.isBuffer(buffer)) return buffer;
+	let arrayBuffer = buffer instanceof ArrayBuffer ? buffer : await buffer.arrayBuffer();
 
 	return Buffer.from(arrayBuffer);
 }
@@ -155,13 +158,19 @@ export async function _getFileAttributes(file: SpinalDocument | SpinalFile): Pro
 export async function _getFileAsBuffer(file: SpinalDocument | SpinalNode | SpinalFile, hubUrl: string = ""): Promise<Buffer> {
 	if (file instanceof SpinalNode) file = (await getFileModelFromNode(file)) as SpinalDocument | SpinalFile;
 
-	if (file instanceof SpinalDocument) return file.getCurrentVersionAsBuffer();
+	if (file instanceof SpinalDocument) return file.getCurrentVersionAsBuffer(hubUrl);
 
-	const pathServerId = file._ptr.data.value;
-	return getPathData(pathServerId, hubUrl);
+	return new Promise((resolve, reject) => {
+		file._ptr.load(async (element: SpinalPath) => {
+			const data = await getPathData(element, hubUrl);
+			resolve(data);
+		});
+	});
 }
 
-export function getPathData(dynamicId: number, hubUrl: string = ""): Promise<Buffer> {
+export async function getPathData(pathModel: Path, hubUrl: string = ""): Promise<Buffer> {
+	await waitUntilPathIsLoaded(pathModel);
+	const dynamicId = pathModel._server_id;
 	if (hubUrl.endsWith("/")) hubUrl = hubUrl.slice(0, -1);
 
 	const path = `${hubUrl}/sceen/_?u=${dynamicId}`;
@@ -173,7 +182,7 @@ export function getPathData(dynamicId: number, hubUrl: string = ""): Promise<Buf
 	});
 }
 
-export async function convertFileInTreeToSpecialFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl: string = ""): Promise<IFileFormattedInfo[]> {
+export async function convertFileInTreeToSpecialFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format?: fileFormat, hubUrl: string = ""): Promise<IFileFormattedInfo[]> {
 	const queue = await getStarterQueue(startNode);
 	const filesBuffers: IFileFormattedInfo[] = [];
 	const alreadyProcessedNodes = new Set<number>();
@@ -213,10 +222,16 @@ function bufferToStream(buffer: Buffer): NodeJS.ReadableStream {
 	return stream;
 }
 
-export async function convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl: string = ""): Promise<{ name: string; serverId: number; data: Buffer | string | NodeJS.ReadableStream }> {
-	const buffer = await _getFileAsBuffer(file, hubUrl);
-	const data = format === "base64" ? buffer.toString("base64") : format === "stream" ? bufferToStream(buffer) : buffer;
-	return { name: file.name.get(), serverId: file._server_id as number, data };
+export async function convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format?: fileFormat, hubUrl: string = ""): Promise<{ name: string; serverId: number; data: Buffer | string | NodeJS.ReadableStream }> {
+	const name = file instanceof SpinalNode ? file.getName().get() : file.name.get();
+	const fileData: any = { name, serverId: file._server_id as number };
+
+	if (format) {
+		const buffer = await _getFileAsBuffer(file, hubUrl);
+		fileData.data = format === "base64" ? buffer.toString("base64") : format === "stream" ? bufferToStream(buffer) : buffer;
+	}
+
+	return fileData;
 }
 
 export async function convertTreeToFileBuffers(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<IFileBufferInfo[]> {
@@ -255,7 +270,10 @@ async function getStarterQueue(startNode: SpinalNode | SpinalDocument | SpinalFi
 
 export async function _getOrCreateRootNode(node: SpinalNode, createIfNotExist: boolean = true): Promise<SpinalNode | null> {
 	const children = await node.getChildren([TO_ROOT_DIRECTORY_RELATION]);
-	if (children.length > 0) return children[0];
+	if (children.length > 0) {
+		await convertOldFilesToSpinalDocument(children[0]);
+		return children[0];
+	}
 
 	if (!createIfNotExist) return null;
 
@@ -291,4 +309,45 @@ export async function removeFileNode(fileNode: SpinalNode, contextNode?: SpinalN
 
 export function isFileVersion(fileVersion: any): fileVersion is FileVersion {
 	return fileVersion?.constructor?.name === "FileVersion";
+}
+
+async function waitUntilPathIsLoaded(pathModel: Path): Promise<boolean> {
+	return new Promise((resolve, reject) => {
+		const waitTimeout = () => {
+			if (pathModel.remaining.get() == 0 && pathModel._server_id) {
+				resolve(true);
+				return;
+			}
+			setTimeout(waitTimeout, 100);
+		};
+		waitTimeout();
+	});
+}
+
+async function convertOldFilesToSpinalDocument(node: SpinalNode): Promise<boolean> {
+	const directoryElement = await node.getElement(true);
+	if (!directoryElement) return false;
+	const documents: SpinalDocument[] = [];
+
+	for (let i = 0; i < directoryElement.length; i++) {
+		const element = directoryElement[i];
+		let document: SpinalDocument;
+
+		if (element instanceof SpinalDocument) {
+			document = element;
+		} else if (element instanceof SpinalFile) {
+			const fakeVersion = await FileVersion.createFakeFileVersionInstance(element);
+			const spinalDocument = new SpinalDocument(element.name.get(), fakeVersion, element._info.get());
+			document = spinalDocument;
+		}
+
+		const fileNode = await createorGetFileNode(document!);
+		documents.push(document!);
+		node.addChild(fileNode, TO_FILE_RELATION, SPINAL_RELATION_PTR_LST_TYPE);
+	}
+
+	if (directoryElement instanceof Lst || directoryElement instanceof Directory) directoryElement.clear();
+
+	return true;
+	// directory.clear();
 }

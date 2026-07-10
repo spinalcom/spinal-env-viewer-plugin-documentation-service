@@ -1,7 +1,7 @@
 /// <reference types="node" />
 /// <reference types="node" />
 /// <reference types="node" />
-import { File as SpinalFile } from "spinal-core-connectorjs_type";
+import { File as SpinalFile, Path } from "spinal-core-connectorjs_type";
 import { SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
 import { fileFormat, FilesArgType, IFileBufferInfo, IFileFormattedInfo } from "../interfaces";
 import { SpinalDocument } from "../models_spinalcom/SpinalDocument";
@@ -22,9 +22,9 @@ export declare function _getFileAttributes(file: SpinalDocument | SpinalFile): P
     relationName: string;
 }>;
 export declare function _getFileAsBuffer(file: SpinalDocument | SpinalNode | SpinalFile, hubUrl?: string): Promise<Buffer>;
-export declare function getPathData(dynamicId: number, hubUrl?: string): Promise<Buffer>;
-export declare function convertFileInTreeToSpecialFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl?: string): Promise<IFileFormattedInfo[]>;
-export declare function convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl?: string): Promise<{
+export declare function getPathData(pathModel: Path, hubUrl?: string): Promise<Buffer>;
+export declare function convertFileInTreeToSpecialFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format?: fileFormat, hubUrl?: string): Promise<IFileFormattedInfo[]>;
+export declare function convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format?: fileFormat, hubUrl?: string): Promise<{
     name: string;
     serverId: number;
     data: Buffer | string | NodeJS.ReadableStream;
