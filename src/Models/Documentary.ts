@@ -27,16 +27,16 @@ class SpinalDocumentary {
 		return Promise.all(promises);
 	}
 
-	public async removeFileFromContext(fileNode: SpinalNode | SpinalDocument): Promise<boolean> {
+	public async removeFileFromContext(fileNode: SpinalNode | SpinalDocument, contextNode: SpinalContext): Promise<boolean> {
 		if (fileNode instanceof SpinalDocument) fileNode = (await fileNode.getNode()) as SpinalNode;
 
-		if (fileNode.getType().get() !== DIRECTORY_NODE_TYPE) return removeFileNode(fileNode);
+		if (fileNode.getType().get() !== DIRECTORY_NODE_TYPE) return removeFileNode(fileNode, contextNode);
 
 		const files = await fileNode.getChildren([TO_FOLDER_RELATION, TO_FILE_RELATION]);
 		const promises: Promise<boolean | boolean[]>[] = [];
 
 		for (const file of files) {
-			promises.push(this.removeFileFromContext(file));
+			promises.push(this.removeFileFromContext(file, contextNode));
 		}
 
 		return Promise.all(promises).then((result) => {
@@ -54,7 +54,7 @@ class SpinalDocumentary {
 		sourceNode = await createorGetFileNode(sourceNode);
 		targetNode = await createorGetFileNode(targetNode);
 
-		await this.removeFileFromContext(documentToMove);
+		await this.removeFileFromContext(documentToMove, contextNode);
 
 		return this.addFileToNodeInContext(targetNode, documentToMove, contextNode)
 			.then((result) => !!result)

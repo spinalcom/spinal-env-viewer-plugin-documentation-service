@@ -31,5 +31,5 @@ export declare function convertFileToSpecialFormat(file: SpinalNode | SpinalDocu
 }>;
 export declare function convertTreeToFileBuffers(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl?: string): Promise<IFileBufferInfo[]>;
 export declare function _getOrCreateRootNode(node: SpinalNode, createIfNotExist?: boolean): Promise<SpinalNode | null>;
-export declare function removeFileNode(fileNode: SpinalNode): Promise<boolean>;
+export declare function removeFileNode(fileNode: SpinalNode, contextNode?: SpinalNode): Promise<boolean>;
 export declare function isFileVersion(fileVersion: any): fileVersion is FileVersion;

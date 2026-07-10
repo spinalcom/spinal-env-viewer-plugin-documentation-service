@@ -22,15 +22,15 @@ class SpinalDocumentary {
         }
         return Promise.all(promises);
     }
-    async removeFileFromContext(fileNode) {
+    async removeFileFromContext(fileNode, contextNode) {
         if (fileNode instanceof models_spinalcom_1.SpinalDocument)
             fileNode = (await fileNode.getNode());
         if (fileNode.getType().get() !== constants_1.DIRECTORY_NODE_TYPE)
-            return (0, files_1.removeFileNode)(fileNode);
+            return (0, files_1.removeFileNode)(fileNode, contextNode);
         const files = await fileNode.getChildren([constants_1.TO_FOLDER_RELATION, constants_1.TO_FILE_RELATION]);
         const promises = [];
         for (const file of files) {
-            promises.push(this.removeFileFromContext(file));
+            promises.push(this.removeFileFromContext(file, contextNode));
         }
         return Promise.all(promises).then((result) => {
             return true;
@@ -44,7 +44,7 @@ class SpinalDocumentary {
         documentToMove = await (0, files_1.createorGetFileNode)(documentToMove);
         sourceNode = await (0, files_1.createorGetFileNode)(sourceNode);
         targetNode = await (0, files_1.createorGetFileNode)(targetNode);
-        await this.removeFileFromContext(documentToMove);
+        await this.removeFileFromContext(documentToMove, contextNode);
         return this.addFileToNodeInContext(targetNode, documentToMove, contextNode)
             .then((result) => !!result)
             .catch(() => false);

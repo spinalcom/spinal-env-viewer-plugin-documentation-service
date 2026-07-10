@@ -10,7 +10,7 @@ declare class SpinalDocumentary {
     constructor();
     createDocumentaryContext(graph: SpinalGraph, name: string): Promise<SpinalContext>;
     addFileToNodeInContext(parentNode: SpinalNode, files: FilesArgType, contextNode: SpinalContext, chunkSize?: number): Promise<SpinalNode[]>;
-    removeFileFromContext(fileNode: SpinalNode | SpinalDocument): Promise<boolean>;
+    removeFileFromContext(fileNode: SpinalNode | SpinalDocument, contextNode: SpinalContext): Promise<boolean>;
     addDirectoryToNodeInContext(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon?: string): Promise<SpinalNode>;
     moveDocumentInContext(documentToMove: SpinalNode | SpinalDocument | SpinalFile, sourceNode: SpinalNode | SpinalDocument | SpinalFile, targetNode: SpinalNode | SpinalDocument | SpinalFile, contextNode: SpinalContext): Promise<boolean>;
     getFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]>;

@@ -238,8 +238,12 @@ async function _getOrCreateRootNode(node, createIfNotExist = true) {
     return directoryNode;
 }
 exports._getOrCreateRootNode = _getOrCreateRootNode;
-async function removeFileNode(fileNode) {
-    const parentNodes = await fileNode.getParents([constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
+async function removeFileNode(fileNode, contextNode) {
+    let parentNodes;
+    if (contextNode)
+        parentNodes = await fileNode.getParentsInContext(contextNode, [constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
+    else
+        parentNodes = await fileNode.getParents([constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
     const fileElement = await getFileModelFromNode(fileNode);
     const unlinkPromises = parentNodes.map(async (parent) => {
         if (parent.getType().get() === constants_1.DIRECTORY_NODE_TYPE) {
