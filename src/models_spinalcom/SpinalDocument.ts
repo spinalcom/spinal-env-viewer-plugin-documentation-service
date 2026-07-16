@@ -81,6 +81,33 @@ export default class SpinalDocument extends SpinalFile {
 		return currentVersion.getAsBuffer(hubUrl);
 	}
 
+	async removeVersion(versionName: string): Promise<boolean> {
+		if (this.isDirectory()) throw new Error("Cannot remove version of a directory.");
+
+		const currentVersion = await this.getCurrentVersion();
+		if (currentVersion.version.get() === versionName) throw new Error("Cannot remove the current version.");
+
+		const versionHistory = await this._loadVersionHistory();
+		const versionFound = Array.from(versionHistory).find((version: FileVersion) => version.version.get() === versionName);
+		if (!versionFound) throw new Error(`Version ${versionName} not found.`);
+
+		versionHistory.remove(versionFound);
+
+		return true;
+	}
+
+	async getVersionByName(versionName: string): Promise<FileVersion | null> {
+		if (this.isDirectory()) throw new Error("Directories do not have versions.");
+
+		const versionHistory = await this._loadVersionHistory();
+		for (const version of versionHistory) {
+			if (version.version.get() === versionName) {
+				return version;
+			}
+		}
+		return null; // Return null if the version is not found
+	}
+
 	async getVersionHistory(): Promise<FileVersion[]> {
 		if (this.isDirectory()) throw new Error("Directories do not have versions.");
 

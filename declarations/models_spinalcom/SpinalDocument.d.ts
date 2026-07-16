@@ -13,6 +13,8 @@ export default class SpinalDocument extends SpinalFile {
     updateVersion(buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<FileVersion>;
     getCurrentVersion(): Promise<FileVersion>;
     getCurrentVersionAsBuffer(hubUrl?: string): Promise<Buffer>;
+    removeVersion(versionName: string): Promise<boolean>;
+    getVersionByName(versionName: string): Promise<FileVersion | null>;
     getVersionHistory(): Promise<FileVersion[]>;
     linkToNode(parentNode: SpinalNode, contextNode?: SpinalContext): Promise<SpinalNode>;
     remove(): Promise<boolean>;

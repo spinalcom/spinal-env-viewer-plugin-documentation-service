@@ -22,6 +22,12 @@ class SpinalDocumentary {
         }
         return Promise.all(promises);
     }
+    async addExistingFileToContext(fileNode, parentNode, contextNode) {
+        const file = await (0, files_1.createorGetFileNode)(fileNode);
+        if (!file)
+            return null;
+        return this.addFileToNodeInContext(parentNode, file, contextNode).then((result) => (result.length > 0 ? result[0] : null));
+    }
     async removeFileFromContext(fileNode, contextNode) {
         if (fileNode instanceof models_spinalcom_1.SpinalDocument)
             fileNode = (await fileNode.getNode());
@@ -79,6 +85,13 @@ class SpinalDocumentary {
         if (!fileNode || !(fileNode instanceof models_spinalcom_1.SpinalDocument))
             throw new Error("File model not found for the given node.");
         return fileNode.updateVersion(buffer, versionName, chunkSize);
+    }
+    async removeFileVersion(fileNode, versionName) {
+        if (fileNode instanceof spinal_model_graph_1.SpinalNode)
+            fileNode = (await (0, files_1.getFileModelFromNode)(fileNode));
+        if (!fileNode || !(fileNode instanceof models_spinalcom_1.SpinalDocument))
+            throw new Error("File model not found for the given node.");
+        return fileNode.removeVersion(versionName);
     }
     async importFilesFromSpinalDrive(contextNode, parentNode, startFile) {
         const queue = [{ file: startFile, parent: parentNode }];

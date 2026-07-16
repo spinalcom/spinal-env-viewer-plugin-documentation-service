@@ -27,6 +27,12 @@ class SpinalDocumentary {
 		return Promise.all(promises);
 	}
 
+	public async addExistingFileToContext(fileNode: SpinalNode | SpinalDocument | SpinalFile, parentNode: SpinalNode, contextNode: SpinalContext): Promise<SpinalNode | null> {
+		const file = await createorGetFileNode(fileNode);
+		if (!file) return null;
+		return this.addFileToNodeInContext(parentNode, file, contextNode).then((result) => (result.length > 0 ? result[0] : null));
+	}
+
 	public async removeFileFromContext(fileNode: SpinalNode | SpinalDocument, contextNode: SpinalContext): Promise<boolean> {
 		if (fileNode instanceof SpinalDocument) fileNode = (await fileNode.getNode()) as SpinalNode;
 
@@ -93,6 +99,13 @@ class SpinalDocumentary {
 		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
 
 		return fileNode.updateVersion(buffer, versionName, chunkSize);
+	}
+
+	public async removeFileVersion(fileNode: SpinalNode | SpinalDocument, versionName: string): Promise<boolean> {
+		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
+		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
+
+		return fileNode.removeVersion(versionName);
 	}
 
 	public async importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalDocument): Promise<SpinalNode[]> {
