@@ -351,3 +351,9 @@ async function convertOldFilesToSpinalDocument(node: SpinalNode): Promise<boolea
 	return true;
 	// directory.clear();
 }
+
+export async function _getRootNodeParent(node: SpinalNode): Promise<SpinalNode[]> {
+	return node.getParents([TO_FOLDER_RELATION, TO_FILE_RELATION]).then((parents) => {
+		return parents;
+	});
+}

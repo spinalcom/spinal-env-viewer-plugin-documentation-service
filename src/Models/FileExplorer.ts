@@ -24,7 +24,7 @@
 
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalNode } from "spinal-model-graph";
 import { MESSAGE_TYPES } from "spinal-models-documentation";
-import { _getOrCreateRootNode, convertFileToSpinalDocument, createorGetFileNode, getFileModelFromNode } from "../utils/files";
+import { _getOrCreateRootNode, _getRootNodeParent, convertFileToSpinalDocument, createorGetFileNode, getFileModelFromNode } from "../utils/files";
 import { FilesArgType } from "../interfaces";
 import { DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
 import { SpinalDocument } from "../models_spinalcom";
@@ -173,6 +173,17 @@ export class FileExplorer {
 			}
 			return files;
 		});
+	}
+
+	public static async getFileParents(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<SpinalNode[]> {
+		let rootDirNode;
+		if (fileNode instanceof SpinalDocument) fileNode = (await fileNode.getNode()) as SpinalNode;
+		if (fileNode.getType().get() === DIRECTORY_NODE_TYPE || fileNode.getType().get() === FILE_NODE_TYPE) rootDirNode = fileNode;
+		else rootDirNode = await FileExplorer.getDirectory(fileNode as SpinalNode);
+
+		if (!rootDirNode) return [];
+
+		return _getRootNodeParent(fileNode as SpinalNode);
 	}
 
 	public static async removeFileLinked(node: SpinalNode, fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<boolean> {

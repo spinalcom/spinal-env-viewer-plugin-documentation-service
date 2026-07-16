@@ -161,6 +161,18 @@ class FileExplorer {
             return files;
         });
     }
+    static async getFileParents(fileNode) {
+        let rootDirNode;
+        if (fileNode instanceof models_spinalcom_1.SpinalDocument)
+            fileNode = (await fileNode.getNode());
+        if (fileNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE || fileNode.getType().get() === constants_1.FILE_NODE_TYPE)
+            rootDirNode = fileNode;
+        else
+            rootDirNode = await FileExplorer.getDirectory(fileNode);
+        if (!rootDirNode)
+            return [];
+        return (0, files_1._getRootNodeParent)(fileNode);
+    }
     static async removeFileLinked(node, fileNode) {
         const rootDirNode = await (0, files_1._getOrCreateRootNode)(node, false);
         if (!rootDirNode)

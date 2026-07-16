@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isFileVersion = exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.convertFileToSpecialFormat = exports.convertFileInTreeToSpecialFormat = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createorGetFileNode = exports.getFilesFromDirectory = exports.getFileModelFromNode = exports.addSpinalDocumentAsNodeChild = exports.convertFileToBuffer = exports.convertFileToSpinalDocument = void 0;
+exports._getRootNodeParent = exports.isFileVersion = exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.convertFileToSpecialFormat = exports.convertFileInTreeToSpecialFormat = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createorGetFileNode = exports.getFilesFromDirectory = exports.getFileModelFromNode = exports.addSpinalDocumentAsNodeChild = exports.convertFileToBuffer = exports.convertFileToSpinalDocument = void 0;
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const constants_1 = require("../Models/constants");
@@ -311,4 +311,10 @@ async function convertOldFilesToSpinalDocument(node) {
     return true;
     // directory.clear();
 }
+async function _getRootNodeParent(node) {
+    return node.getParents([constants_1.TO_FOLDER_RELATION, constants_1.TO_FILE_RELATION]).then((parents) => {
+        return parents;
+    });
+}
+exports._getRootNodeParent = _getRootNodeParent;
 //# sourceMappingURL=files.js.map
