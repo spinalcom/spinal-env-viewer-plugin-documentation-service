@@ -22,35 +22,31 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-import { AttributeService } from './AttributeService';
-import { NoteService } from './NoteService';
-import { UrlService } from './UrlService';
+import { AttributeService } from "./AttributeService";
+import { NoteService } from "./NoteService";
+import { UrlService } from "./UrlService";
 import { SpinalDocumentary } from "./Documentary";
 
 // @ts-ignore
-const globalType: any = typeof window === 'undefined' ? global : window;
+const globalType: any = typeof window === "undefined" ? global : window;
 
 function applyMixins(derivedConstructor: any, baseConstructors: any[]) {
-  baseConstructors.forEach((baseConstructor) => {
-    Object.getOwnPropertyNames(baseConstructor.prototype).forEach((name) => {
-      Object.defineProperty(
-        derivedConstructor.prototype,
-        name,
-        Object.getOwnPropertyDescriptor(baseConstructor.prototype, name)
-      );
-    });
-  });
+	baseConstructors.forEach((baseConstructor) => {
+		Object.getOwnPropertyNames(baseConstructor.prototype).forEach((name) => {
+			Object.defineProperty(derivedConstructor.prototype, name, Object.getOwnPropertyDescriptor(baseConstructor.prototype, name));
+		});
+	});
 }
 
-class ServiceDocumentation { }
+class ServiceDocumentation {}
 
-interface ServiceDocumentation extends AttributeService, NoteService, UrlService, SpinalDocumentary { }
+interface ServiceDocumentation extends AttributeService, NoteService, UrlService, SpinalDocumentary {}
 
 applyMixins(ServiceDocumentation, [AttributeService, NoteService, UrlService, SpinalDocumentary]);
 
 const serviceDocumentation = new ServiceDocumentation();
 
-globalType.spinal['serviceDocumentation'] = serviceDocumentation;
+globalType.spinal["serviceDocumentation"] = serviceDocumentation;
 
 export { ServiceDocumentation, serviceDocumentation };
 

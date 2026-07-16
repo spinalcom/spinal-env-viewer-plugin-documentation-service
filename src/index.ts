@@ -22,8 +22,6 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-console.warn("Warning: spinal-env-viewer-plugin-documentation is deprecated. Please use spinal-env-viewer-plugin-service-documentation instead.");
-
 import { Directory } from "spinal-core-connectorjs_type";
 import { serviceDocumentation } from "./Models/ServiceDocumentation";
 import { FileVersion, SpinalDocument } from "./models_spinalcom";

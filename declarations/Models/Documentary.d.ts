@@ -15,6 +15,7 @@ declare class SpinalDocumentary {
     addDirectoryToNodeInContext(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon?: string): Promise<SpinalNode>;
     moveDocumentInContext(documentToMove: SpinalNode | SpinalDocument | SpinalFile, sourceNode: SpinalNode | SpinalDocument | SpinalFile, targetNode: SpinalNode | SpinalDocument | SpinalFile, contextNode: SpinalContext): Promise<boolean>;
     getFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]>;
+    getFileVersionByName(fileNode: SpinalNode | SpinalDocument | SpinalFile, versionName: string): Promise<FileVersion | null>;
     updateFileVersion(fileNode: SpinalNode | SpinalDocument, buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<FileVersion>;
     removeFileVersion(fileNode: SpinalNode | SpinalDocument, versionName: string): Promise<boolean>;
     importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalDocument): Promise<SpinalNode[]>;
@@ -47,6 +48,7 @@ declare class SpinalDocumentary {
         name: string;
         data: Buffer | string | NodeJS.ReadableStream;
     }[]>;
+    getFileParents(node: SpinalNode | SpinalDocument | SpinalFile): Promise<SpinalNode[]>;
     unlinkFileFromNode(node: SpinalNode, fileNode: SpinalNode): Promise<boolean>;
     private _createNodeInContext;
     static pushFileToDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<SpinalNode | null>;

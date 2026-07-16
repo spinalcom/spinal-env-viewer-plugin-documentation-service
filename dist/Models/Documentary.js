@@ -79,6 +79,15 @@ class SpinalDocumentary {
         // }
         throw new Error("Unsupported file model type.");
     }
+    async getFileVersionByName(fileNode, versionName) {
+        if (fileNode instanceof spinal_model_graph_1.SpinalNode)
+            fileNode = (await (0, files_1.getFileModelFromNode)(fileNode));
+        if (!fileNode)
+            throw new Error("File model not found for the given node.");
+        if (fileNode instanceof models_spinalcom_1.SpinalDocument)
+            return fileNode.getVersionByName(versionName);
+        return null;
+    }
     async updateFileVersion(fileNode, buffer, versionName, chunkSize) {
         if (fileNode instanceof spinal_model_graph_1.SpinalNode)
             fileNode = (await (0, files_1.getFileModelFromNode)(fileNode));
@@ -153,6 +162,9 @@ class SpinalDocumentary {
         if (!rootDirNode)
             return [];
         return (0, files_1.convertFileInTreeToSpecialFormat)(rootDirNode, format, hubUrl);
+    }
+    async getFileParents(node) {
+        return FileExplorer_1.FileExplorer.getFileParents(node);
     }
     ///////////// end of file Linked to node functions
     //TODO: correct this function

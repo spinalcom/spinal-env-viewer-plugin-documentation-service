@@ -1,6 +1,6 @@
-import { AttributeService } from './AttributeService';
-import { NoteService } from './NoteService';
-import { UrlService } from './UrlService';
+import { AttributeService } from "./AttributeService";
+import { NoteService } from "./NoteService";
+import { UrlService } from "./UrlService";
 import { SpinalDocumentary } from "./Documentary";
 declare class ServiceDocumentation {
 }

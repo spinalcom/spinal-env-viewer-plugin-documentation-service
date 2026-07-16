@@ -94,6 +94,14 @@ class SpinalDocumentary {
 		throw new Error("Unsupported file model type.");
 	}
 
+	public async getFileVersionByName(fileNode: SpinalNode | SpinalDocument | SpinalFile, versionName: string): Promise<FileVersion | null> {
+		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
+		if (!fileNode) throw new Error("File model not found for the given node.");
+
+		if (fileNode instanceof SpinalDocument) return fileNode.getVersionByName(versionName);
+		return null;
+	}
+
 	public async updateFileVersion(fileNode: SpinalNode | SpinalDocument, buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<FileVersion> {
 		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
 		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
@@ -180,6 +188,10 @@ class SpinalDocumentary {
 		if (!rootDirNode) return [];
 
 		return convertFileInTreeToSpecialFormat(rootDirNode, format, hubUrl);
+	}
+
+	public async getFileParents(node: SpinalNode | SpinalDocument | SpinalFile): Promise<SpinalNode[]> {
+		return FileExplorer.getFileParents(node);
 	}
 	///////////// end of file Linked to node functions
 
