@@ -353,7 +353,16 @@ async function convertOldFilesToSpinalDocument(node: SpinalNode): Promise<boolea
 }
 
 export async function _getRootNodeParent(node: SpinalNode): Promise<SpinalNode[]> {
-	return node.getParents([TO_FOLDER_RELATION, TO_FILE_RELATION]).then((parents) => {
-		return parents;
-	});
+	const parents = await node.getParents([TO_FOLDER_RELATION, TO_FILE_RELATION]);
+
+	const result: SpinalNode[] = [];
+	for (const parent of parents) {
+		if (parent.getName().get().endsWith("_root_directory")) {
+			const grandParents = await parent.getParents([TO_ROOT_DIRECTORY_RELATION]);
+			result.push(...grandParents);
+		} else {
+			result.push(parent);
+		}
+	}
+	return result;
 }

@@ -312,9 +312,18 @@ async function convertOldFilesToSpinalDocument(node) {
     // directory.clear();
 }
 async function _getRootNodeParent(node) {
-    return node.getParents([constants_1.TO_FOLDER_RELATION, constants_1.TO_FILE_RELATION]).then((parents) => {
-        return parents;
-    });
+    const parents = await node.getParents([constants_1.TO_FOLDER_RELATION, constants_1.TO_FILE_RELATION]);
+    const result = [];
+    for (const parent of parents) {
+        if (parent.getName().get().endsWith("_root_directory")) {
+            const grandParents = await parent.getParents([constants_1.TO_ROOT_DIRECTORY_RELATION]);
+            result.push(...grandParents);
+        }
+        else {
+            result.push(parent);
+        }
+    }
+    return result;
 }
 exports._getRootNodeParent = _getRootNodeParent;
 //# sourceMappingURL=files.js.map
