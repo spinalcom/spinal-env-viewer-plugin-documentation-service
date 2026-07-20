@@ -163,10 +163,11 @@ class FileExplorer {
     }
     static async getFileParents(fileNode) {
         // let rootDirNode;
-        // if (fileNode instanceof SpinalDocument) fileNode = (await fileNode.getNode()) as SpinalNode;
         // if (fileNode.getType().get() === DIRECTORY_NODE_TYPE || fileNode.getType().get() === FILE_NODE_TYPE) rootDirNode = fileNode;
         // // else rootDirNode = await FileExplorer.getDirectory(fileNode as SpinalNode);
         // if (!rootDirNode) return [];
+        if (fileNode instanceof models_spinalcom_1.SpinalDocument)
+            fileNode = (await fileNode.getNode());
         return (0, files_1._getRootNodeParent)(fileNode);
     }
     static async removeFileLinked(node, fileNode) {

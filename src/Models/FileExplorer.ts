@@ -177,11 +177,11 @@ export class FileExplorer {
 
 	public static async getFileParents(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<SpinalNode[]> {
 		// let rootDirNode;
-		// if (fileNode instanceof SpinalDocument) fileNode = (await fileNode.getNode()) as SpinalNode;
 		// if (fileNode.getType().get() === DIRECTORY_NODE_TYPE || fileNode.getType().get() === FILE_NODE_TYPE) rootDirNode = fileNode;
 		// // else rootDirNode = await FileExplorer.getDirectory(fileNode as SpinalNode);
 
 		// if (!rootDirNode) return [];
+		if (fileNode instanceof SpinalDocument) fileNode = (await fileNode.getNode()) as SpinalNode;
 
 		return _getRootNodeParent(fileNode as SpinalNode);
 	}
