@@ -182,7 +182,7 @@ export async function getPathData(pathModel: Path, hubUrl: string = ""): Promise
 	});
 }
 
-export async function convertFileInTreeToSpecialFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format?: fileFormat, hubUrl: string = ""): Promise<IFileFormattedInfo[]> {
+export async function convertFileInTreeToSpecialFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format?: fileFormat, hubUrl: string = "", onlyFiles: boolean = false): Promise<IFileFormattedInfo[]> {
 	const queue = await getStarterQueue(startNode);
 	const filesBuffers: IFileFormattedInfo[] = [];
 	const alreadyProcessedNodes = new Set<number>();
@@ -196,12 +196,16 @@ export async function convertFileInTreeToSpecialFormat(startNode: SpinalNode | S
 
 		if (alreadyProcessedNodes.has(serverId)) continue;
 
-		if (file._info.model_type?.get() !== DIRECTORY_MODEL_TYPE) {
-			const data = await convertFileToSpecialFormat(file, format, hubUrl);
+		const data = await convertFileToSpecialFormat(file, format, hubUrl);
+		const isDirectory = file._info.model_type?.get() === DIRECTORY_MODEL_TYPE;
+
+		// If the current file is not a directory or if we want to include files, we add it to the result
+		if (!onlyFiles || (onlyFiles && !isDirectory)) {
 			filesBuffers.push({ path, ...data });
 		}
 
-		if (file._info.model_type?.get() === DIRECTORY_MODEL_TYPE) {
+		// If the current file is a directory, we get its children and add them to the queue for processing
+		if (isDirectory) {
 			const children = await getFilesFromDirectory(file);
 
 			for (const child of children) {
@@ -225,8 +229,11 @@ function bufferToStream(buffer: Buffer): NodeJS.ReadableStream {
 export async function convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format?: fileFormat, hubUrl: string = ""): Promise<{ name: string; serverId: number; data: Buffer | string | NodeJS.ReadableStream }> {
 	const name = file instanceof SpinalNode ? file.getName().get() : file.name.get();
 	const fileData: any = { name, serverId: file._server_id as number };
+	const fileType = file instanceof SpinalNode ? file.getType().get() : file._info.model_type?.get();
 
-	if (format) {
+	const isDirectory = fileType === DIRECTORY_MODEL_TYPE;
+
+	if (!isDirectory && format) {
 		const buffer = await _getFileAsBuffer(file, hubUrl);
 		fileData.data = format === "base64" ? buffer.toString("base64") : format === "stream" ? bufferToStream(buffer) : buffer;
 	}
@@ -235,7 +242,7 @@ export async function convertFileToSpecialFormat(file: SpinalNode | SpinalDocume
 }
 
 export async function convertTreeToFileBuffers(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<IFileBufferInfo[]> {
-	return convertFileInTreeToSpecialFormat(startNode, "buffer", hubUrl).then((files) => {
+	return convertFileInTreeToSpecialFormat(startNode, "buffer", hubUrl, true).then((files) => {
 		return files.map((file) => {
 			return { name: file.name, path: file.path, buffer: file.data as Buffer };
 		});

@@ -124,11 +124,14 @@ class SpinalDocumentary {
         return createdNodes;
     }
     //////////////////////////////////
+    async getAllPathsInTree(startNode) {
+        return (0, files_1.convertFileInTreeToSpecialFormat)(startNode, undefined, "", false);
+    }
     async getFilesInTreeAsBuffer(startNode, hubUrl = "") {
         return (0, files_1.convertTreeToFileBuffers)(startNode, hubUrl);
     }
     async getFilesInTreeToSpecificFormat(startNode, format, hubUrl = "") {
-        return (0, files_1.convertFileInTreeToSpecialFormat)(startNode, format, hubUrl);
+        return (0, files_1.convertFileInTreeToSpecialFormat)(startNode, format, hubUrl, true);
     }
     async convertFileToBuffer(file, hubUrl = "") {
         return (0, files_1.convertFileToSpecialFormat)(file, "buffer", hubUrl).then((result) => {
@@ -161,7 +164,7 @@ class SpinalDocumentary {
         const rootDirNode = await (0, files_1._getOrCreateRootNode)(node, false);
         if (!rootDirNode)
             return [];
-        return (0, files_1.convertFileInTreeToSpecialFormat)(rootDirNode, format, hubUrl);
+        return (0, files_1.convertFileInTreeToSpecialFormat)(rootDirNode, format, hubUrl, true);
     }
     async getFileParents(node) {
         return FileExplorer_1.FileExplorer.getFileParents(node);

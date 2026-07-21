@@ -164,7 +164,7 @@ async function getPathData(pathModel, hubUrl = "") {
     });
 }
 exports.getPathData = getPathData;
-async function convertFileInTreeToSpecialFormat(startNode, format, hubUrl = "") {
+async function convertFileInTreeToSpecialFormat(startNode, format, hubUrl = "", onlyFiles = false) {
     const queue = await getStarterQueue(startNode);
     const filesBuffers = [];
     const alreadyProcessedNodes = new Set();
@@ -176,11 +176,14 @@ async function convertFileInTreeToSpecialFormat(startNode, format, hubUrl = "") 
         const serverId = file._server_id || 0;
         if (alreadyProcessedNodes.has(serverId))
             continue;
-        if (file._info.model_type?.get() !== constants_1.DIRECTORY_MODEL_TYPE) {
-            const data = await convertFileToSpecialFormat(file, format, hubUrl);
+        const data = await convertFileToSpecialFormat(file, format, hubUrl);
+        const isDirectory = file._info.model_type?.get() === constants_1.DIRECTORY_MODEL_TYPE;
+        // If the current file is not a directory or if we want to include files, we add it to the result
+        if (!onlyFiles || (onlyFiles && !isDirectory)) {
             filesBuffers.push({ path, ...data });
         }
-        if (file._info.model_type?.get() === constants_1.DIRECTORY_MODEL_TYPE) {
+        // If the current file is a directory, we get its children and add them to the queue for processing
+        if (isDirectory) {
             const children = await getFilesFromDirectory(file);
             for (const child of children) {
                 queue.push({ path: `${path}/${child.name.get()}`, file: child });
@@ -200,7 +203,9 @@ function bufferToStream(buffer) {
 async function convertFileToSpecialFormat(file, format, hubUrl = "") {
     const name = file instanceof spinal_env_viewer_graph_service_1.SpinalNode ? file.getName().get() : file.name.get();
     const fileData = { name, serverId: file._server_id };
-    if (format) {
+    const fileType = file instanceof spinal_env_viewer_graph_service_1.SpinalNode ? file.getType().get() : file._info.model_type?.get();
+    const isDirectory = fileType === constants_1.DIRECTORY_MODEL_TYPE;
+    if (!isDirectory && format) {
         const buffer = await _getFileAsBuffer(file, hubUrl);
         fileData.data = format === "base64" ? buffer.toString("base64") : format === "stream" ? bufferToStream(buffer) : buffer;
     }
@@ -208,7 +213,7 @@ async function convertFileToSpecialFormat(file, format, hubUrl = "") {
 }
 exports.convertFileToSpecialFormat = convertFileToSpecialFormat;
 async function convertTreeToFileBuffers(startNode, hubUrl = "") {
-    return convertFileInTreeToSpecialFormat(startNode, "buffer", hubUrl).then((files) => {
+    return convertFileInTreeToSpecialFormat(startNode, "buffer", hubUrl, true).then((files) => {
         return files.map((file) => {
             return { name: file.name, path: file.path, buffer: file.data };
         });

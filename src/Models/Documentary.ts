@@ -2,7 +2,7 @@ import { File as SpinalFile, Lst, Directory } from "spinal-core-connectorjs_type
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalGraph, SpinalNode } from "spinal-model-graph";
 import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addSpinalDocumentAsNodeChild, convertFileInTreeToSpecialFormat, convertFileToSpecialFormat, convertFileToSpinalDocument, convertTreeToFileBuffers, createorGetFileNode, getFileModelFromNode, removeFileNode } from "../utils/files";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, DOCUMENTARY_CONTEXT_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
-import { fileFormat, FilesArgType } from "../interfaces";
+import { fileFormat, FilesArgType, IFileInfo } from "../interfaces";
 import { FileVersion, SpinalDocument } from "../models_spinalcom";
 import { FileExplorer } from "./FileExplorer";
 
@@ -143,12 +143,16 @@ class SpinalDocumentary {
 
 	//////////////////////////////////
 
-	public async getFilesInTreeAsBuffer(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<{ name: string; path: string; buffer: Buffer }[]> {
+	public async getAllPathsInTree(startNode: SpinalNode | SpinalDocument | SpinalFile): Promise<IFileInfo[]> {
+		return convertFileInTreeToSpecialFormat(startNode, undefined, "", false);
+	}
+
+	public async getFilesInTreeAsBuffer(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<IFileInfo[]> {
 		return convertTreeToFileBuffers(startNode, hubUrl);
 	}
 
-	public async getFilesInTreeToSpecificFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl: string = ""): Promise<{ name: string; path: string; data: Buffer | string | NodeJS.ReadableStream }[]> {
-		return convertFileInTreeToSpecialFormat(startNode, format, hubUrl);
+	public async getFilesInTreeToSpecificFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl: string = ""): Promise<IFileInfo[]> {
+		return convertFileInTreeToSpecialFormat(startNode, format, hubUrl, true);
 	}
 
 	public async convertFileToBuffer(file: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<{ name: string; buffer: Buffer }> {
@@ -157,7 +161,7 @@ class SpinalDocumentary {
 		});
 	}
 
-	public async convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl: string = ""): Promise<{ name: string; data: Buffer | string | NodeJS.ReadableStream }> {
+	public async convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl: string = ""): Promise<IFileInfo> {
 		return convertFileToSpecialFormat(file, format, hubUrl);
 	}
 
@@ -187,7 +191,7 @@ class SpinalDocumentary {
 		const rootDirNode = await _getOrCreateRootNode(node, false);
 		if (!rootDirNode) return [];
 
-		return convertFileInTreeToSpecialFormat(rootDirNode, format, hubUrl);
+		return convertFileInTreeToSpecialFormat(rootDirNode, format, hubUrl, true);
 	}
 
 	public async getFileParents(node: SpinalNode | SpinalDocument | SpinalFile): Promise<SpinalNode[]> {

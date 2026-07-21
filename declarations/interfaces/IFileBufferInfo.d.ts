@@ -12,3 +12,9 @@ export interface IFileFormattedInfo {
     serverId: number;
     data: Buffer | string | NodeJS.ReadableStream;
 }
+export interface IFileInfo {
+    name?: string;
+    path?: string;
+    serverId?: number;
+    data?: Buffer | string | NodeJS.ReadableStream;
+}
