@@ -228,10 +228,10 @@ function bufferToStream(buffer: Buffer): NodeJS.ReadableStream {
 
 export async function convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format?: fileFormat, hubUrl: string = ""): Promise<{ name: string; serverId: number; data: Buffer | string | NodeJS.ReadableStream }> {
 	const name = file instanceof SpinalNode ? file.getName().get() : file.name.get();
-	const fileData: any = { name, serverId: file._server_id as number };
 	const fileType = file instanceof SpinalNode ? file.getType().get() : file._info.model_type?.get();
 
 	const isDirectory = fileType === DIRECTORY_MODEL_TYPE;
+	const fileData: any = { name, serverId: file._server_id as number, type: isDirectory ? DIRECTORY_NODE_TYPE : FILE_NODE_TYPE };
 
 	if (!isDirectory && format) {
 		const buffer = await _getFileAsBuffer(file, hubUrl);

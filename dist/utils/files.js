@@ -202,9 +202,9 @@ function bufferToStream(buffer) {
 }
 async function convertFileToSpecialFormat(file, format, hubUrl = "") {
     const name = file instanceof spinal_env_viewer_graph_service_1.SpinalNode ? file.getName().get() : file.name.get();
-    const fileData = { name, serverId: file._server_id };
     const fileType = file instanceof spinal_env_viewer_graph_service_1.SpinalNode ? file.getType().get() : file._info.model_type?.get();
     const isDirectory = fileType === constants_1.DIRECTORY_MODEL_TYPE;
+    const fileData = { name, serverId: file._server_id, type: isDirectory ? constants_1.DIRECTORY_NODE_TYPE : constants_1.FILE_NODE_TYPE };
     if (!isDirectory && format) {
         const buffer = await _getFileAsBuffer(file, hubUrl);
         fileData.data = format === "base64" ? buffer.toString("base64") : format === "stream" ? bufferToStream(buffer) : buffer;
