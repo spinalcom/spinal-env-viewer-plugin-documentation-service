@@ -24,7 +24,7 @@
 
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalNode } from "spinal-model-graph";
 import { MESSAGE_TYPES } from "spinal-models-documentation";
-import { _getOrCreateRootNode, _getRootNodeParent, convertFileToSpinalDocument, createorGetFileNode, getFileModelFromNode } from "../utils/files";
+import { _getOrCreateRootNode, _getRootNodeParent, convertFileToSpinalDocument, createorGetFileNode, getFileModelFromNode, removeFileNodeFromParent } from "../utils/files";
 import { FilesArgType } from "../interfaces";
 import { DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
 import { SpinalDocument } from "../models_spinalcom";
@@ -190,22 +190,23 @@ export class FileExplorer {
 		const rootDirNode = await _getOrCreateRootNode(node, false);
 		if (!rootDirNode) return false;
 
-		let fileModel: SpinalDocument | SpinalFile | undefined = undefined;
+		return removeFileNodeFromParent(rootDirNode, fileNode);
+		// let fileModel: SpinalDocument | SpinalFile | undefined = undefined;
 
-		if (fileNode instanceof SpinalDocument || fileNode instanceof SpinalFile) {
-			fileModel = fileNode;
-			fileNode = await createorGetFileNode(fileNode instanceof SpinalDocument ? fileNode : (fileNode as SpinalFile));
-		}
+		// if (fileNode instanceof SpinalDocument || fileNode instanceof SpinalFile) {
+		// 	fileModel = fileNode;
+		// 	fileNode = await createorGetFileNode(fileNode instanceof SpinalDocument ? fileNode : (fileNode as SpinalFile));
+		// }
 
-		const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
-		return rootDirNode
-			.removeChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE)
-			.then(async () => {
-				fileModel = fileModel || (await getFileModelFromNode(fileNode as SpinalNode));
+		// const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
+		// return rootDirNode
+		// 	.removeChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE)
+		// 	.then(async () => {
+		// 		fileModel = fileModel || (await getFileModelFromNode(fileNode as SpinalNode));
 
-				return SpinalDocumentary.removeFileFromDirectory(rootDirNode, fileModel as any);
-			})
-			.catch(() => false);
+		// 		return SpinalDocumentary.removeFileFromDirectory(rootDirNode, fileModel as any);
+		// 	})
+		// 	.catch(() => false);
 	}
 
 	public static async _getOrCreateFileDirectory(node: SpinalNode<any>): Promise<SpinalNode | null> {

@@ -75,7 +75,9 @@ export function addSpinalDocumentAsNodeChild(parentNode: SpinalNode, spinalDocum
 	});
 }
 
-export async function getFileModelFromNode(node: SpinalNode): Promise<SpinalDocument | SpinalFile | undefined> {
+export async function getFileModelFromNode(node: SpinalNode | SpinalDocument | SpinalFile): Promise<SpinalDocument | SpinalFile | undefined> {
+	if (node instanceof SpinalDocument || node instanceof SpinalFile) return node;
+
 	const file = await node.getElement(true);
 	return file;
 }
@@ -293,25 +295,38 @@ export async function _getOrCreateRootNode(node: SpinalNode, createIfNotExist: b
 	return directoryNode;
 }
 
-export async function removeFileNode(fileNode: SpinalNode, contextNode?: SpinalNode): Promise<boolean> {
-	let parentNodes: SpinalNode[];
+export function isRootDirectoryNode(node: SpinalNode): boolean {
+	return node.getType().get() === DIRECTORY_NODE_TYPE && node.getName().get().endsWith("_root_directory");
+}
 
-	if (contextNode) parentNodes = await fileNode.getParentsInContext(contextNode, [TO_FILE_RELATION, TO_FOLDER_RELATION]);
-	else parentNodes = await fileNode.getParents([TO_FILE_RELATION, TO_FOLDER_RELATION]);
+export async function removeFileNodeFromParent(parentNode: SpinalNode, fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<boolean> {
+	try {
+		let fileModel: SpinalDocument | SpinalFile | undefined = undefined;
 
-	const fileElement = await getFileModelFromNode(fileNode);
-
-	const unlinkPromises = parentNodes.map(async (parent) => {
-		if (parent.getType().get() === DIRECTORY_NODE_TYPE) {
-			const directory = await parent.getElement(true);
-			directory?.remove(fileElement as SpinalDocument);
+		if (fileNode instanceof SpinalDocument || fileNode instanceof SpinalFile) {
+			fileModel = fileNode;
+			fileNode = await createorGetFileNode(fileNode instanceof SpinalDocument ? fileNode : (fileNode as SpinalFile));
 		}
-		return parent.removeChild(fileNode, TO_FILE_RELATION, SPINAL_RELATION_PTR_LST_TYPE);
-	});
 
-	return Promise.all(unlinkPromises)
-		.then(() => true)
-		.catch((err) => false);
+		const isDirectory = fileNode.getType().get() === DIRECTORY_NODE_TYPE;
+		const relationName = isDirectory ? TO_FOLDER_RELATION : TO_FILE_RELATION;
+		await parentNode.removeChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE);
+
+		// If the parent node is a directory, we also remove the file from its directory list
+		if (parentNode.getType().get() === DIRECTORY_NODE_TYPE) {
+			return SpinalDocumentary.removeFileFromDirectory(parentNode, fileModel as any);
+		}
+
+		// if fileNode is a directory, and it has no parents, we remove it from its children
+		if (isDirectory) {
+			const parents = await fileNode.getParents([TO_FILE_RELATION, TO_FOLDER_RELATION]);
+			if (parents.length === 0) await fileNode._removeFromChildren();
+		}
+
+		return true;
+	} catch (error) {
+		return false;
+	}
 }
 
 export function isFileVersion(fileVersion: any): fileVersion is FileVersion {

@@ -9,7 +9,7 @@ import { FileVersion } from "../models_spinalcom/FileVersion";
 export declare function convertFileToSpinalDocument(files: FilesArgType, chunkSize?: number): Promise<(SpinalDocument | SpinalFile)[]>;
 export declare function convertFileToBuffer(file: any): Promise<Buffer>;
 export declare function addSpinalDocumentAsNodeChild(parentNode: SpinalNode, spinalDocumentNode: SpinalNode, relationName: string, contextNode?: SpinalContext): Promise<SpinalNode>;
-export declare function getFileModelFromNode(node: SpinalNode): Promise<SpinalDocument | SpinalFile | undefined>;
+export declare function getFileModelFromNode(node: SpinalNode | SpinalDocument | SpinalFile): Promise<SpinalDocument | SpinalFile | undefined>;
 export declare function getFilesFromDirectory(directoryNode: SpinalFile | SpinalDocument): Promise<(SpinalDocument | SpinalFile)[]>;
 export declare function createorGetFileNode(file: SpinalDocument | SpinalFile | SpinalNode): Promise<SpinalNode>;
 export declare function _getFileChildren(file: SpinalDocument | SpinalFile, parentNode: SpinalNode): Promise<{
@@ -31,6 +31,7 @@ export declare function convertFileToSpecialFormat(file: SpinalNode | SpinalDocu
 }>;
 export declare function convertTreeToFileBuffers(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl?: string): Promise<IFileBufferInfo[]>;
 export declare function _getOrCreateRootNode(node: SpinalNode, createIfNotExist?: boolean): Promise<SpinalNode | null>;
-export declare function removeFileNode(fileNode: SpinalNode, contextNode?: SpinalNode): Promise<boolean>;
+export declare function isRootDirectoryNode(node: SpinalNode): boolean;
+export declare function removeFileNodeFromParent(parentNode: SpinalNode, fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<boolean>;
 export declare function isFileVersion(fileVersion: any): fileVersion is FileVersion;
 export declare function _getRootNodeParent(node: SpinalNode): Promise<SpinalNode[]>;

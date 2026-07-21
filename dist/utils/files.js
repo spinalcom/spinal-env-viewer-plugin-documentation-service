@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._getRootNodeParent = exports.isFileVersion = exports.removeFileNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.convertFileToSpecialFormat = exports.convertFileInTreeToSpecialFormat = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createorGetFileNode = exports.getFilesFromDirectory = exports.getFileModelFromNode = exports.addSpinalDocumentAsNodeChild = exports.convertFileToBuffer = exports.convertFileToSpinalDocument = void 0;
+exports._getRootNodeParent = exports.isFileVersion = exports.removeFileNodeFromParent = exports.isRootDirectoryNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.convertFileToSpecialFormat = exports.convertFileInTreeToSpecialFormat = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createorGetFileNode = exports.getFilesFromDirectory = exports.getFileModelFromNode = exports.addSpinalDocumentAsNodeChild = exports.convertFileToBuffer = exports.convertFileToSpinalDocument = void 0;
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const constants_1 = require("../Models/constants");
@@ -10,6 +10,7 @@ const SpinalDocument_1 = require("../models_spinalcom/SpinalDocument");
 const versionUtils_1 = require("./versionUtils");
 const FileVersion_1 = require("../models_spinalcom/FileVersion");
 const stream_1 = require("stream");
+const Documentary_1 = require("../Models/Documentary");
 async function convertFileToSpinalDocument(files, chunkSize = -1) {
     const isFileList = typeof FileList !== "undefined" && files instanceof FileList;
     if (!isFileList && !Array.isArray(files))
@@ -67,6 +68,8 @@ function addSpinalDocumentAsNodeChild(parentNode, spinalDocumentNode, relationNa
 }
 exports.addSpinalDocumentAsNodeChild = addSpinalDocumentAsNodeChild;
 async function getFileModelFromNode(node) {
+    if (node instanceof SpinalDocument_1.SpinalDocument || node instanceof spinal_core_connectorjs_type_1.File)
+        return node;
     const file = await node.getElement(true);
     return file;
 }
@@ -256,25 +259,37 @@ async function _getOrCreateRootNode(node, createIfNotExist = true) {
     return directoryNode;
 }
 exports._getOrCreateRootNode = _getOrCreateRootNode;
-async function removeFileNode(fileNode, contextNode) {
-    let parentNodes;
-    if (contextNode)
-        parentNodes = await fileNode.getParentsInContext(contextNode, [constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
-    else
-        parentNodes = await fileNode.getParents([constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
-    const fileElement = await getFileModelFromNode(fileNode);
-    const unlinkPromises = parentNodes.map(async (parent) => {
-        if (parent.getType().get() === constants_1.DIRECTORY_NODE_TYPE) {
-            const directory = await parent.getElement(true);
-            directory?.remove(fileElement);
-        }
-        return parent.removeChild(fileNode, constants_1.TO_FILE_RELATION, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
-    });
-    return Promise.all(unlinkPromises)
-        .then(() => true)
-        .catch((err) => false);
+function isRootDirectoryNode(node) {
+    return node.getType().get() === constants_1.DIRECTORY_NODE_TYPE && node.getName().get().endsWith("_root_directory");
 }
-exports.removeFileNode = removeFileNode;
+exports.isRootDirectoryNode = isRootDirectoryNode;
+async function removeFileNodeFromParent(parentNode, fileNode) {
+    try {
+        let fileModel = undefined;
+        if (fileNode instanceof SpinalDocument_1.SpinalDocument || fileNode instanceof spinal_core_connectorjs_type_1.File) {
+            fileModel = fileNode;
+            fileNode = await createorGetFileNode(fileNode instanceof SpinalDocument_1.SpinalDocument ? fileNode : fileNode);
+        }
+        const isDirectory = fileNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE;
+        const relationName = isDirectory ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
+        await parentNode.removeChild(fileNode, relationName, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
+        // If the parent node is a directory, we also remove the file from its directory list
+        if (parentNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE) {
+            return Documentary_1.default.removeFileFromDirectory(parentNode, fileModel);
+        }
+        // if fileNode is a directory, and it has no parents, we remove it from its children
+        if (isDirectory) {
+            const parents = await fileNode.getParents([constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
+            if (parents.length === 0)
+                await fileNode._removeFromChildren();
+        }
+        return true;
+    }
+    catch (error) {
+        return false;
+    }
+}
+exports.removeFileNodeFromParent = removeFileNodeFromParent;
 function isFileVersion(fileVersion) {
     return fileVersion?.constructor?.name === "FileVersion";
 }

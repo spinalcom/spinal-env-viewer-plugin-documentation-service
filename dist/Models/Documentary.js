@@ -28,19 +28,25 @@ class SpinalDocumentary {
             return null;
         return this.addFileToNodeInContext(parentNode, file, contextNode).then((result) => (result.length > 0 ? result[0] : null));
     }
-    async removeFileFromContext(fileNode, contextNode) {
-        if (fileNode instanceof models_spinalcom_1.SpinalDocument)
-            fileNode = (await fileNode.getNode());
-        if (fileNode.getType().get() !== constants_1.DIRECTORY_NODE_TYPE)
-            return (0, files_1.removeFileNode)(fileNode, contextNode);
-        const files = await fileNode.getChildren([constants_1.TO_FOLDER_RELATION, constants_1.TO_FILE_RELATION]);
-        const promises = [];
-        for (const file of files) {
-            promises.push(this.removeFileFromContext(file, contextNode));
-        }
-        return Promise.all(promises).then((result) => {
-            return true;
-        });
+    async removeFileFromContext(fileNode, contextNode, unlinkRefs = true) {
+        if (fileNode instanceof spinal_model_graph_1.SpinalNode)
+            fileNode = (await (0, files_1.getFileModelFromNode)(fileNode));
+        if (!fileNode || !(fileNode instanceof models_spinalcom_1.SpinalDocument))
+            throw new Error("File model not found for the given node.");
+        await fileNode.removeFromContext(contextNode);
+        if (unlinkRefs)
+            await fileNode.removeAllLinks();
+        return true;
+        // if (fileNode instanceof SpinalDocument) fileNode = (await fileNode.getNode()) as SpinalNode;
+        // if (fileNode.getType().get() !== DIRECTORY_NODE_TYPE) return removeFileNode(fileNode, contextNode, unlinkRefs);
+        // const files = await fileNode.getChildren([TO_FOLDER_RELATION, TO_FILE_RELATION]);
+        // const promises: Promise<boolean | boolean[]>[] = [];
+        // for (const file of files) {
+        // 	promises.push(this.removeFileFromContext(file, contextNode, unlinkRefs));
+        // }
+        // return Promise.all(promises).then((result) => {
+        // 	return true;
+        // });
     }
     addDirectoryToNodeInContext(parentNode, name, contextNode, icon = "folder") {
         const file = new models_spinalcom_1.SpinalDocument(name, new spinal_core_connectorjs_type_1.Lst(), { model_type: constants_1.DIRECTORY_MODEL_TYPE, icon });
@@ -50,7 +56,13 @@ class SpinalDocumentary {
         documentToMove = await (0, files_1.createorGetFileNode)(documentToMove);
         sourceNode = await (0, files_1.createorGetFileNode)(sourceNode);
         targetNode = await (0, files_1.createorGetFileNode)(targetNode);
-        await this.removeFileFromContext(documentToMove, contextNode);
+        if (contextNode.belongsToContext(documentToMove))
+            return false;
+        if (contextNode.belongsToContext(sourceNode))
+            return false;
+        if (contextNode.belongsToContext(targetNode))
+            return false;
+        await (0, files_1.removeFileNodeFromParent)(sourceNode, documentToMove);
         return this.addFileToNodeInContext(targetNode, documentToMove, contextNode)
             .then((result) => !!result)
             .catch(() => false);
@@ -170,7 +182,6 @@ class SpinalDocumentary {
         return FileExplorer_1.FileExplorer.getFileParents(node);
     }
     ///////////// end of file Linked to node functions
-    //TODO: correct this function
     async unlinkFileFromNode(node, fileNode) {
         return FileExplorer_1.FileExplorer.removeFileLinked(node, fileNode);
     }
@@ -197,12 +208,15 @@ class SpinalDocumentary {
     }
     static async removeFileFromDirectory(directoryNode, file) {
         const directoryElement = await (0, files_1.getFileModelFromNode)(directoryNode);
+        const fileModel = await (0, files_1.getFileModelFromNode)(file);
+        if (!fileModel)
+            return false;
         const list = await new Promise((resolve) => directoryElement?._ptr?.load((e) => resolve(e)));
         if (!list)
             return false;
         if (list instanceof spinal_core_connectorjs_type_1.Lst || list instanceof spinal_core_connectorjs_type_1.Directory) {
             for (let f of list) {
-                if (f._server_id === file._server_id) {
+                if (f._server_id === fileModel._server_id) {
                     list.remove(f);
                     return true;
                 }

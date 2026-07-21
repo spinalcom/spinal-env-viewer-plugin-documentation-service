@@ -1,6 +1,6 @@
 import { File as SpinalFile, Lst, Directory } from "spinal-core-connectorjs_type";
 import { SPINAL_RELATION_PTR_LST_TYPE, SpinalContext, SpinalGraph, SpinalNode } from "spinal-model-graph";
-import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addSpinalDocumentAsNodeChild, convertFileInTreeToSpecialFormat, convertFileToSpecialFormat, convertFileToSpinalDocument, convertTreeToFileBuffers, createorGetFileNode, getFileModelFromNode, removeFileNode } from "../utils/files";
+import { _getFileAsBuffer, _getFileAttributes, _getFileChildren, _getOrCreateRootNode, addSpinalDocumentAsNodeChild, convertFileInTreeToSpecialFormat, convertFileToSpecialFormat, convertFileToSpinalDocument, convertTreeToFileBuffers, createorGetFileNode, getFileModelFromNode, removeFileNodeFromParent } from "../utils/files";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, DOCUMENTARY_CONTEXT_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
 import { fileFormat, FilesArgType, IFileInfo } from "../interfaces";
 import { FileVersion, SpinalDocument } from "../models_spinalcom";
@@ -33,21 +33,25 @@ class SpinalDocumentary {
 		return this.addFileToNodeInContext(parentNode, file, contextNode).then((result) => (result.length > 0 ? result[0] : null));
 	}
 
-	public async removeFileFromContext(fileNode: SpinalNode | SpinalDocument, contextNode: SpinalContext): Promise<boolean> {
-		if (fileNode instanceof SpinalDocument) fileNode = (await fileNode.getNode()) as SpinalNode;
+	public async removeFileFromContext(fileNode: SpinalNode | SpinalDocument, contextNode: SpinalContext, unlinkRefs: boolean = true): Promise<boolean> {
+		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
+		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
 
-		if (fileNode.getType().get() !== DIRECTORY_NODE_TYPE) return removeFileNode(fileNode, contextNode);
+		await fileNode.removeFromContext(contextNode);
+		if (unlinkRefs) await fileNode.removeAllLinks();
 
-		const files = await fileNode.getChildren([TO_FOLDER_RELATION, TO_FILE_RELATION]);
-		const promises: Promise<boolean | boolean[]>[] = [];
+		return true;
 
-		for (const file of files) {
-			promises.push(this.removeFileFromContext(file, contextNode));
-		}
-
-		return Promise.all(promises).then((result) => {
-			return true;
-		});
+		// if (fileNode instanceof SpinalDocument) fileNode = (await fileNode.getNode()) as SpinalNode;
+		// if (fileNode.getType().get() !== DIRECTORY_NODE_TYPE) return removeFileNode(fileNode, contextNode, unlinkRefs);
+		// const files = await fileNode.getChildren([TO_FOLDER_RELATION, TO_FILE_RELATION]);
+		// const promises: Promise<boolean | boolean[]>[] = [];
+		// for (const file of files) {
+		// 	promises.push(this.removeFileFromContext(file, contextNode, unlinkRefs));
+		// }
+		// return Promise.all(promises).then((result) => {
+		// 	return true;
+		// });
 	}
 
 	public addDirectoryToNodeInContext(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon: string = "folder"): Promise<SpinalNode> {
@@ -60,7 +64,11 @@ class SpinalDocumentary {
 		sourceNode = await createorGetFileNode(sourceNode);
 		targetNode = await createorGetFileNode(targetNode);
 
-		await this.removeFileFromContext(documentToMove, contextNode);
+		if (contextNode.belongsToContext(documentToMove)) return false;
+		if (contextNode.belongsToContext(sourceNode)) return false;
+		if (contextNode.belongsToContext(targetNode)) return false;
+
+		await removeFileNodeFromParent(sourceNode, documentToMove);
 
 		return this.addFileToNodeInContext(targetNode, documentToMove, contextNode)
 			.then((result) => !!result)
@@ -199,7 +207,6 @@ class SpinalDocumentary {
 	}
 	///////////// end of file Linked to node functions
 
-	//TODO: correct this function
 	public async unlinkFileFromNode(node: SpinalNode, fileNode: SpinalNode) {
 		return FileExplorer.removeFileLinked(node, fileNode);
 	}
@@ -230,14 +237,17 @@ class SpinalDocumentary {
 		return null;
 	}
 
-	public static async removeFileFromDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<boolean> {
+	public static async removeFileFromDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile | SpinalNode): Promise<boolean> {
 		const directoryElement = await getFileModelFromNode(directoryNode);
+		const fileModel = await getFileModelFromNode(file);
+		if (!fileModel) return false;
+
 		const list = await new Promise((resolve) => directoryElement?._ptr?.load((e) => resolve(e)));
 		if (!list) return false;
 
 		if (list instanceof Lst || list instanceof Directory) {
 			for (let f of list) {
-				if (f._server_id === file._server_id) {
+				if (f._server_id === fileModel._server_id) {
 					list.remove(f);
 					return true;
 				}

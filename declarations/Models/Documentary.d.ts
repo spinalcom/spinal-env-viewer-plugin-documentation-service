@@ -11,7 +11,7 @@ declare class SpinalDocumentary {
     createDocumentaryContext(graph: SpinalGraph, name: string): Promise<SpinalContext>;
     addFileToNodeInContext(parentNode: SpinalNode, files: FilesArgType, contextNode: SpinalContext, chunkSize?: number): Promise<SpinalNode[]>;
     addExistingFileToContext(fileNode: SpinalNode | SpinalDocument | SpinalFile, parentNode: SpinalNode, contextNode: SpinalContext): Promise<SpinalNode | null>;
-    removeFileFromContext(fileNode: SpinalNode | SpinalDocument, contextNode: SpinalContext): Promise<boolean>;
+    removeFileFromContext(fileNode: SpinalNode | SpinalDocument, contextNode: SpinalContext, unlinkRefs?: boolean): Promise<boolean>;
     addDirectoryToNodeInContext(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon?: string): Promise<SpinalNode>;
     moveDocumentInContext(documentToMove: SpinalNode | SpinalDocument | SpinalFile, sourceNode: SpinalNode | SpinalDocument | SpinalFile, targetNode: SpinalNode | SpinalDocument | SpinalFile, contextNode: SpinalContext): Promise<boolean>;
     getFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]>;
@@ -42,7 +42,7 @@ declare class SpinalDocumentary {
     unlinkFileFromNode(node: SpinalNode, fileNode: SpinalNode): Promise<boolean>;
     private _createNodeInContext;
     static pushFileToDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<SpinalNode | null>;
-    static removeFileFromDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<boolean>;
+    static removeFileFromDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile | SpinalNode): Promise<boolean>;
 }
 export { SpinalDocumentary };
 export default SpinalDocumentary;

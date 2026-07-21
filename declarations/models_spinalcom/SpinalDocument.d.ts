@@ -17,7 +17,10 @@ export default class SpinalDocument extends SpinalFile {
     getVersionByName(versionName: string): Promise<FileVersion | null>;
     getVersionHistory(): Promise<FileVersion[]>;
     linkToNode(parentNode: SpinalNode, contextNode?: SpinalContext): Promise<SpinalNode>;
-    remove(): Promise<boolean>;
+    remove(unlinkToAll?: boolean): Promise<boolean>;
+    removeFromParent(parentNode: SpinalNode): Promise<boolean>;
+    removeFromContext(contextNode: SpinalContext): Promise<boolean>;
+    removeAllLinks(): Promise<boolean>;
     getNode(): Promise<SpinalNode | null>;
     getParentNodes(): Promise<SpinalNode<any>[]>;
     getFilesTreeAsBuffers(hubUrl?: string): Promise<IFileBufferInfo[]>;

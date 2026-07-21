@@ -1,7 +1,7 @@
 import { File as SpinalFile, Path, Directory, spinalCore, Ptr, Lst } from "spinal-core-connectorjs";
 import { FileExplorer } from "../Models/FileExplorer";
 import { SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
-import { addSpinalDocumentAsNodeChild, convertTreeToFileBuffers, isFileVersion, removeFileNode } from "../utils/files";
+import { addSpinalDocumentAsNodeChild, convertTreeToFileBuffers, isFileVersion, isRootDirectoryNode, removeFileNodeFromParent } from "../utils/files";
 import { FilesArgType, IFileBufferInfo } from "../interfaces";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_MODEL_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "../Models/constants";
 import FileVersion from "./FileVersion";
@@ -122,22 +122,69 @@ export default class SpinalDocument extends SpinalFile {
 		return addSpinalDocumentAsNodeChild(parentNode, this._node as SpinalNode, relationName, contextNode);
 	}
 
-	async remove(): Promise<boolean> {
+	async remove(unlinkToAll: boolean = true): Promise<boolean> {
 		if (!this._node) this._node = (await this.getNode()) as SpinalNode;
 		if (!this._node) return false;
 
-		if (!this.isDirectory()) return removeFileNode(this._node);
+		const parentNodes = await this._node.getParents([TO_FILE_RELATION, TO_FOLDER_RELATION]);
+		const unlinkPromises = parentNodes.map(async (parent) => {
+			if (!unlinkToAll && isRootDirectoryNode(parent)) return true;
 
-		const files = await this._node.getChildren([TO_FOLDER_RELATION, TO_FILE_RELATION]);
-		const promises: Promise<boolean | boolean[]>[] = [];
-
-		for (const file of files) {
-			promises.push(file.remove());
-		}
-
-		return Promise.all(promises).then((result) => {
-			return true;
+			return removeFileNodeFromParent(parent, this._node as SpinalNode);
 		});
+
+		return Promise.all(unlinkPromises)
+			.then(async () => {
+				// If the document is a directory, remove it from its children
+				if (this.isDirectory()) await this._node?._removeFromChildren();
+				return true;
+			})
+			.catch(() => false);
+		// if (!this.isDirectory()) return removeFileNode(this._node, undefined, unlinkToAll);
+
+		// const files = await this._node.getChildren([TO_FOLDER_RELATION, TO_FILE_RELATION]);
+		// const promises: Promise<boolean | boolean[]>[] = [];
+
+		// for (const file of files) {
+		// 	promises.push(file.remove());
+		// }
+
+		// return Promise.all(promises).then((result) => {
+		// 	return true;
+		// });
+	}
+
+	async removeFromParent(parentNode: SpinalNode): Promise<boolean> {
+		if (!this._node) this._node = (await this.getNode()) as SpinalNode;
+		if (!this._node) return false;
+
+		return removeFileNodeFromParent(parentNode, this._node as SpinalNode);
+	}
+
+	async removeFromContext(contextNode: SpinalContext): Promise<boolean> {
+		if (!this._node) this._node = (await this.getNode()) as SpinalNode;
+		if (!this._node) return Promise.resolve(false);
+
+		const parents = await this._node.getParentsInContext(contextNode, [TO_FILE_RELATION, TO_FOLDER_RELATION]);
+		const unLinkPromises = parents.map((parent) => removeFileNodeFromParent(parent, this._node as SpinalNode));
+		return Promise.all(unLinkPromises)
+			.then(() => true)
+			.catch(() => false);
+	}
+
+	async removeAllLinks(): Promise<boolean> {
+		if (!this._node) this._node = (await this.getNode()) as SpinalNode;
+		if (!this._node) return false;
+
+		const parents = await this._node.getParents([TO_FILE_RELATION, TO_FOLDER_RELATION]);
+		const unlinkPromises = parents.map((parent) => {
+			if (isRootDirectoryNode(parent)) return removeFileNodeFromParent(parent, this._node as SpinalNode);
+			return Promise.resolve(false);
+		});
+
+		return Promise.all(unlinkPromises)
+			.then(() => true)
+			.catch(() => false);
 	}
 
 	getNode(): Promise<SpinalNode | null> {

@@ -24,7 +24,6 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileExplorer = void 0;
-const spinal_model_graph_1 = require("spinal-model-graph");
 const spinal_models_documentation_1 = require("spinal-models-documentation");
 const files_1 = require("../utils/files");
 const constants_1 = require("./constants");
@@ -174,19 +173,20 @@ class FileExplorer {
         const rootDirNode = await (0, files_1._getOrCreateRootNode)(node, false);
         if (!rootDirNode)
             return false;
-        let fileModel = undefined;
-        if (fileNode instanceof models_spinalcom_1.SpinalDocument || fileNode instanceof spinal_core_connectorjs_type_1.File) {
-            fileModel = fileNode;
-            fileNode = await (0, files_1.createorGetFileNode)(fileNode instanceof models_spinalcom_1.SpinalDocument ? fileNode : fileNode);
-        }
-        const relationName = fileNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
-        return rootDirNode
-            .removeChild(fileNode, relationName, spinal_model_graph_1.SPINAL_RELATION_PTR_LST_TYPE)
-            .then(async () => {
-            fileModel = fileModel || (await (0, files_1.getFileModelFromNode)(fileNode));
-            return Documentary_1.SpinalDocumentary.removeFileFromDirectory(rootDirNode, fileModel);
-        })
-            .catch(() => false);
+        return (0, files_1.removeFileNodeFromParent)(rootDirNode, fileNode);
+        // let fileModel: SpinalDocument | SpinalFile | undefined = undefined;
+        // if (fileNode instanceof SpinalDocument || fileNode instanceof SpinalFile) {
+        // 	fileModel = fileNode;
+        // 	fileNode = await createorGetFileNode(fileNode instanceof SpinalDocument ? fileNode : (fileNode as SpinalFile));
+        // }
+        // const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
+        // return rootDirNode
+        // 	.removeChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE)
+        // 	.then(async () => {
+        // 		fileModel = fileModel || (await getFileModelFromNode(fileNode as SpinalNode));
+        // 		return SpinalDocumentary.removeFileFromDirectory(rootDirNode, fileModel as any);
+        // 	})
+        // 	.catch(() => false);
     }
     static async _getOrCreateFileDirectory(node) {
         let directory = await FileExplorer.getDirectory(node);
