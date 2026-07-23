@@ -585,7 +585,8 @@ class AttributeService {
      * @param attrsToUp - The attributes to create or update, represented as a record where the keys are the attribute labels and the values are the attribute values.
      * @returns A Promise that resolves when the attributes and categories have been created or updated.
      */
-    async createOrUpdateAttrsAndCategories(node, categoryName, attrsToUp) {
+    async createOrUpdateAttrsAndCategories(node, categoryName, attrsToUp, shouldUpdateDirectModificationDate = false) {
+        let isModified = false;
         async function getCatNode(node, name) {
             const children = await node.getChildren(constants_1.NODE_TO_CATEGORY_RELATION);
             for (const child of children) {
@@ -597,6 +598,7 @@ class AttributeService {
         let cat;
         if (!catNode) {
             cat = await attributeService.addCategoryAttribute(node, categoryName);
+            isModified = true;
         }
         else {
             cat = {
@@ -613,11 +615,16 @@ class AttributeService {
                 let attr = attrs.find((itm) => itm.label.get() === label);
                 if (attr) {
                     attr.setValue(value);
+                    isModified = true;
                 }
                 else {
                     attributeService.addAttributeByCategory(node, cat, label, value);
+                    isModified = true;
                 }
             }
+        }
+        if (shouldUpdateDirectModificationDate && isModified) {
+            node.info.directModificationDate.set(Date.now());
         }
     }
     ///////////////////////////////////////////////////////////////////

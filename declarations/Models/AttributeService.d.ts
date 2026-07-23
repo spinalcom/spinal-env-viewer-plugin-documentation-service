@@ -220,7 +220,7 @@ declare class AttributeService {
      * @param attrsToUp - The attributes to create or update, represented as a record where the keys are the attribute labels and the values are the attribute values.
      * @returns A Promise that resolves when the attributes and categories have been created or updated.
      */
-    createOrUpdateAttrsAndCategories(node: SpinalNode<any>, categoryName: string, attrsToUp: Record<string, string>): Promise<void>;
+    createOrUpdateAttrsAndCategories(node: SpinalNode<any>, categoryName: string, attrsToUp: Record<string, string>, shouldUpdateDirectModificationDate?: boolean): Promise<void>;
     /**
      * This methods link directily the attribute to the node without use category.
      * @param {SpinalNode<any>} node

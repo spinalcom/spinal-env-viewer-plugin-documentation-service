@@ -44,7 +44,7 @@ import {
  * @class AttributeService
  */
 class AttributeService {
-  constructor() {}
+  constructor() { }
 
   /**
    * This method creates a category and link it to the node passed in parameter. It returs an object of category
@@ -591,8 +591,8 @@ class AttributeService {
         !categoryName || categoryName.length === 0
           ? categories
           : categories.filter(
-              (el) => el.nameCat.toString().trim() === categoryName
-            );
+            (el) => el.nameCat.toString().trim() === categoryName
+          );
       return {
         parentNode: parent,
         categories: filterCategory,
@@ -800,8 +800,10 @@ class AttributeService {
   public async createOrUpdateAttrsAndCategories(
     node: SpinalNode<any>,
     categoryName: string,
-    attrsToUp: Record<string, string>
+    attrsToUp: Record<string, string>,
+    shouldUpdateDirectModificationDate: boolean = false
   ): Promise<void> {
+    let isModified = false;
     async function getCatNode(node: SpinalNode, name: string) {
       const children = await node.getChildren(NODE_TO_CATEGORY_RELATION);
       for (const child of children) {
@@ -812,6 +814,7 @@ class AttributeService {
     let cat: ICategory;
     if (!catNode) {
       cat = await attributeService.addCategoryAttribute(node, categoryName);
+      isModified = true;
     } else {
       cat = {
         element: <Lst>await catNode.getElement(true),
@@ -827,10 +830,15 @@ class AttributeService {
         let attr = attrs.find((itm) => itm.label.get() === label);
         if (attr) {
           attr.setValue(value);
+          isModified = true;
         } else {
           attributeService.addAttributeByCategory(node, cat, label, value);
+          isModified = true;
         }
       }
+    }
+    if (shouldUpdateDirectModificationDate && isModified) {
+      node.info.directModificationDate.set(Date.now());
     }
   }
 
