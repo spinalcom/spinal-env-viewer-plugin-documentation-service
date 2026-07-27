@@ -268,14 +268,14 @@ async function removeFileNodeFromParent(parentNode, fileNode) {
         let fileModel = undefined;
         if (fileNode instanceof SpinalDocument_1.SpinalDocument || fileNode instanceof spinal_core_connectorjs_type_1.File) {
             fileModel = fileNode;
-            fileNode = await createorGetFileNode(fileNode instanceof SpinalDocument_1.SpinalDocument ? fileNode : fileNode);
+            fileNode = await createorGetFileNode(fileNode);
         }
         const isDirectory = fileNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE;
         const relationName = isDirectory ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
         await parentNode.removeChild(fileNode, relationName, spinal_env_viewer_graph_service_1.SPINAL_RELATION_PTR_LST_TYPE);
         // If the parent node is a directory, we also remove the file from its directory list
         if (parentNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE) {
-            return Documentary_1.default.removeFileFromDirectory(parentNode, fileModel);
+            return Documentary_1.default.removeFileFromDirectory(parentNode, fileNode);
         }
         // if fileNode is a directory, and it has no parents, we remove it from its children
         if (isDirectory) {

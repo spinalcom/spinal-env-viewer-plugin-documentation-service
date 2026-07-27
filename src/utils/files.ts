@@ -305,7 +305,7 @@ export async function removeFileNodeFromParent(parentNode: SpinalNode, fileNode:
 
 		if (fileNode instanceof SpinalDocument || fileNode instanceof SpinalFile) {
 			fileModel = fileNode;
-			fileNode = await createorGetFileNode(fileNode instanceof SpinalDocument ? fileNode : (fileNode as SpinalFile));
+			fileNode = await createorGetFileNode(fileNode);
 		}
 
 		const isDirectory = fileNode.getType().get() === DIRECTORY_NODE_TYPE;
@@ -314,7 +314,7 @@ export async function removeFileNodeFromParent(parentNode: SpinalNode, fileNode:
 
 		// If the parent node is a directory, we also remove the file from its directory list
 		if (parentNode.getType().get() === DIRECTORY_NODE_TYPE) {
-			return SpinalDocumentary.removeFileFromDirectory(parentNode, fileModel as any);
+			return SpinalDocumentary.removeFileFromDirectory(parentNode, fileNode);
 		}
 
 		// if fileNode is a directory, and it has no parents, we remove it from its children
