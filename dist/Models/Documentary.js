@@ -114,26 +114,12 @@ class SpinalDocumentary {
             throw new Error("File model not found for the given node.");
         return fileNode.removeVersion(versionName);
     }
-    async importFilesFromSpinalDrive(contextNode, parentNode, startFile) {
-        const queue = [{ file: startFile, parent: parentNode }];
-        const createdNodes = [];
-        while (queue.length > 0) {
-            const itemToProcess = queue.shift();
-            if (!itemToProcess)
-                continue;
-            const { file, parent } = itemToProcess;
-            const { name, nodeType, relationName } = await (0, files_1._getFileAttributes)(file);
-            const node = await this._createNodeInContext(file, parent, relationName, contextNode);
-            if (!node)
-                continue;
-            // Only push to createdNodes if it's a file, directories will be processed for their children
-            if (nodeType === constants_1.DIRECTORY_NODE_TYPE) {
-                const children = await (0, files_1._getFileChildren)(file, node);
-                queue.push(...children);
-            }
-            createdNodes.push(node);
-        }
-        return createdNodes;
+    async downgradeFileVersion(fileNode, versionName) {
+        if (fileNode instanceof spinal_model_graph_1.SpinalNode)
+            fileNode = (await (0, files_1.getFileModelFromNode)(fileNode));
+        if (!fileNode || !(fileNode instanceof models_spinalcom_1.SpinalDocument))
+            throw new Error("File model not found for the given node.");
+        return fileNode.setAsCurrentVersion(versionName);
     }
     //////////////////////////////////
     async getAllPathsInTree(startNode) {
@@ -223,6 +209,27 @@ class SpinalDocumentary {
             }
         }
         return false;
+    }
+    async importFilesFromSpinalDrive(contextNode, parentNode, startFile) {
+        const queue = [{ file: startFile, parent: parentNode }];
+        const createdNodes = [];
+        while (queue.length > 0) {
+            const itemToProcess = queue.shift();
+            if (!itemToProcess)
+                continue;
+            const { file, parent } = itemToProcess;
+            const { name, nodeType, relationName } = await (0, files_1._getFileAttributes)(file);
+            const node = await this._createNodeInContext(file, parent, relationName, contextNode);
+            if (!node)
+                continue;
+            // Only push to createdNodes if it's a file, directories will be processed for their children
+            if (nodeType === constants_1.DIRECTORY_NODE_TYPE) {
+                const children = await (0, files_1._getFileChildren)(file, node);
+                queue.push(...children);
+            }
+            createdNodes.push(node);
+        }
+        return createdNodes;
     }
 }
 exports.SpinalDocumentary = SpinalDocumentary;

@@ -18,7 +18,7 @@ declare class SpinalDocumentary {
     getFileVersionByName(fileNode: SpinalNode | SpinalDocument | SpinalFile, versionName: string): Promise<FileVersion | null>;
     updateFileVersion(fileNode: SpinalNode | SpinalDocument, buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<FileVersion>;
     removeFileVersion(fileNode: SpinalNode | SpinalDocument, versionName: string): Promise<boolean>;
-    importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalDocument): Promise<SpinalNode[]>;
+    downgradeFileVersion(fileNode: SpinalNode | SpinalDocument, versionName: string): Promise<FileVersion>;
     getAllPathsInTree(startNode: SpinalNode | SpinalDocument | SpinalFile): Promise<IFileInfo[]>;
     getFilesInTreeAsBuffer(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl?: string): Promise<IFileInfo[]>;
     getFilesInTreeToSpecificFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl?: string): Promise<IFileInfo[]>;
@@ -43,6 +43,7 @@ declare class SpinalDocumentary {
     private _createNodeInContext;
     static pushFileToDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<SpinalNode | null>;
     static removeFileFromDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile | SpinalNode): Promise<boolean>;
+    importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalDocument): Promise<SpinalNode[]>;
 }
 export { SpinalDocumentary };
 export default SpinalDocumentary;

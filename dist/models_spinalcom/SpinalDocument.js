@@ -63,6 +63,15 @@ class SpinalDocument extends spinal_core_connectorjs_1.File {
             }
         });
     }
+    async setAsCurrentVersion(versionName) {
+        if (this.isDirectory())
+            throw new Error("Directories do not have versions.");
+        const version = await this.getVersionByName(versionName);
+        if (!version)
+            throw new Error(`Version ${versionName} not found.`);
+        this.mod_attr("currentVersion", new spinal_core_connectorjs_1.Ptr(version));
+        return version;
+    }
     async getCurrentVersionAsBuffer(hubUrl = "") {
         if (this.isDirectory())
             throw new Error("Directories do not have versions.");

@@ -124,29 +124,11 @@ class SpinalDocumentary {
 		return fileNode.removeVersion(versionName);
 	}
 
-	public async importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalDocument): Promise<SpinalNode[]> {
-		const queue: { file: SpinalDocument; parent: SpinalNode }[] = [{ file: startFile, parent: parentNode }];
-		const createdNodes: SpinalNode[] = [];
+	public async downgradeFileVersion(fileNode: SpinalNode | SpinalDocument, versionName: string): Promise<FileVersion> {
+		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
+		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
 
-		while (queue.length > 0) {
-			const itemToProcess = queue.shift();
-			if (!itemToProcess) continue;
-
-			const { file, parent } = itemToProcess;
-			const { name, nodeType, relationName } = await _getFileAttributes(file);
-
-			const node = await this._createNodeInContext(file, parent, relationName, contextNode);
-			if (!node) continue;
-
-			// Only push to createdNodes if it's a file, directories will be processed for their children
-			if (nodeType === DIRECTORY_NODE_TYPE) {
-				const children = await _getFileChildren(file, node);
-				queue.push(...children);
-			}
-			createdNodes.push(node);
-		}
-
-		return createdNodes;
+		return fileNode.setAsCurrentVersion(versionName);
 	}
 
 	//////////////////////////////////
@@ -255,6 +237,31 @@ class SpinalDocumentary {
 		}
 
 		return false;
+	}
+
+	public async importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalDocument): Promise<SpinalNode[]> {
+		const queue: { file: SpinalDocument; parent: SpinalNode }[] = [{ file: startFile, parent: parentNode }];
+		const createdNodes: SpinalNode[] = [];
+
+		while (queue.length > 0) {
+			const itemToProcess = queue.shift();
+			if (!itemToProcess) continue;
+
+			const { file, parent } = itemToProcess;
+			const { name, nodeType, relationName } = await _getFileAttributes(file);
+
+			const node = await this._createNodeInContext(file, parent, relationName, contextNode);
+			if (!node) continue;
+
+			// Only push to createdNodes if it's a file, directories will be processed for their children
+			if (nodeType === DIRECTORY_NODE_TYPE) {
+				const children = await _getFileChildren(file, node);
+				queue.push(...children);
+			}
+			createdNodes.push(node);
+		}
+
+		return createdNodes;
 	}
 
 	// public async moveDocument(documentToMove: SpinalNode | SpinalDocument | SpinalFile, sourceNode: SpinalNode | SpinalDocument | SpinalFile, targetNode: SpinalNode | SpinalDocument | SpinalFile): Promise<boolean> {

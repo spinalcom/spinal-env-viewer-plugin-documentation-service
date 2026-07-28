@@ -12,6 +12,7 @@ export default class SpinalDocument extends SpinalFile {
     getDirectoryElement(): Promise<Directory | Lst | null>;
     updateVersion(buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<FileVersion>;
     getCurrentVersion(): Promise<FileVersion>;
+    setAsCurrentVersion(versionName: string): Promise<FileVersion>;
     getCurrentVersionAsBuffer(hubUrl?: string): Promise<Buffer>;
     removeVersion(versionName: string): Promise<boolean>;
     getVersionByName(versionName: string): Promise<FileVersion | null>;

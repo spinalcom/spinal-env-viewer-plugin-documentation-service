@@ -74,6 +74,15 @@ export default class SpinalDocument extends SpinalFile {
 		});
 	}
 
+	async setAsCurrentVersion(versionName: string): Promise<FileVersion> {
+		if (this.isDirectory()) throw new Error("Directories do not have versions.");
+		const version = await this.getVersionByName(versionName);
+		if (!version) throw new Error(`Version ${versionName} not found.`);
+
+		this.mod_attr("currentVersion", new Ptr(version));
+		return version;
+	}
+
 	async getCurrentVersionAsBuffer(hubUrl: string = ""): Promise<Buffer> {
 		if (this.isDirectory()) throw new Error("Directories do not have versions.");
 
