@@ -94,13 +94,28 @@ export default class SpinalDocument extends SpinalFile {
 		if (this.isDirectory()) throw new Error("Cannot remove version of a directory.");
 
 		const currentVersion = await this.getCurrentVersion();
-		if (currentVersion.version.get() === versionName) throw new Error("Cannot remove the current version.");
+		const isCurrentVersion = currentVersion.version.get() === versionName;
 
-		const versionHistory = await this._loadVersionHistory();
-		const versionFound = Array.from(versionHistory).find((version: FileVersion) => version.version.get() === versionName);
-		if (!versionFound) throw new Error(`Version ${versionName} not found.`);
+		let versionHistory = await this._loadVersionHistory();
+		const versionsArray = Array.from(versionHistory);
 
-		versionHistory.remove(versionFound);
+		// If the version to remove is not the current version, simply remove it from the history
+		if (!isCurrentVersion) {
+			const versionFound = versionsArray.find((version: FileVersion) => version.version.get() === versionName);
+			if (!versionFound) throw new Error(`Version ${versionName} not found.`);
+			versionHistory.remove(versionFound);
+			return true;
+		}
+
+		// If the version to remove is the current version, ensure there are other versions to switch to
+		if (versionsArray.length === 1) throw new Error("Cannot remove the only version of the file.");
+
+		// Find the last version based on creation date
+		const lastVersion = [...versionsArray].sort((a, b) => b.creationDate.get() - a.creationDate.get())[0];
+		if (!lastVersion) throw new Error("No other version found to set as current.");
+
+		this.mod_attr("currentVersion", new Ptr(lastVersion)); // Set the last version as the current version
+		versionHistory.remove(currentVersion); // Remove the current version from history
 
 		return true;
 	}

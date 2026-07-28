@@ -22,9 +22,9 @@
  * <http://resources.spinalcom.com/licenses.pdf>.
  */
 
-import { SPINAL_RELATION_PTR_LST_TYPE, SpinalNode } from "spinal-model-graph";
+import { SpinalNode } from "spinal-model-graph";
 import { MESSAGE_TYPES } from "spinal-models-documentation";
-import { _getOrCreateRootNode, _getRootNodeParent, convertFileToSpinalDocument, createorGetFileNode, getFileModelFromNode, removeFileNodeFromParent } from "../utils/files";
+import { _getOrCreateRootNode, _getRootNodeParent, convertFileToSpinalDocument, getFileModelFromNode, removeFileNodeFromParent } from "../utils/files";
 import { FilesArgType } from "../interfaces";
 import { DIRECTORY_NODE_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "./constants";
 import { SpinalDocument } from "../models_spinalcom";
