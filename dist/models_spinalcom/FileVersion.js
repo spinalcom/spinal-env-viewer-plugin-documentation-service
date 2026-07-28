@@ -9,7 +9,7 @@ const stream_1 = require("stream");
 class FileVersion extends spinal_core_connectorjs_1.Model {
     constructor(versionInfo) {
         super();
-        if (!versionInfo || !versionInfo.version || !Array.isArray(versionInfo.hashes) || versionInfo.hashes.length === 0) {
+        if (!versionInfo || !versionInfo.version || !Array.isArray(versionInfo.hashes) || versionInfo.hashes.length == 0) {
             return;
         }
         const hashesModel = new spinal_core_connectorjs_1.Lst(versionInfo.hashes);

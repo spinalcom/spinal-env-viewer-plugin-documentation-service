@@ -211,7 +211,7 @@ class SpinalDocumentary {
 		if (!list) throw new Error("Directory list not found or failed to load.");
 
 		if (list instanceof Lst || list instanceof Directory) {
-			const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
+			const relationName = fileNode.getType().get() == DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
 			list.push(file);
 			return directoryNode.addChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE);
 		}
@@ -229,7 +229,7 @@ class SpinalDocumentary {
 
 		if (list instanceof Lst || list instanceof Directory) {
 			for (let f of list) {
-				if (f._server_id === fileModel._server_id) {
+				if (f._server_id == fileModel._server_id) {
 					list.remove(f);
 					return true;
 				}
@@ -254,7 +254,7 @@ class SpinalDocumentary {
 			if (!node) continue;
 
 			// Only push to createdNodes if it's a file, directories will be processed for their children
-			if (nodeType === DIRECTORY_NODE_TYPE) {
+			if (nodeType == DIRECTORY_NODE_TYPE) {
 				const children = await _getFileChildren(file, node);
 				queue.push(...children);
 			}

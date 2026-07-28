@@ -144,7 +144,7 @@ class FileExplorer {
         let rootDirNode;
         if (node instanceof models_spinalcom_1.SpinalDocument)
             node = (await node.getNode());
-        if (node.getType().get() === constants_1.DIRECTORY_NODE_TYPE || node.getType().get() === constants_1.FILE_NODE_TYPE)
+        if (node.getType().get() == constants_1.DIRECTORY_NODE_TYPE || node.getType().get() == constants_1.FILE_NODE_TYPE)
             rootDirNode = node;
         else
             rootDirNode = await FileExplorer.getDirectory(node);
@@ -162,7 +162,7 @@ class FileExplorer {
     }
     static async getFileParents(fileNode) {
         // let rootDirNode;
-        // if (fileNode.getType().get() === DIRECTORY_NODE_TYPE || fileNode.getType().get() === FILE_NODE_TYPE) rootDirNode = fileNode;
+        // if (fileNode.getType().get() == DIRECTORY_NODE_TYPE || fileNode.getType().get() == FILE_NODE_TYPE) rootDirNode = fileNode;
         // // else rootDirNode = await FileExplorer.getDirectory(fileNode as SpinalNode);
         // if (!rootDirNode) return [];
         if (fileNode instanceof models_spinalcom_1.SpinalDocument)
@@ -179,7 +179,7 @@ class FileExplorer {
         // 	fileModel = fileNode;
         // 	fileNode = await createorGetFileNode(fileNode instanceof SpinalDocument ? fileNode : (fileNode as SpinalFile));
         // }
-        // const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
+        // const relationName = fileNode.getType().get() == DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
         // return rootDirNode
         // 	.removeChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE)
         // 	.then(async () => {

@@ -82,19 +82,19 @@ class SpinalDocument extends spinal_core_connectorjs_1.File {
         if (this.isDirectory())
             throw new Error("Cannot remove version of a directory.");
         const currentVersion = await this.getCurrentVersion();
-        const isCurrentVersion = currentVersion.version.get() === versionName;
+        const isCurrentVersion = currentVersion.version.get() == versionName;
         let versionHistory = await this._loadVersionHistory();
         const versionsArray = Array.from(versionHistory);
         // If the version to remove is not the current version, simply remove it from the history
         if (!isCurrentVersion) {
-            const versionFound = versionsArray.find((version) => version.version.get() === versionName);
+            const versionFound = versionsArray.find((version) => version.version.get() == versionName);
             if (!versionFound)
                 throw new Error(`Version ${versionName} not found.`);
             versionHistory.remove(versionFound);
             return true;
         }
         // If the version to remove is the current version, ensure there are other versions to switch to
-        if (versionsArray.length === 1)
+        if (versionsArray.length == 1)
             throw new Error("Cannot remove the only version of the file.");
         // Find the last version based on creation date
         const lastVersion = [...versionsArray].sort((a, b) => b.creationDate.get() - a.creationDate.get())[0];
@@ -109,7 +109,7 @@ class SpinalDocument extends spinal_core_connectorjs_1.File {
             throw new Error("Directories do not have versions.");
         const versionHistory = await this._loadVersionHistory();
         for (const version of versionHistory) {
-            if (version.version.get() === versionName) {
+            if (version.version.get() == versionName) {
                 return version;
             }
         }
@@ -223,7 +223,7 @@ class SpinalDocument extends spinal_core_connectorjs_1.File {
         return this._node;
     }
     isDirectory() {
-        return this._info?.model_type?.get() === constants_1.DIRECTORY_MODEL_TYPE;
+        return this._info?.model_type?.get() == constants_1.DIRECTORY_MODEL_TYPE;
     }
     _addNodeToInfo() {
         const type = this.isDirectory() ? constants_1.DIRECTORY_NODE_TYPE : constants_1.FILE_NODE_TYPE;

@@ -1,6 +1,6 @@
-import { SpinalNode } from 'spinal-env-viewer-graph-service';
-import { SpinalAttribute } from 'spinal-models-documentation';
-import type { ICategory } from '../interfaces';
+import { SpinalNode } from "spinal-env-viewer-graph-service";
+import { SpinalAttribute } from "spinal-models-documentation";
+import type { ICategory } from "../interfaces";
 /**
  * @class AttributeService
  */

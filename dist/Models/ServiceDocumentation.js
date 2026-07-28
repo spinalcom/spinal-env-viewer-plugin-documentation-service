@@ -29,7 +29,7 @@ const NoteService_1 = require("./NoteService");
 const UrlService_1 = require("./UrlService");
 const Documentary_1 = require("./Documentary");
 // @ts-ignore
-const globalType = typeof window === "undefined" ? global : window;
+const globalType = typeof window == "undefined" ? global : window;
 function applyMixins(derivedConstructor, baseConstructors) {
     baseConstructors.forEach((baseConstructor) => {
         Object.getOwnPropertyNames(baseConstructor.prototype).forEach((name) => {

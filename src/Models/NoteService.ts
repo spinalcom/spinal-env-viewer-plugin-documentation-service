@@ -32,7 +32,7 @@ import { FileExplorer } from "./FileExplorer";
 import { File as SpinalFileModel } from "spinal-core-connectorjs_type";
 import AttributeService, { attributeService } from "./AttributeService";
 
-const globalType: any = typeof window === "undefined" ? global : window;
+const globalType: any = typeof window == "undefined" ? global : window;
 
 class NoteService {
 	constructor() {}
@@ -153,12 +153,12 @@ class NoteService {
 		let contextId = noteContextId;
 		let groupId = noteGroupId;
 
-		if (typeof contextId === "undefined") {
+		if (typeof contextId == "undefined") {
 			const noteContext = await this.createDefaultContext();
 			contextId = noteContext.getId().get();
 		}
 
-		if (typeof groupId === "undefined") {
+		if (typeof groupId == "undefined") {
 			const groupNode = await this.createDefaultGroup();
 			if (!groupNode) throw new Error("Unable to create default group");
 			groupId = groupNode.getId().get();
@@ -208,12 +208,12 @@ class NoteService {
 		//@ts-ignore
 		SpinalGraphService._addNode(noteNode);
 
-		if (typeof contextId === "undefined") {
+		if (typeof contextId == "undefined") {
 			const noteContext = await this.createDefaultContext();
 			contextId = noteContext.getId().get();
 		}
 
-		if (typeof groupId === "undefined") {
+		if (typeof groupId == "undefined") {
 			const groupNode = await this.createDefaultGroup();
 			groupId = groupNode?.getId().get();
 		}
@@ -231,7 +231,7 @@ class NoteService {
 		return startNode.findInContext(noteContext, (node) => {
 			let type = node.getType().get();
 
-			if (type === NOTE_TYPE) {
+			if (type == NOTE_TYPE) {
 				SpinalGraphService._addNode(node);
 				return true;
 			}

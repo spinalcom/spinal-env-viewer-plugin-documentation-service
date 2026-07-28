@@ -42,7 +42,7 @@ class VersionUtils {
         return hash.digest("hex"); // return the hash as a hexadecimal string
     }
     _checkIfChunkExists(hash, allHashes) {
-        const foundHash = allHashes.find((h) => h.hash === hash);
+        const foundHash = allHashes.find((h) => h.hash == hash);
         return foundHash ? foundHash.path : null;
         // const lastVersionHashes = lastVersion ? lastVersion.hashes : [];
         // return lastVersionHashes.includes(hash);

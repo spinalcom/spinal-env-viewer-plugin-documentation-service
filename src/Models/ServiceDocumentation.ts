@@ -28,7 +28,7 @@ import { UrlService } from "./UrlService";
 import { SpinalDocumentary } from "./Documentary";
 
 // @ts-ignore
-const globalType: any = typeof window === "undefined" ? global : window;
+const globalType: any = typeof window == "undefined" ? global : window;
 
 function applyMixins(derivedConstructor: any, baseConstructors: any[]) {
 	baseConstructors.forEach((baseConstructor) => {

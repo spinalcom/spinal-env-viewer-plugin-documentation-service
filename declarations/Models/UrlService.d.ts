@@ -1,6 +1,6 @@
-import { SpinalNode } from 'spinal-model-graph';
-import { SpinalURL } from 'spinal-models-documentation';
-import type { IUrl } from '../interfaces';
+import { SpinalNode } from "spinal-model-graph";
+import { SpinalURL } from "spinal-models-documentation";
+import type { IUrl } from "../interfaces";
 declare class UrlService {
     constructor();
     /**

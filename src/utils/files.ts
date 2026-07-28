@@ -64,7 +64,7 @@ export function addSpinalDocumentAsNodeChild(parentNode: SpinalNode, spinalDocum
 	else prom = parentNode.addChild(spinalDocumentNode, relationName, SPINAL_RELATION_PTR_LST_TYPE);
 
 	return prom.then(async (result) => {
-		if (parentNode.getType().get() === DIRECTORY_NODE_TYPE) {
+		if (parentNode.getType().get() == DIRECTORY_NODE_TYPE) {
 			const childSpinalDocument = await getFileModelFromNode(spinalDocumentNode);
 			if (!childSpinalDocument) return result;
 
@@ -94,7 +94,7 @@ async function _addFileNodeToDirectory(directoryNode: SpinalNode, file: SpinalDo
 }
 
 async function getDirectoryElement(spinalDocument: SpinalDocument | SpinalFile): Promise<Lst | Directory | undefined> {
-	const isDirectory = spinalDocument._info?.model_type?.get() === DIRECTORY_MODEL_TYPE;
+	const isDirectory = spinalDocument._info?.model_type?.get() == DIRECTORY_MODEL_TYPE;
 	if (!isDirectory) return;
 
 	return new Promise<Lst | Directory | undefined>((resolve) => {
@@ -128,7 +128,7 @@ export async function createorGetFileNode(file: SpinalDocument | SpinalFile | Sp
 }
 
 function createAndAddNodeToFile(file: SpinalFile): SpinalNode {
-	const isDirectory = file._info?.model_type?.get() === DIRECTORY_MODEL_TYPE;
+	const isDirectory = file._info?.model_type?.get() == DIRECTORY_MODEL_TYPE;
 	const type = isDirectory ? DIRECTORY_NODE_TYPE : FILE_NODE_TYPE;
 	const name = file.name.get();
 
@@ -150,9 +150,9 @@ export async function _getFileChildren(file: SpinalDocument | SpinalFile, parent
 
 export async function _getFileAttributes(file: SpinalDocument | SpinalFile): Promise<{ name: string; nodeType: string; relationName: string }> {
 	const name = file.name.get();
-	const isDirectory = file._info?.model_type?.get() === DIRECTORY_MODEL_TYPE;
+	const isDirectory = file._info?.model_type?.get() == DIRECTORY_MODEL_TYPE;
 	const nodeType = isDirectory ? DIRECTORY_NODE_TYPE : FILE_NODE_TYPE;
-	const relationName = nodeType === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
+	const relationName = nodeType == DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
 
 	return { name, nodeType, relationName };
 }
@@ -199,7 +199,7 @@ export async function convertFileInTreeToSpecialFormat(startNode: SpinalNode | S
 		if (alreadyProcessedNodes.has(serverId)) continue;
 
 		const data = await convertFileToSpecialFormat(file, format, hubUrl);
-		const isDirectory = file._info.model_type?.get() === DIRECTORY_MODEL_TYPE;
+		const isDirectory = file._info.model_type?.get() == DIRECTORY_MODEL_TYPE;
 
 		// If the current file is not a directory or if we want to include files, we add it to the result
 		if (!onlyFiles || (onlyFiles && !isDirectory)) {
@@ -232,12 +232,12 @@ export async function convertFileToSpecialFormat(file: SpinalNode | SpinalDocume
 	const name = file instanceof SpinalNode ? file.getName().get() : file.name.get();
 	const fileType = file instanceof SpinalNode ? file.getType().get() : file._info.model_type?.get();
 
-	const isDirectory = fileType === DIRECTORY_MODEL_TYPE;
+	const isDirectory = fileType == DIRECTORY_MODEL_TYPE;
 	const fileData: any = { name, serverId: file._server_id as number, type: isDirectory ? DIRECTORY_NODE_TYPE : FILE_NODE_TYPE };
 
 	if (!isDirectory && format) {
 		const buffer = await _getFileAsBuffer(file, hubUrl);
-		fileData.data = format === "base64" ? buffer.toString("base64") : format === "stream" ? bufferToStream(buffer) : buffer;
+		fileData.data = format == "base64" ? buffer.toString("base64") : format == "stream" ? bufferToStream(buffer) : buffer;
 	}
 
 	return fileData;
@@ -263,7 +263,7 @@ async function getStarterQueue(startNode: SpinalNode | SpinalDocument | SpinalFi
 
 		const { node, path } = data;
 		const type = node.getType().get();
-		if (type === FILE_NODE_TYPE || type === DIRECTORY_NODE_TYPE) {
+		if (type == FILE_NODE_TYPE || type == DIRECTORY_NODE_TYPE) {
 			res.push({ path, file: (await getFileModelFromNode(node)) as SpinalDocument | SpinalFile });
 		}
 
@@ -296,7 +296,7 @@ export async function _getOrCreateRootNode(node: SpinalNode, createIfNotExist: b
 }
 
 export function isRootDirectoryNode(node: SpinalNode): boolean {
-	return node.getType().get() === DIRECTORY_NODE_TYPE && node.getName().get().endsWith("_root_directory");
+	return node.getType().get() == DIRECTORY_NODE_TYPE && node.getName().get().endsWith("_root_directory");
 }
 
 export async function removeFileNodeFromParent(parentNode: SpinalNode, fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<boolean> {
@@ -308,19 +308,19 @@ export async function removeFileNodeFromParent(parentNode: SpinalNode, fileNode:
 			fileNode = await createorGetFileNode(fileNode);
 		}
 
-		const isDirectory = fileNode.getType().get() === DIRECTORY_NODE_TYPE;
+		const isDirectory = fileNode.getType().get() == DIRECTORY_NODE_TYPE;
 		const relationName = isDirectory ? TO_FOLDER_RELATION : TO_FILE_RELATION;
 		await parentNode.removeChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE);
 
 		// If the parent node is a directory, we also remove the file from its directory list
-		if (parentNode.getType().get() === DIRECTORY_NODE_TYPE) {
+		if (parentNode.getType().get() == DIRECTORY_NODE_TYPE) {
 			return SpinalDocumentary.removeFileFromDirectory(parentNode, fileNode);
 		}
 
 		// if fileNode is a directory, and it has no parents, we remove it from its children
 		if (isDirectory) {
 			const parents = await fileNode.getParents([TO_FILE_RELATION, TO_FOLDER_RELATION]);
-			if (parents.length === 0) await fileNode._removeFromChildren();
+			if (parents.length == 0) await fileNode._removeFromChildren();
 		}
 
 		return true;
@@ -330,7 +330,7 @@ export async function removeFileNodeFromParent(parentNode: SpinalNode, fileNode:
 }
 
 export function isFileVersion(fileVersion: any): fileVersion is FileVersion {
-	return fileVersion?.constructor?.name === "FileVersion";
+	return fileVersion?.constructor?.name == "FileVersion";
 }
 
 async function waitUntilPathIsLoaded(pathModel: Path): Promise<boolean> {

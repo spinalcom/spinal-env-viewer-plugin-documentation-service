@@ -31,7 +31,7 @@ const spinal_models_documentation_1 = require("spinal-models-documentation");
 const FileExplorer_1 = require("./FileExplorer");
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const AttributeService_1 = require("./AttributeService");
-const globalType = typeof window === "undefined" ? global : window;
+const globalType = typeof window == "undefined" ? global : window;
 class NoteService {
     constructor() { }
     /**
@@ -132,11 +132,11 @@ class NoteService {
         spinal_env_viewer_graph_service_1.SpinalGraphService._addNode(spinalNode);
         let contextId = noteContextId;
         let groupId = noteGroupId;
-        if (typeof contextId === "undefined") {
+        if (typeof contextId == "undefined") {
             const noteContext = await this.createDefaultContext();
             contextId = noteContext.getId().get();
         }
-        if (typeof groupId === "undefined") {
+        if (typeof groupId == "undefined") {
             const groupNode = await this.createDefaultGroup();
             if (!groupNode)
                 throw new Error("Unable to create default group");
@@ -179,11 +179,11 @@ class NoteService {
     async addNoteToContext(noteNode, contextId, groupId) {
         //@ts-ignore
         spinal_env_viewer_graph_service_1.SpinalGraphService._addNode(noteNode);
-        if (typeof contextId === "undefined") {
+        if (typeof contextId == "undefined") {
             const noteContext = await this.createDefaultContext();
             contextId = noteContext.getId().get();
         }
-        if (typeof groupId === "undefined") {
+        if (typeof groupId == "undefined") {
             const groupNode = await this.createDefaultGroup();
             groupId = groupNode?.getId().get();
         }
@@ -198,7 +198,7 @@ class NoteService {
     getNotesInNoteContext(noteContext, startNode) {
         return startNode.findInContext(noteContext, (node) => {
             let type = node.getType().get();
-            if (type === constants_1.NOTE_TYPE) {
+            if (type == constants_1.NOTE_TYPE) {
                 spinal_env_viewer_graph_service_1.SpinalGraphService._addNode(node);
                 return true;
             }

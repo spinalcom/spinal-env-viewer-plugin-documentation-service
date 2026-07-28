@@ -160,7 +160,7 @@ export class FileExplorer {
 	public static async getFilesLinkedToNode(node: SpinalNode<any>): Promise<(SpinalDocument | SpinalFile)[]> {
 		let rootDirNode;
 		if (node instanceof SpinalDocument) node = (await node.getNode()) as SpinalNode;
-		if (node.getType().get() === DIRECTORY_NODE_TYPE || node.getType().get() === FILE_NODE_TYPE) rootDirNode = node;
+		if (node.getType().get() == DIRECTORY_NODE_TYPE || node.getType().get() == FILE_NODE_TYPE) rootDirNode = node;
 		else rootDirNode = await FileExplorer.getDirectory(node);
 
 		if (!rootDirNode) return [];
@@ -177,7 +177,7 @@ export class FileExplorer {
 
 	public static async getFileParents(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<SpinalNode[]> {
 		// let rootDirNode;
-		// if (fileNode.getType().get() === DIRECTORY_NODE_TYPE || fileNode.getType().get() === FILE_NODE_TYPE) rootDirNode = fileNode;
+		// if (fileNode.getType().get() == DIRECTORY_NODE_TYPE || fileNode.getType().get() == FILE_NODE_TYPE) rootDirNode = fileNode;
 		// // else rootDirNode = await FileExplorer.getDirectory(fileNode as SpinalNode);
 
 		// if (!rootDirNode) return [];
@@ -198,7 +198,7 @@ export class FileExplorer {
 		// 	fileNode = await createorGetFileNode(fileNode instanceof SpinalDocument ? fileNode : (fileNode as SpinalFile));
 		// }
 
-		// const relationName = fileNode.getType().get() === DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
+		// const relationName = fileNode.getType().get() == DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
 		// return rootDirNode
 		// 	.removeChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE)
 		// 	.then(async () => {

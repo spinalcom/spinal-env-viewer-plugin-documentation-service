@@ -9,7 +9,7 @@ class FileVersion extends Model {
 	constructor(versionInfo: IFileVersionInfo) {
 		super();
 
-		if (!versionInfo || !versionInfo.version || !Array.isArray(versionInfo.hashes) || versionInfo.hashes.length === 0) {
+		if (!versionInfo || !versionInfo.version || !Array.isArray(versionInfo.hashes) || versionInfo.hashes.length == 0) {
 			return;
 		}
 

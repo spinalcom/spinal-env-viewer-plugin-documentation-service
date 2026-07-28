@@ -42,7 +42,7 @@ class UrlService {
         const urlNameIsValid = urlName && urlName.length > 0;
         const urlLinkIsValid = urlLink && urlLink.length > 0;
         if (!(urlNameIsValid && urlLinkIsValid))
-            throw new Error('name or link is invalid');
+            throw new Error("name or link is invalid");
         const urlExist = await this.getURL(node, urlName);
         if (urlExist)
             throw new Error(`${urlName} already exist in ${node.getName().get()}`);
@@ -70,7 +70,7 @@ class UrlService {
         if (urlName && urlName.toString().trim().length) {
             return values.find(({ element }) => {
                 const elementName = element.name.get();
-                return elementName.toString().trim() === urlName.toString().trim();
+                return elementName.toString().trim() == urlName.toString().trim();
             });
         }
         return values;

@@ -94,21 +94,21 @@ export default class SpinalDocument extends SpinalFile {
 		if (this.isDirectory()) throw new Error("Cannot remove version of a directory.");
 
 		const currentVersion = await this.getCurrentVersion();
-		const isCurrentVersion = currentVersion.version.get() === versionName;
+		const isCurrentVersion = currentVersion.version.get() == versionName;
 
 		let versionHistory = await this._loadVersionHistory();
 		const versionsArray = Array.from(versionHistory);
 
 		// If the version to remove is not the current version, simply remove it from the history
 		if (!isCurrentVersion) {
-			const versionFound = versionsArray.find((version: FileVersion) => version.version.get() === versionName);
+			const versionFound = versionsArray.find((version: FileVersion) => version.version.get() == versionName);
 			if (!versionFound) throw new Error(`Version ${versionName} not found.`);
 			versionHistory.remove(versionFound);
 			return true;
 		}
 
 		// If the version to remove is the current version, ensure there are other versions to switch to
-		if (versionsArray.length === 1) throw new Error("Cannot remove the only version of the file.");
+		if (versionsArray.length == 1) throw new Error("Cannot remove the only version of the file.");
 
 		// Find the last version based on creation date
 		const lastVersion = [...versionsArray].sort((a, b) => b.creationDate.get() - a.creationDate.get())[0];
@@ -125,7 +125,7 @@ export default class SpinalDocument extends SpinalFile {
 
 		const versionHistory = await this._loadVersionHistory();
 		for (const version of versionHistory) {
-			if (version.version.get() === versionName) {
+			if (version.version.get() == versionName) {
 				return version;
 			}
 		}
@@ -253,7 +253,7 @@ export default class SpinalDocument extends SpinalFile {
 	}
 
 	isDirectory(): boolean {
-		return this._info?.model_type?.get() === DIRECTORY_MODEL_TYPE;
+		return this._info?.model_type?.get() == DIRECTORY_MODEL_TYPE;
 	}
 
 	private _addNodeToInfo() {

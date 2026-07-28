@@ -54,7 +54,7 @@ export default class VersionUtils {
 	}
 
 	private _checkIfChunkExists(hash: string, allHashes: IHash[]): spinal.Path | null {
-		const foundHash = allHashes.find((h) => h.hash === hash);
+		const foundHash = allHashes.find((h) => h.hash == hash);
 		return foundHash ? foundHash.path : null;
 
 		// const lastVersionHashes = lastVersion ? lastVersion.hashes : [];
