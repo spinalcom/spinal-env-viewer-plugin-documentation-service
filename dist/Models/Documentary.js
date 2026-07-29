@@ -68,8 +68,11 @@ class SpinalDocumentary {
             throw new Error("File model not found for the given node.");
         const unlinkRefs = options?.unlinkRefs ?? true;
         await fileNode.removeFromContext(contextNode, unlinkRefs);
-        if (options?.removeChildren && fileNode.getType().get() === constants_1.DIRECTORY_NODE_TYPE) {
-            const children = await fileNode.getChildren([constants_1.TO_FOLDER_RELATION, constants_1.TO_FILE_RELATION]);
+        if (options?.removeChildren && fileNode.isDirectory()) {
+            const node = await fileNode.getNode();
+            if (!node)
+                throw new Error("Directory node not found.");
+            const children = await node.getChildren([constants_1.TO_FOLDER_RELATION, constants_1.TO_FILE_RELATION]);
             const removeChildrenPromises = children.map((child) => this.removeFileFromContext(child, contextNode, options));
             await Promise.all(removeChildrenPromises);
         }

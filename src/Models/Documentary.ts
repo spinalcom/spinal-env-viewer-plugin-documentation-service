@@ -72,8 +72,10 @@ class SpinalDocumentary {
 		const unlinkRefs = options?.unlinkRefs ?? true;
 		await fileNode.removeFromContext(contextNode, unlinkRefs);
 
-		if (options?.removeChildren && fileNode.getType().get() === DIRECTORY_NODE_TYPE) {
-			const children = await fileNode.getChildren([TO_FOLDER_RELATION, TO_FILE_RELATION]);
+		if (options?.removeChildren && fileNode.isDirectory()) {
+			const node = await fileNode.getNode();
+			if (!node) throw new Error("Directory node not found.");
+			const children = await node.getChildren([TO_FOLDER_RELATION, TO_FILE_RELATION]);
 			const removeChildrenPromises = children.map((child: SpinalNode) => this.removeFileFromContext(child, contextNode, options));
 			await Promise.all(removeChildrenPromises);
 		}
