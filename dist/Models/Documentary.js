@@ -110,12 +110,12 @@ class SpinalDocumentary {
         documentToMove = await (0, files_1.createorGetFileNode)(documentToMove);
         sourceNode = await (0, files_1.createorGetFileNode)(sourceNode);
         targetNode = await (0, files_1.createorGetFileNode)(targetNode);
-        if (contextNode.belongsToContext(documentToMove))
-            return false;
-        if (contextNode.belongsToContext(sourceNode))
-            return false;
-        if (contextNode.belongsToContext(targetNode))
-            return false;
+        if (!documentToMove.belongsToContext(contextNode) && documentToMove._server_id !== contextNode._server_id)
+            throw new Error("Document to move does not belong to the specified context.");
+        if (!sourceNode.belongsToContext(contextNode) && sourceNode._server_id !== contextNode._server_id)
+            throw new Error("Source node does not belong to the specified context.");
+        if (!targetNode.belongsToContext(contextNode) && targetNode._server_id !== contextNode._server_id)
+            throw new Error("Target node does not belong to the specified context.");
         await (0, files_1.removeFileNodeFromParent)(sourceNode, documentToMove);
         return this.addFileToNodeInContext(targetNode, documentToMove, contextNode)
             .then((result) => !!result)

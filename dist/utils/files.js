@@ -265,9 +265,7 @@ function isRootDirectoryNode(node) {
 exports.isRootDirectoryNode = isRootDirectoryNode;
 async function removeFileNodeFromParent(parentNode, fileNode) {
     try {
-        let fileModel = undefined;
         if (fileNode instanceof SpinalDocument_1.SpinalDocument || fileNode instanceof spinal_core_connectorjs_type_1.File) {
-            fileModel = fileNode;
             fileNode = await createorGetFileNode(fileNode);
         }
         const isDirectory = fileNode.getType().get() == constants_1.DIRECTORY_NODE_TYPE;

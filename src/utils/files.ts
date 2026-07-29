@@ -301,10 +301,7 @@ export function isRootDirectoryNode(node: SpinalNode): boolean {
 
 export async function removeFileNodeFromParent(parentNode: SpinalNode, fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<boolean> {
 	try {
-		let fileModel: SpinalDocument | SpinalFile | undefined = undefined;
-
 		if (fileNode instanceof SpinalDocument || fileNode instanceof SpinalFile) {
-			fileModel = fileNode;
 			fileNode = await createorGetFileNode(fileNode);
 		}
 
