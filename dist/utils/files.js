@@ -295,7 +295,7 @@ exports.isFileVersion = isFileVersion;
 async function waitUntilPathIsLoaded(pathModel) {
     return new Promise((resolve, reject) => {
         const waitTimeout = () => {
-            if (pathModel.remaining.get() == 0 && pathModel._server_id) {
+            if (pathModel.remaining.get() <= 0 && pathModel._server_id) {
                 resolve(true);
                 return;
             }
