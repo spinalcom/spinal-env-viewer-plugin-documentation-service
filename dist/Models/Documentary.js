@@ -32,6 +32,8 @@ class SpinalDocumentary {
      * @returns {Promise<SpinalNode[]>} Linked file nodes.
      */
     async addFileToNodeInContext(parentNode, files, contextNode, chunkSize = -1) {
+        if (parentNode instanceof models_spinalcom_1.SpinalDocument)
+            parentNode = (await parentNode.getNode());
         const filesConverted = await (0, files_1.convertFileToSpinalDocument)(files, chunkSize);
         const promises = [];
         for (const file of filesConverted) {

@@ -26,7 +26,7 @@ declare class SpinalDocumentary {
      * @param {number} [chunkSize=-1] Optional chunk size used by file conversion.
      * @returns {Promise<SpinalNode[]>} Linked file nodes.
      */
-    addFileToNodeInContext(parentNode: SpinalNode, files: FilesArgType, contextNode: SpinalContext, chunkSize?: number): Promise<SpinalNode[]>;
+    addFileToNodeInContext(parentNode: SpinalNode | SpinalDocument, files: FilesArgType, contextNode: SpinalContext, chunkSize?: number): Promise<SpinalNode[]>;
     /**
      * Adds an existing file node/model to a parent node in context.
      * @param {SpinalNode | SpinalDocument | SpinalFile} fileNode File reference to add.

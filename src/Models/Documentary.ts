@@ -33,7 +33,8 @@ class SpinalDocumentary {
 	 * @param {number} [chunkSize=-1] Optional chunk size used by file conversion.
 	 * @returns {Promise<SpinalNode[]>} Linked file nodes.
 	 */
-	public async addFileToNodeInContext(parentNode: SpinalNode, files: FilesArgType, contextNode: SpinalContext, chunkSize: number = -1): Promise<SpinalNode[]> {
+	public async addFileToNodeInContext(parentNode: SpinalNode | SpinalDocument, files: FilesArgType, contextNode: SpinalContext, chunkSize: number = -1): Promise<SpinalNode[]> {
+		if (parentNode instanceof SpinalDocument) parentNode = (await parentNode.getNode()) as SpinalNode;
 		const filesConverted = await convertFileToSpinalDocument(files, chunkSize);
 		const promises: Promise<SpinalNode>[] = [];
 
