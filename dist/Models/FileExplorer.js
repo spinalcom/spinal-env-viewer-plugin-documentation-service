@@ -153,9 +153,9 @@ class FileExplorer {
         return rootDirNode.getChildren([constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]).then(async (children) => {
             const files = [];
             for (const child of children) {
-                const element = await (0, files_1.getFileModelFromNode)(child);
-                if (element)
-                    files.push(element);
+                const childSpinalDocument = await (0, files_1.getFileModelFromNode)(child);
+                if (childSpinalDocument)
+                    files.push(childSpinalDocument);
             }
             return files;
         });
@@ -174,19 +174,6 @@ class FileExplorer {
         if (!rootDirNode)
             return false;
         return (0, files_1.removeFileNodeFromParent)(rootDirNode, fileNode);
-        // let fileModel: SpinalDocument | SpinalFile | undefined = undefined;
-        // if (fileNode instanceof SpinalDocument || fileNode instanceof SpinalFile) {
-        // 	fileModel = fileNode;
-        // 	fileNode = await createorGetFileNode(fileNode instanceof SpinalDocument ? fileNode : (fileNode as SpinalFile));
-        // }
-        // const relationName = fileNode.getType().get() == DIRECTORY_NODE_TYPE ? TO_FOLDER_RELATION : TO_FILE_RELATION;
-        // return rootDirNode
-        // 	.removeChild(fileNode, relationName, SPINAL_RELATION_PTR_LST_TYPE)
-        // 	.then(async () => {
-        // 		fileModel = fileModel || (await getFileModelFromNode(fileNode as SpinalNode));
-        // 		return SpinalDocumentary.removeFileFromDirectory(rootDirNode, fileModel as any);
-        // 	})
-        // 	.catch(() => false);
     }
     static async _getOrCreateFileDirectory(node) {
         let directory = await FileExplorer.getDirectory(node);

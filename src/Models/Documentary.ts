@@ -66,14 +66,14 @@ class SpinalDocumentary {
 	 * @returns {Promise<boolean>} True when completed.
 	 */
 	public async removeFileFromContext(fileNode: SpinalNode | SpinalDocument, contextNode: SpinalContext, options?: { unlinkRefs?: boolean; removeChildren?: boolean }): Promise<boolean> {
-		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
-		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
+		const fileModel = fileNode instanceof SpinalNode ? await getFileModelFromNode(fileNode) : fileNode;
+		if (!fileModel || !(fileModel instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
 
 		const unlinkRefs = options?.unlinkRefs ?? true;
-		await fileNode.removeFromContext(contextNode, unlinkRefs);
+		await fileModel.removeFromContext(contextNode, unlinkRefs);
 
-		if (options?.removeChildren && fileNode.isDirectory()) {
-			const node = await fileNode.getNode();
+		if (options?.removeChildren && fileModel.isDirectory()) {
+			const node = await fileModel.getNode();
 			if (!node) throw new Error("Directory node not found.");
 			const children = await node.getChildren([TO_FOLDER_RELATION, TO_FILE_RELATION]);
 			const removeChildrenPromises = children.map((child: SpinalNode) => this.removeFileFromContext(child, contextNode, options));
@@ -147,20 +147,15 @@ class SpinalDocumentary {
 	 * @returns {Promise<FileVersion[]>} Version history for the file.
 	 */
 	public async getFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]> {
-		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
-		if (!fileNode) throw new Error("File model not found for the given node.");
+		const fileModel = fileNode instanceof SpinalNode ? await getFileModelFromNode(fileNode) : fileNode;
+		if (!fileModel) throw new Error("File model not found for the given node.");
 
-		if (fileNode instanceof SpinalDocument) return fileNode.getVersionHistory();
+		if (fileModel instanceof SpinalDocument) return fileModel.getVersionHistory();
 
-		if (fileNode instanceof SpinalFile) {
-			const fakeFileVersion = await FileVersion.createFakeFileVersionInstance(fileNode);
+		if (fileModel instanceof SpinalFile) {
+			const fakeFileVersion = await FileVersion.createFakeFileVersionInstance(fileModel);
 			if (fakeFileVersion) return [fakeFileVersion];
 		}
-
-		// if (fileNode instanceof SpinalFile) {
-		// const fakeFileVersion = FileVersion.createFakeFileVersionInstance(fileNode);
-		// return [fakeFileVersion];
-		// }
 
 		throw new Error("Unsupported file model type.");
 	}
@@ -172,10 +167,10 @@ class SpinalDocumentary {
 	 * @returns {Promise<FileVersion | null>} Matching version or null.
 	 */
 	public async getFileVersionByName(fileNode: SpinalNode | SpinalDocument | SpinalFile, versionName: string): Promise<FileVersion | null> {
-		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
-		if (!fileNode) throw new Error("File model not found for the given node.");
+		const fileModel = fileNode instanceof SpinalNode ? await getFileModelFromNode(fileNode) : fileNode;
+		if (!fileModel) throw new Error("File model not found for the given node.");
 
-		if (fileNode instanceof SpinalDocument) return fileNode.getVersionByName(versionName);
+		if (fileModel instanceof SpinalDocument) return fileModel.getVersionByName(versionName);
 		return null;
 	}
 
@@ -188,10 +183,10 @@ class SpinalDocumentary {
 	 * @returns {Promise<FileVersion>} Created file version.
 	 */
 	public async updateFileVersion(fileNode: SpinalNode | SpinalDocument, buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<FileVersion> {
-		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
-		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
+		const fileModel = fileNode instanceof SpinalNode ? await getFileModelFromNode(fileNode) : fileNode;
+		if (!fileModel || !(fileModel instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
 
-		return fileNode.updateVersion(buffer, versionName, chunkSize);
+		return fileModel.updateVersion(buffer, versionName, chunkSize);
 	}
 
 	/**
@@ -201,10 +196,10 @@ class SpinalDocumentary {
 	 * @returns {Promise<boolean>} True if version is removed.
 	 */
 	public async removeFileVersion(fileNode: SpinalNode | SpinalDocument, versionName: string): Promise<boolean> {
-		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
-		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
+		const fileModel = fileNode instanceof SpinalNode ? await getFileModelFromNode(fileNode) : fileNode;
+		if (!fileModel || !(fileModel instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
 
-		return fileNode.removeVersion(versionName);
+		return fileModel.removeVersion(versionName);
 	}
 
 	/**
@@ -214,10 +209,10 @@ class SpinalDocumentary {
 	 * @returns {Promise<FileVersion>} The new current version.
 	 */
 	public async downgradeFileVersion(fileNode: SpinalNode | SpinalDocument, versionName: string): Promise<FileVersion> {
-		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
-		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
+		const fileModel = fileNode instanceof SpinalNode ? await getFileModelFromNode(fileNode) : fileNode;
+		if (!fileModel || !(fileModel instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
 
-		return fileNode.setAsCurrentVersion(versionName);
+		return fileModel.setAsCurrentVersion(versionName);
 	}
 
 	//////////////////////////////////
@@ -282,10 +277,8 @@ class SpinalDocumentary {
 	 * @returns {Promise<SpinalNode | null>} First linked file node or null.
 	 */
 	public async linkFileToNode(node: SpinalNode, fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<SpinalNode | null> {
-		let fileModel: SpinalDocument | SpinalFile | undefined;
-
-		if (fileNode instanceof SpinalNode) fileModel = await getFileModelFromNode(fileNode);
-		else fileModel = fileNode;
+		let fileModel = fileNode instanceof SpinalNode ? await getFileModelFromNode(fileNode) : fileNode;
+		if (!fileModel) throw new Error("File model not found for the given node.");
 
 		const filesUploaded = await FileExplorer.addFileUpload(node, fileModel);
 		return filesUploaded[0] || null;
@@ -368,6 +361,7 @@ class SpinalDocumentary {
 	public static async pushFileToDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<SpinalNode | null> {
 		const fileNode = await createorGetFileNode(file);
 		const directoryElement = await getFileModelFromNode(directoryNode);
+
 		const list = await new Promise((resolve) => directoryElement?._ptr?.load((e) => resolve(e)));
 		if (!list) throw new Error("Directory list not found or failed to load.");
 
