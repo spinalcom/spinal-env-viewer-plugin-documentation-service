@@ -20,7 +20,7 @@ export default class SpinalDocument extends SpinalFile {
     linkToNode(parentNode: SpinalNode, contextNode?: SpinalContext): Promise<SpinalNode>;
     remove(unlinkToAll?: boolean): Promise<boolean>;
     removeFromParent(parentNode: SpinalNode): Promise<boolean>;
-    removeFromContext(contextNode: SpinalContext): Promise<boolean>;
+    removeFromContext(contextNode: SpinalContext, unLinkRefs?: boolean): Promise<boolean>;
     removeAllLinks(): Promise<boolean>;
     getNode(): Promise<SpinalNode | null>;
     getParentNodes(): Promise<SpinalNode<any>[]>;

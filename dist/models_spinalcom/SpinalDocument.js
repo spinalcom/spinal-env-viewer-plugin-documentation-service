@@ -163,15 +163,20 @@ class SpinalDocument extends spinal_core_connectorjs_1.File {
             return false;
         return (0, files_1.removeFileNodeFromParent)(parentNode, this._node);
     }
-    async removeFromContext(contextNode) {
+    async removeFromContext(contextNode, unLinkRefs = true) {
         if (!this._node)
             this._node = (await this.getNode());
         if (!this._node)
             return Promise.resolve(false);
+        // remove
         const parents = await this._node.getParentsInContext(contextNode, [constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
         const unLinkPromises = parents.map((parent) => (0, files_1.removeFileNodeFromParent)(parent, this._node));
         return Promise.all(unLinkPromises)
-            .then(() => true)
+            .then(async () => {
+            if (!unLinkRefs)
+                return true;
+            return this.removeAllLinks();
+        })
             .catch(() => false);
     }
     async removeAllLinks() {

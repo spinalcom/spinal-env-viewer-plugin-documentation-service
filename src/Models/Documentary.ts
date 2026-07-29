@@ -6,16 +6,33 @@ import { fileFormat, FilesArgType, IFileInfo } from "../interfaces";
 import { FileVersion, SpinalDocument } from "../models_spinalcom";
 import { FileExplorer } from "./FileExplorer";
 
+/**
+ * Service class that manages documentation files and directories in a Spinal graph context.
+ */
 class SpinalDocumentary {
 	constructor() {}
 
 	////////////////// Inside context functions ///////////////////////
 
+	/**
+	 * Creates and adds a documentary context to a graph.
+	 * @param {SpinalGraph} graph Graph that will contain the context.
+	 * @param {string} name Name of the context to create.
+	 * @returns {Promise<SpinalContext>} The created context.
+	 */
 	public async createDocumentaryContext(graph: SpinalGraph, name: string): Promise<SpinalContext> {
 		const context = new SpinalContext(name, DOCUMENTARY_CONTEXT_TYPE);
 		return graph.addContext(context);
 	}
 
+	/**
+	 * Converts input files to Spinal documents and links them under a parent node in context.
+	 * @param {SpinalNode} parentNode Parent node receiving file links.
+	 * @param {FilesArgType} files File input(s) to convert.
+	 * @param {SpinalContext} contextNode Context where links are created.
+	 * @param {number} [chunkSize=-1] Optional chunk size used by file conversion.
+	 * @returns {Promise<SpinalNode[]>} Linked file nodes.
+	 */
 	public async addFileToNodeInContext(parentNode: SpinalNode, files: FilesArgType, contextNode: SpinalContext, chunkSize: number = -1): Promise<SpinalNode[]> {
 		const filesConverted = await convertFileToSpinalDocument(files, chunkSize);
 		const promises: Promise<SpinalNode>[] = [];
@@ -27,18 +44,40 @@ class SpinalDocumentary {
 		return Promise.all(promises);
 	}
 
+	/**
+	 * Adds an existing file node/model to a parent node in context.
+	 * @param {SpinalNode | SpinalDocument | SpinalFile} fileNode File reference to add.
+	 * @param {SpinalNode} parentNode Parent node receiving the file.
+	 * @param {SpinalContext} contextNode Context where the link is created.
+	 * @returns {Promise<SpinalNode | null>} The created file node link, or null.
+	 */
 	public async addExistingFileToContext(fileNode: SpinalNode | SpinalDocument | SpinalFile, parentNode: SpinalNode, contextNode: SpinalContext): Promise<SpinalNode | null> {
 		const file = await createorGetFileNode(fileNode);
 		if (!file) return null;
 		return this.addFileToNodeInContext(parentNode, file, contextNode).then((result) => (result.length > 0 ? result[0] : null));
 	}
 
-	public async removeFileFromContext(fileNode: SpinalNode | SpinalDocument, contextNode: SpinalContext, unlinkRefs: boolean = true): Promise<boolean> {
+	/**
+	 * Removes a file from a context and optionally removes descendants.
+	 * @param {SpinalNode | SpinalDocument} fileNode File node/model to remove.
+	 * @param {SpinalContext} contextNode Context from which the file is removed.
+	 * @param {{ unlinkRefs?: boolean; removeChildren?: boolean }} [options] Removal options.
+	 * @returns {Promise<boolean>} True when completed.
+	 */
+	public async removeFileFromContext(fileNode: SpinalNode | SpinalDocument, contextNode: SpinalContext, options?: { unlinkRefs?: boolean; removeChildren?: boolean }): Promise<boolean> {
 		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
 		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
 
-		await fileNode.removeFromContext(contextNode);
-		if (unlinkRefs) await fileNode.removeAllLinks();
+		const unlinkRefs = options?.unlinkRefs ?? true;
+		await fileNode.removeFromContext(contextNode, unlinkRefs);
+
+		if (options?.removeChildren && fileNode.getType().get() === DIRECTORY_NODE_TYPE) {
+			const children = await fileNode.getChildren([TO_FOLDER_RELATION, TO_FILE_RELATION]);
+			const removeChildrenPromises = children.map((child: SpinalNode) => this.removeFileFromContext(child, contextNode, options));
+			await Promise.all(removeChildrenPromises);
+		}
+
+		// if (unlinkRefs) await fileNode.removeAllLinks();
 
 		return true;
 
@@ -54,11 +93,27 @@ class SpinalDocumentary {
 		// });
 	}
 
+	/**
+	 * Creates a directory and links it under a parent node in context.
+	 * @param {SpinalNode} parentNode Parent node receiving the directory.
+	 * @param {string} name Directory name.
+	 * @param {SpinalContext} [contextNode] Optional context for contextual linking.
+	 * @param {string} [icon="folder"] Icon metadata.
+	 * @returns {Promise<SpinalNode>} Linked directory node.
+	 */
 	public addDirectoryToNodeInContext(parentNode: SpinalNode, name: string, contextNode?: SpinalContext, icon: string = "folder"): Promise<SpinalNode> {
 		const file = new SpinalDocument(name, new Lst(), { model_type: DIRECTORY_MODEL_TYPE, icon });
 		return file.linkToNode(parentNode, contextNode);
 	}
 
+	/**
+	 * Moves a document from a source parent to a target parent in context.
+	 * @param {SpinalNode | SpinalDocument | SpinalFile} documentToMove File to move.
+	 * @param {SpinalNode | SpinalDocument | SpinalFile} sourceNode Current parent node.
+	 * @param {SpinalNode | SpinalDocument | SpinalFile} targetNode Destination parent node.
+	 * @param {SpinalContext} contextNode Context where the move occurs.
+	 * @returns {Promise<boolean>} True on success, false otherwise.
+	 */
 	public async moveDocumentInContext(documentToMove: SpinalNode | SpinalDocument | SpinalFile, sourceNode: SpinalNode | SpinalDocument | SpinalFile, targetNode: SpinalNode | SpinalDocument | SpinalFile, contextNode: SpinalContext): Promise<boolean> {
 		documentToMove = await createorGetFileNode(documentToMove);
 		sourceNode = await createorGetFileNode(sourceNode);
@@ -83,6 +138,11 @@ class SpinalDocumentary {
 
 	/////////////////// Versioning functions ///////////////////////
 
+	/**
+	 * Gets the versions of a file.
+	 * @param {SpinalNode | SpinalDocument | SpinalFile} fileNode File node/model.
+	 * @returns {Promise<FileVersion[]>} Version history for the file.
+	 */
 	public async getFileVersions(fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<FileVersion[]> {
 		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
 		if (!fileNode) throw new Error("File model not found for the given node.");
@@ -102,6 +162,12 @@ class SpinalDocumentary {
 		throw new Error("Unsupported file model type.");
 	}
 
+	/**
+	 * Gets one version by its name.
+	 * @param {SpinalNode | SpinalDocument | SpinalFile} fileNode File node/model.
+	 * @param {string} versionName Version name to retrieve.
+	 * @returns {Promise<FileVersion | null>} Matching version or null.
+	 */
 	public async getFileVersionByName(fileNode: SpinalNode | SpinalDocument | SpinalFile, versionName: string): Promise<FileVersion | null> {
 		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
 		if (!fileNode) throw new Error("File model not found for the given node.");
@@ -110,6 +176,14 @@ class SpinalDocumentary {
 		return null;
 	}
 
+	/**
+	 * Creates a new version from a buffer or file input.
+	 * @param {SpinalNode | SpinalDocument} fileNode File node/model to update.
+	 * @param {Buffer | FilesArgType} buffer New content payload.
+	 * @param {string} [versionName] Optional version name.
+	 * @param {number} [chunkSize] Optional chunk size used by persistence.
+	 * @returns {Promise<FileVersion>} Created file version.
+	 */
 	public async updateFileVersion(fileNode: SpinalNode | SpinalDocument, buffer: Buffer | FilesArgType, versionName?: string, chunkSize?: number): Promise<FileVersion> {
 		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
 		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
@@ -117,6 +191,12 @@ class SpinalDocumentary {
 		return fileNode.updateVersion(buffer, versionName, chunkSize);
 	}
 
+	/**
+	 * Removes a version from a file history.
+	 * @param {SpinalNode | SpinalDocument} fileNode File node/model.
+	 * @param {string} versionName Version name to remove.
+	 * @returns {Promise<boolean>} True if version is removed.
+	 */
 	public async removeFileVersion(fileNode: SpinalNode | SpinalDocument, versionName: string): Promise<boolean> {
 		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
 		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
@@ -124,6 +204,12 @@ class SpinalDocumentary {
 		return fileNode.removeVersion(versionName);
 	}
 
+	/**
+	 * Sets a version as the current version.
+	 * @param {SpinalNode | SpinalDocument} fileNode File node/model.
+	 * @param {string} versionName Version name to set as current.
+	 * @returns {Promise<FileVersion>} The new current version.
+	 */
 	public async downgradeFileVersion(fileNode: SpinalNode | SpinalDocument, versionName: string): Promise<FileVersion> {
 		if (fileNode instanceof SpinalNode) fileNode = (await getFileModelFromNode(fileNode)) as SpinalDocument;
 		if (!fileNode || !(fileNode instanceof SpinalDocument)) throw new Error("File model not found for the given node.");
@@ -133,28 +219,65 @@ class SpinalDocumentary {
 
 	//////////////////////////////////
 
+	/**
+	 * Lists all paths in a file tree from a starting node.
+	 * @param {SpinalNode | SpinalDocument | SpinalFile} startNode Tree root.
+	 * @returns {Promise<IFileInfo[]>} File tree entries with path data.
+	 */
 	public async getAllPathsInTree(startNode: SpinalNode | SpinalDocument | SpinalFile): Promise<IFileInfo[]> {
 		return convertFileInTreeToSpecialFormat(startNode, undefined, "", false);
 	}
 
+	/**
+	 * Exports all files in a tree as buffers.
+	 * @param {SpinalNode | SpinalDocument | SpinalFile} startNode Tree root.
+	 * @param {string} [hubUrl=""] Optional hub URL.
+	 * @returns {Promise<IFileInfo[]>} Converted file data.
+	 */
 	public async getFilesInTreeAsBuffer(startNode: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<IFileInfo[]> {
 		return convertTreeToFileBuffers(startNode, hubUrl);
 	}
 
+	/**
+	 * Exports all files in a tree to a specific format.
+	 * @param {SpinalNode | SpinalDocument | SpinalFile} startNode Tree root.
+	 * @param {fileFormat} format Output format.
+	 * @param {string} [hubUrl=""] Optional hub URL.
+	 * @returns {Promise<IFileInfo[]>} Converted file data.
+	 */
 	public async getFilesInTreeToSpecificFormat(startNode: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl: string = ""): Promise<IFileInfo[]> {
 		return convertFileInTreeToSpecialFormat(startNode, format, hubUrl, true);
 	}
 
+	/**
+	 * Converts a file to a `{ name, buffer }` structure.
+	 * @param {SpinalNode | SpinalDocument | SpinalFile} file File node/model.
+	 * @param {string} [hubUrl=""] Optional hub URL.
+	 * @returns {Promise<{ name: string; buffer: Buffer }>} Converted buffer payload.
+	 */
 	public async convertFileToBuffer(file: SpinalNode | SpinalDocument | SpinalFile, hubUrl: string = ""): Promise<{ name: string; buffer: Buffer }> {
 		return convertFileToSpecialFormat(file, "buffer", hubUrl).then((result) => {
 			return { name: result.name, buffer: result.data as Buffer };
 		});
 	}
 
+	/**
+	 * Converts a file to the requested special format.
+	 * @param {SpinalNode | SpinalDocument | SpinalFile} file File node/model.
+	 * @param {fileFormat} format Output format.
+	 * @param {string} [hubUrl=""] Optional hub URL.
+	 * @returns {Promise<IFileInfo>} Converted file descriptor.
+	 */
 	public async convertFileToSpecialFormat(file: SpinalNode | SpinalDocument | SpinalFile, format: fileFormat, hubUrl: string = ""): Promise<IFileInfo> {
 		return convertFileToSpecialFormat(file, format, hubUrl);
 	}
 
+	/**
+	 * Links a file to a business node through file explorer relation.
+	 * @param {SpinalNode} node Business node.
+	 * @param {SpinalNode | SpinalDocument | SpinalFile} fileNode File node/model.
+	 * @returns {Promise<SpinalNode | null>} First linked file node or null.
+	 */
 	public async linkFileToNode(node: SpinalNode, fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<SpinalNode | null> {
 		let fileModel: SpinalDocument | SpinalFile | undefined;
 
@@ -166,10 +289,21 @@ class SpinalDocumentary {
 	}
 
 	///////////// file Linked to node functions
+	/**
+	 * Gets files linked to a business node.
+	 * @param {SpinalNode} node Business node.
+	 * @returns {ReturnType<typeof FileExplorer.getFilesLinkedToNode>} Linked files.
+	 */
 	public async getFileLinkedToNode(node: SpinalNode): ReturnType<typeof FileExplorer.getFilesLinkedToNode> {
 		return FileExplorer.getFilesLinkedToNode(node);
 	}
 
+	/**
+	 * Gets linked files as buffers.
+	 * @param {SpinalNode} node Business node.
+	 * @param {string} [hubUrl=""] Optional hub URL.
+	 * @returns {Promise<{ name: string; path: string; buffer: Buffer }[]>} Linked files as buffers.
+	 */
 	public async getFileLinkedToNodeAsBuffers(node: SpinalNode, hubUrl: string = ""): Promise<{ name: string; path: string; buffer: Buffer }[]> {
 		const rootDirNode = await _getOrCreateRootNode(node, false);
 		if (!rootDirNode) return [];
@@ -177,6 +311,13 @@ class SpinalDocumentary {
 		return convertTreeToFileBuffers(rootDirNode, hubUrl);
 	}
 
+	/**
+	 * Gets linked files converted to a specific format.
+	 * @param {SpinalNode} node Business node.
+	 * @param {fileFormat} format Output format.
+	 * @param {string} [hubUrl=""] Optional hub URL.
+	 * @returns {Promise<{ name: string; data: Buffer | string | NodeJS.ReadableStream }[]>} Converted linked files.
+	 */
 	public async getFileLinkedToNodeToSpecificFormat(node: SpinalNode, format: fileFormat, hubUrl: string = ""): Promise<{ name: string; data: Buffer | string | NodeJS.ReadableStream }[]> {
 		const rootDirNode = await _getOrCreateRootNode(node, false);
 		if (!rootDirNode) return [];
@@ -184,11 +325,22 @@ class SpinalDocumentary {
 		return convertFileInTreeToSpecialFormat(rootDirNode, format, hubUrl, true);
 	}
 
+	/**
+	 * Gets parent nodes of a file.
+	 * @param {SpinalNode | SpinalDocument | SpinalFile} node File node/model.
+	 * @returns {Promise<SpinalNode[]>} Parent nodes.
+	 */
 	public async getFileParents(node: SpinalNode | SpinalDocument | SpinalFile): Promise<SpinalNode[]> {
 		return FileExplorer.getFileParents(node);
 	}
 	///////////// end of file Linked to node functions
 
+	/**
+	 * Unlinks a file from a business node.
+	 * @param {SpinalNode} node Business node.
+	 * @param {SpinalNode} fileNode File node to unlink.
+	 * @returns {ReturnType<typeof FileExplorer.removeFileLinked>} Result of unlink operation.
+	 */
 	public async unlinkFileFromNode(node: SpinalNode, fileNode: SpinalNode) {
 		return FileExplorer.removeFileLinked(node, fileNode);
 	}
@@ -204,6 +356,12 @@ class SpinalDocumentary {
 		return node as SpinalNode;
 	}
 
+	/**
+	 * Pushes a file into a directory list and adds corresponding graph relation.
+	 * @param {SpinalNode} directoryNode Directory node.
+	 * @param {SpinalDocument | SpinalFile} file File model to push.
+	 * @returns {Promise<SpinalNode | null>} Created child node relation or null.
+	 */
 	public static async pushFileToDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile): Promise<SpinalNode | null> {
 		const fileNode = await createorGetFileNode(file);
 		const directoryElement = await getFileModelFromNode(directoryNode);
@@ -219,6 +377,12 @@ class SpinalDocumentary {
 		return null;
 	}
 
+	/**
+	 * Removes a file from a directory list.
+	 * @param {SpinalNode} directoryNode Directory node.
+	 * @param {SpinalDocument | SpinalFile | SpinalNode} file File node/model to remove.
+	 * @returns {Promise<boolean>} True if removed.
+	 */
 	public static async removeFileFromDirectory(directoryNode: SpinalNode, file: SpinalDocument | SpinalFile | SpinalNode): Promise<boolean> {
 		const directoryElement = await getFileModelFromNode(directoryNode);
 		const fileModel = await getFileModelFromNode(file);
@@ -239,6 +403,13 @@ class SpinalDocumentary {
 		return false;
 	}
 
+	/**
+	 * Imports a SpinalDrive hierarchy into context using breadth-first traversal.
+	 * @param {SpinalContext} contextNode Destination context.
+	 * @param {SpinalNode} parentNode Parent node used as import root.
+	 * @param {SpinalDocument} startFile First file/directory to import.
+	 * @returns {Promise<SpinalNode[]>} All created nodes.
+	 */
 	public async importFilesFromSpinalDrive(contextNode: SpinalContext, parentNode: SpinalNode, startFile: SpinalDocument): Promise<SpinalNode[]> {
 		const queue: { file: SpinalDocument; parent: SpinalNode }[] = [{ file: startFile, parent: parentNode }];
 		const createdNodes: SpinalNode[] = [];

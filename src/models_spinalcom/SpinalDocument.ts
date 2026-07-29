@@ -185,14 +185,18 @@ export default class SpinalDocument extends SpinalFile {
 		return removeFileNodeFromParent(parentNode, this._node as SpinalNode);
 	}
 
-	async removeFromContext(contextNode: SpinalContext): Promise<boolean> {
+	async removeFromContext(contextNode: SpinalContext, unLinkRefs: boolean = true): Promise<boolean> {
 		if (!this._node) this._node = (await this.getNode()) as SpinalNode;
 		if (!this._node) return Promise.resolve(false);
 
+		// remove
 		const parents = await this._node.getParentsInContext(contextNode, [TO_FILE_RELATION, TO_FOLDER_RELATION]);
 		const unLinkPromises = parents.map((parent) => removeFileNodeFromParent(parent, this._node as SpinalNode));
 		return Promise.all(unLinkPromises)
-			.then(() => true)
+			.then(async () => {
+				if (!unLinkRefs) return true;
+				return this.removeAllLinks();
+			})
 			.catch(() => false);
 	}
 
