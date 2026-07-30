@@ -124,6 +124,8 @@ class SpinalDocument extends spinal_core_connectorjs_1.File {
     async linkToNode(parentNode, contextNode) {
         if (!this._node)
             await this.createNode();
+        if (!(parentNode instanceof spinal_env_viewer_graph_service_1.SpinalNode))
+            parentNode = (await parentNode.getNode());
         const relationName = this.isDirectory() ? constants_1.TO_FOLDER_RELATION : constants_1.TO_FILE_RELATION;
         return (0, files_1.addSpinalDocumentAsNodeChild)(parentNode, this._node, relationName, contextNode);
     }

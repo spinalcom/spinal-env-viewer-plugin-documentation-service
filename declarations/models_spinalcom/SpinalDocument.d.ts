@@ -17,7 +17,7 @@ export default class SpinalDocument extends SpinalFile {
     removeVersion(versionName: string): Promise<boolean>;
     getVersionByName(versionName: string): Promise<FileVersion | null>;
     getVersionHistory(): Promise<FileVersion[]>;
-    linkToNode(parentNode: SpinalNode, contextNode?: SpinalContext): Promise<SpinalNode>;
+    linkToNode(parentNode: SpinalNode | SpinalDocument, contextNode?: SpinalContext): Promise<SpinalNode>;
     remove(unlinkToAll?: boolean): Promise<boolean>;
     removeFromParent(parentNode: SpinalNode): Promise<boolean>;
     removeFromContext(contextNode: SpinalContext, unLinkRefs?: boolean): Promise<boolean>;
