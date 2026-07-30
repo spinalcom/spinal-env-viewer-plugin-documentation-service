@@ -35,3 +35,4 @@ export declare function isRootDirectoryNode(node: SpinalNode): boolean;
 export declare function removeFileNodeFromParent(parentNode: SpinalNode, fileNode: SpinalNode | SpinalDocument | SpinalFile): Promise<boolean>;
 export declare function isFileVersion(fileVersion: any): fileVersion is FileVersion;
 export declare function _getRootNodeParent(node: SpinalNode): Promise<SpinalNode[]>;
+export declare function getNodeParentsInContext(node: SpinalNode, context: SpinalContext, relationNames?: string[]): Promise<SpinalNode[]>;

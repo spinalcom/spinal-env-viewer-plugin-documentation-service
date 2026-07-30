@@ -1,7 +1,7 @@
 import { File as SpinalFile, Path, Directory, spinalCore, Ptr, Lst } from "spinal-core-connectorjs";
 import { FileExplorer } from "../Models/FileExplorer";
 import { SpinalContext, SpinalNode } from "spinal-env-viewer-graph-service";
-import { addSpinalDocumentAsNodeChild, convertTreeToFileBuffers, isFileVersion, isRootDirectoryNode, removeFileNodeFromParent } from "../utils/files";
+import { addSpinalDocumentAsNodeChild, convertTreeToFileBuffers, getNodeParentsInContext, isFileVersion, isRootDirectoryNode, removeFileNodeFromParent } from "../utils/files";
 import { FilesArgType, IFileBufferInfo } from "../interfaces";
 import { DIRECTORY_MODEL_TYPE, DIRECTORY_NODE_TYPE, FILE_MODEL_TYPE, FILE_NODE_TYPE, TO_FILE_RELATION, TO_FOLDER_RELATION } from "../Models/constants";
 import FileVersion from "./FileVersion";
@@ -189,8 +189,10 @@ export default class SpinalDocument extends SpinalFile {
 		if (!this._node) this._node = (await this.getNode()) as SpinalNode;
 		if (!this._node) return Promise.resolve(false);
 
-		// remove
-		const parents = await this._node.getParentsInContext(contextNode, [TO_FILE_RELATION, TO_FOLDER_RELATION]);
+		// I don't use node.getParentsInContext because it doesn't return the context node if the file is directly linked to it.
+		// const parents = await this._node.getParentsInContext(contextNode, [TO_FILE_RELATION, TO_FOLDER_RELATION]);
+
+		const parents = await getNodeParentsInContext(this._node, contextNode, [TO_FILE_RELATION, TO_FOLDER_RELATION]);
 		const unLinkPromises = parents.map((parent) => removeFileNodeFromParent(parent, this._node as SpinalNode));
 		return Promise.all(unLinkPromises)
 			.then(async () => {

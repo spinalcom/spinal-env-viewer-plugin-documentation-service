@@ -168,8 +168,9 @@ class SpinalDocument extends spinal_core_connectorjs_1.File {
             this._node = (await this.getNode());
         if (!this._node)
             return Promise.resolve(false);
-        // remove
-        const parents = await this._node.getParentsInContext(contextNode, [constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
+        // I don't use node.getParentsInContext because it doesn't return the context node if the file is directly linked to it.
+        // const parents = await this._node.getParentsInContext(contextNode, [TO_FILE_RELATION, TO_FOLDER_RELATION]);
+        const parents = await (0, files_1.getNodeParentsInContext)(this._node, contextNode, [constants_1.TO_FILE_RELATION, constants_1.TO_FOLDER_RELATION]);
         const unLinkPromises = parents.map((parent) => (0, files_1.removeFileNodeFromParent)(parent, this._node));
         return Promise.all(unLinkPromises)
             .then(async () => {

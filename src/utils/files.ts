@@ -385,3 +385,8 @@ export async function _getRootNodeParent(node: SpinalNode): Promise<SpinalNode[]
 	}
 	return result;
 }
+
+export async function getNodeParentsInContext(node: SpinalNode, context: SpinalContext, relationNames?: string[]): Promise<SpinalNode[]> {
+	const parents = await node.getParents(relationNames);
+	return parents.filter((parent) => parent.belongsToContext(context) || parent._server_id === context._server_id);
+}

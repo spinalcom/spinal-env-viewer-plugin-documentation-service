@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._getRootNodeParent = exports.isFileVersion = exports.removeFileNodeFromParent = exports.isRootDirectoryNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.convertFileToSpecialFormat = exports.convertFileInTreeToSpecialFormat = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createorGetFileNode = exports.getFilesFromDirectory = exports.getFileModelFromNode = exports.addSpinalDocumentAsNodeChild = exports.convertFileToBuffer = exports.convertFileToSpinalDocument = void 0;
+exports.getNodeParentsInContext = exports._getRootNodeParent = exports.isFileVersion = exports.removeFileNodeFromParent = exports.isRootDirectoryNode = exports._getOrCreateRootNode = exports.convertTreeToFileBuffers = exports.convertFileToSpecialFormat = exports.convertFileInTreeToSpecialFormat = exports.getPathData = exports._getFileAsBuffer = exports._getFileAttributes = exports._getFileChildren = exports.createorGetFileNode = exports.getFilesFromDirectory = exports.getFileModelFromNode = exports.addSpinalDocumentAsNodeChild = exports.convertFileToBuffer = exports.convertFileToSpinalDocument = void 0;
 const spinal_core_connectorjs_type_1 = require("spinal-core-connectorjs_type");
 const spinal_env_viewer_graph_service_1 = require("spinal-env-viewer-graph-service");
 const constants_1 = require("../Models/constants");
@@ -344,4 +344,9 @@ async function _getRootNodeParent(node) {
     return result;
 }
 exports._getRootNodeParent = _getRootNodeParent;
+async function getNodeParentsInContext(node, context, relationNames) {
+    const parents = await node.getParents(relationNames);
+    return parents.filter((parent) => parent.belongsToContext(context) || parent._server_id === context._server_id);
+}
+exports.getNodeParentsInContext = getNodeParentsInContext;
 //# sourceMappingURL=files.js.map
